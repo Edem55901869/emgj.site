@@ -124,6 +124,20 @@ export default function AdminQuestions() {
                           <p className="text-xs text-gray-500">{msg.email}</p>
                           <p className="text-xs text-gray-400 mt-1">{msg.created_date && format(new Date(msg.created_date), 'd MMM yyyy HH:mm', { locale: fr })}</p>
                         </div>
+                        {msg.message.includes('WhatsApp:') && (() => {
+                          const match = msg.message.match(/WhatsApp:\s*([+\d]+)/);
+                          return match ? (
+                            <a
+                              href={`https://wa.me/${match[1].replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 rounded-lg bg-green-100 hover:bg-green-200 transition-colors"
+                              title="Contacter sur WhatsApp"
+                            >
+                              <MessageCircle className="w-5 h-5 text-green-600" />
+                            </a>
+                          ) : null;
+                        })()}
                         <Badge className={`${msg.status === 'répondu' ? 'bg-green-50 text-green-700' : msg.status === 'lu' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}`}>
                           {msg.status}
                         </Badge>
