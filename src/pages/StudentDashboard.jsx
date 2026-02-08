@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -176,14 +176,35 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold text-gray-900">Fil d'actualité</h1>
-            <Badge className="bg-blue-50 text-blue-700 border-blue-100">
-              {studentProfile.domain}
-            </Badge>
+      {/* Header with Profile Banner */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative">
+        <div className="h-24 relative overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+            <span className="text-white text-lg font-bold">EMGJ</span>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 pb-4 -mt-10 relative z-10">
+          <div className="flex items-end gap-3 mb-3">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 border-white">
+                {studentProfile.profile_photo ? (
+                  <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold text-blue-600">
+                    {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
+                  </span>
+                )}
+              </div>
+              {studentProfile.status === 'certifié' && (
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-white font-bold text-lg">{studentProfile.first_name} {studentProfile.last_name}</h2>
+              <p className="text-white/80 text-xs">{studentProfile.domain}</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -232,23 +253,34 @@ export default function StudentDashboard() {
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm"
               >
                 {post.media_url && post.media_type === 'image' && (
-                  <img src={post.media_url} alt="" className="w-full h-48 object-cover" />
+                  <img src={post.media_url} alt="" className="w-full h-64 object-cover" />
                 )}
-                <div className="p-5">
-                  <h3 className="font-bold text-gray-900 text-lg mb-2">{post.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                  {post.media_url && post.media_type === 'video' && (
-                    <video src={post.media_url} controls className="w-full rounded-xl mt-3" />
+                <div className={post.theme_id && post.media_type === 'text' ? `p-8 min-h-[200px] flex flex-col justify-center ${post.theme_bg}` : 'p-5'}>
+                  {post.theme_id && post.media_type === 'text' ? (
+                    <div className={`text-center ${post.theme_text}`}>
+                      <h3 className="font-bold text-2xl mb-3">{post.title}</h3>
+                      <p className="text-lg leading-relaxed">{post.content}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="font-bold text-gray-900 text-lg mb-2">{post.title}</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                      {post.media_url && post.media_type === 'video' && (
+                        <video src={post.media_url} controls className="w-full rounded-xl mt-3" />
+                      )}
+                      {post.media_url && post.media_type === 'audio' && (
+                        <audio src={post.media_url} controls className="w-full mt-3" />
+                      )}
+                      {post.media_url && post.media_type === 'link' && (
+                        <a href={post.media_url} target="_blank" rel="noreferrer" className="text-blue-600 text-sm underline mt-2 block">{post.media_url}</a>
+                      )}
+                    </>
                   )}
-                  {post.media_url && post.media_type === 'audio' && (
-                    <audio src={post.media_url} controls className="w-full mt-3" />
+                  {!post.theme_id && (
+                    <div className="text-xs text-gray-400 mt-3">
+                      {post.created_date && format(new Date(post.created_date), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                    </div>
                   )}
-                  {post.media_url && post.media_type === 'link' && (
-                    <a href={post.media_url} target="_blank" rel="noreferrer" className="text-blue-600 text-sm underline mt-2 block">{post.media_url}</a>
-                  )}
-                  <div className="text-xs text-gray-400 mt-3">
-                    {post.created_date && format(new Date(post.created_date), "d MMM yyyy 'à' HH:mm", { locale: fr })}
-                  </div>
                 </div>
 
                 {/* Actions */}

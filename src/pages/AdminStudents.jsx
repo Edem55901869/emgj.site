@@ -125,7 +125,15 @@ export default function AdminStudents() {
                     </Button>
                     {student.status === 'en_attente' && (
                       <>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'certifié' } })}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={async () => {
+                          await updateMutation.mutateAsync({ id: student.id, data: { status: 'certifié' } });
+                          await base44.entities.Notification.create({
+                            recipient_email: student.user_email,
+                            title: '🎉 Compte certifié !',
+                            message: `Félicitations ${student.first_name} ! Votre compte a été certifié. Vous avez maintenant accès à toutes les fonctionnalités de la plateforme.`,
+                            type: 'success'
+                          });
+                        }}>
                           <Check className="w-4 h-4 text-green-600" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'rejeté' } })}>
@@ -159,7 +167,17 @@ export default function AdminStudents() {
                   <div><p className="text-gray-500">Inscrit le</p><p className="font-medium">{selectedStudent.created_date && format(new Date(selectedStudent.created_date), 'd MMM yyyy', { locale: fr })}</p></div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'certifié' } })} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
+                  <Button onClick={async () => {
+                    await updateMutation.mutateAsync({ id: selectedStudent.id, data: { status: 'certifié' } });
+                    await base44.entities.Notification.create({
+                      recipient_email: selectedStudent.user_email,
+                      title: '🎉 Compte certifié !',
+                      message: `Félicitations ${selectedStudent.first_name} ! Votre compte a été certifié. Vous avez maintenant accès à toutes les fonctionnalités de la plateforme.`,
+                      type: 'success'
+                    });
+                    setSelectedStudent(null);
+                    toast.success('Étudiant certifié et notifié');
+                  }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
                   <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'rejeté' } })} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><X className="w-3 h-3 mr-1" />Rejeter</Button>
                   <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'bloqué' } })} size="sm" variant="outline" className="rounded-xl"><Ban className="w-3 h-3 mr-1" />Bloquer</Button>
                   <Button onClick={() => deleteMutation.mutate(selectedStudent.id)} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><Trash2 className="w-3 h-3 mr-1" />Supprimer</Button>

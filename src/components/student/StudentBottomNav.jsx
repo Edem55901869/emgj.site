@@ -15,7 +15,7 @@ export default function StudentBottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-t border-blue-700/30 shadow-lg shadow-blue-900/20">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {navItems.map((item) => {
           const url = createPageUrl(item.page);
@@ -28,8 +28,8 @@ export default function StudentBottomNav() {
               to={url}
               className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
                 isActive
-                  ? 'text-blue-600'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'text-white bg-white/20 backdrop-blur-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
               <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />

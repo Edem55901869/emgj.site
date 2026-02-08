@@ -47,12 +47,20 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminAI from './pages/AdminAI';
+import AdminAnalytics from './pages/AdminAnalytics';
 import AdminBlog from './pages/AdminBlog';
+import AdminBulletins from './pages/AdminBulletins';
 import AdminConferences from './pages/AdminConferences';
 import AdminCourses from './pages/AdminCourses';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminGroups from './pages/AdminGroups';
+import AdminHosting from './pages/AdminHosting';
 import AdminLibrary from './pages/AdminLibrary';
+import AdminQuestions from './pages/AdminQuestions';
+import AdminSettings from './pages/AdminSettings';
 import AdminStudents from './pages/AdminStudents';
+import AdminTuition from './pages/AdminTuition';
 import Connexion from './pages/Connexion';
 import Home from './pages/Home';
 import StudentConferences from './pages/StudentConferences';
@@ -61,23 +69,24 @@ import StudentDashboard from './pages/StudentDashboard';
 import StudentGroups from './pages/StudentGroups';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentMore from './pages/StudentMore';
-import AdminGroups from './pages/AdminGroups';
-import AdminBulletins from './pages/AdminBulletins';
-import AdminQuestions from './pages/AdminQuestions';
-import AdminTuition from './pages/AdminTuition';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminAI from './pages/AdminAI';
-import AdminHosting from './pages/AdminHosting';
-import AdminSettings from './pages/AdminSettings';
+import StudentProfile from './pages/StudentProfile';
 
 
 export const PAGES = {
+    "AdminAI": AdminAI,
+    "AdminAnalytics": AdminAnalytics,
     "AdminBlog": AdminBlog,
+    "AdminBulletins": AdminBulletins,
     "AdminConferences": AdminConferences,
     "AdminCourses": AdminCourses,
     "AdminDashboard": AdminDashboard,
+    "AdminGroups": AdminGroups,
+    "AdminHosting": AdminHosting,
     "AdminLibrary": AdminLibrary,
+    "AdminQuestions": AdminQuestions,
+    "AdminSettings": AdminSettings,
     "AdminStudents": AdminStudents,
+    "AdminTuition": AdminTuition,
     "Connexion": Connexion,
     "Home": Home,
     "StudentConferences": StudentConferences,
@@ -86,14 +95,7 @@ export const PAGES = {
     "StudentGroups": StudentGroups,
     "StudentLibrary": StudentLibrary,
     "StudentMore": StudentMore,
-    "AdminGroups": AdminGroups,
-    "AdminBulletins": AdminBulletins,
-    "AdminQuestions": AdminQuestions,
-    "AdminTuition": AdminTuition,
-    "AdminAnalytics": AdminAnalytics,
-    "AdminAI": AdminAI,
-    "AdminHosting": AdminHosting,
-    "AdminSettings": AdminSettings,
+    "StudentProfile": StudentProfile,
 }
 
 export const pagesConfig = {
