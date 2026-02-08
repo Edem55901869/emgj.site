@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2 } from 'lucide-react';
+import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2, DollarSign, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { createPageUrl } from '@/utils';
@@ -84,6 +84,34 @@ export default function StudentMore() {
             {unreadCount > 0 && (
               <Badge className="bg-red-500 text-white">{unreadCount}</Badge>
             )}
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+
+          <button 
+            onClick={() => navigate(createPageUrl('StudentTuition'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-900">Scolarité</p>
+              <p className="text-sm text-gray-500">Paiements et factures</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+
+          <button 
+            onClick={() => navigate(createPageUrl('StudentBulletins'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <Award className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-900">Bulletins & Diplômes</p>
+              <p className="text-sm text-gray-500">Mes résultats académiques</p>
+            </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 

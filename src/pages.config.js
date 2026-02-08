@@ -62,6 +62,7 @@ import AdminSettings from './pages/AdminSettings';
 import AdminStudents from './pages/AdminStudents';
 import AdminTuition from './pages/AdminTuition';
 import Connexion from './pages/Connexion';
+import Contact from './pages/Contact';
 import Home from './pages/Home';
 import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
@@ -73,7 +74,8 @@ import StudentMore from './pages/StudentMore';
 import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
-import Contact from './pages/Contact';
+import StudentTuition from './pages/StudentTuition';
+import StudentBulletins from './pages/StudentBulletins';
 
 
 export const PAGES = {
@@ -92,6 +94,7 @@ export const PAGES = {
     "AdminStudents": AdminStudents,
     "AdminTuition": AdminTuition,
     "Connexion": Connexion,
+    "Contact": Contact,
     "Home": Home,
     "StudentConferences": StudentConferences,
     "StudentCourses": StudentCourses,
@@ -103,7 +106,8 @@ export const PAGES = {
     "StudentNotifications": StudentNotifications,
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
-    "Contact": Contact,
+    "StudentTuition": StudentTuition,
+    "StudentBulletins": StudentBulletins,
 }
 
 export const pagesConfig = {
