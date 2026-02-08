@@ -47,37 +47,37 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Home from './pages/Home';
+import AdminBlog from './pages/AdminBlog';
+import AdminConferences from './pages/AdminConferences';
+import AdminCourses from './pages/AdminCourses';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminLibrary from './pages/AdminLibrary';
+import AdminStudents from './pages/AdminStudents';
 import Connexion from './pages/Connexion';
-import StudentDashboard from './pages/StudentDashboard';
+import Home from './pages/Home';
+import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
+import StudentDashboard from './pages/StudentDashboard';
 import StudentGroups from './pages/StudentGroups';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentMore from './pages/StudentMore';
-import StudentConferences from './pages/StudentConferences';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminStudents from './pages/AdminStudents';
-import AdminCourses from './pages/AdminCourses';
-import AdminBlog from './pages/AdminBlog';
-import AdminLibrary from './pages/AdminLibrary';
-import AdminConferences from './pages/AdminConferences';
 
 
 export const PAGES = {
-    "Home": Home,
+    "AdminBlog": AdminBlog,
+    "AdminConferences": AdminConferences,
+    "AdminCourses": AdminCourses,
+    "AdminDashboard": AdminDashboard,
+    "AdminLibrary": AdminLibrary,
+    "AdminStudents": AdminStudents,
     "Connexion": Connexion,
-    "StudentDashboard": StudentDashboard,
+    "Home": Home,
+    "StudentConferences": StudentConferences,
     "StudentCourses": StudentCourses,
+    "StudentDashboard": StudentDashboard,
     "StudentGroups": StudentGroups,
     "StudentLibrary": StudentLibrary,
     "StudentMore": StudentMore,
-    "StudentConferences": StudentConferences,
-    "AdminDashboard": AdminDashboard,
-    "AdminStudents": AdminStudents,
-    "AdminCourses": AdminCourses,
-    "AdminBlog": AdminBlog,
-    "AdminLibrary": AdminLibrary,
-    "AdminConferences": AdminConferences,
 }
 
 export const pagesConfig = {

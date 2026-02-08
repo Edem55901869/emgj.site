@@ -25,14 +25,14 @@ export default function AdminTopNav() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-b border-blue-700/30 shadow-lg shadow-blue-900/20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-gray-900 hidden sm:block">EMGJ Admin</span>
+              <span className="font-bold text-white hidden sm:block">EMGJ Admin</span>
             </div>
 
             {/* Desktop nav */}
@@ -44,7 +44,7 @@ export default function AdminTopNav() {
                     key={item.name}
                     to={createPageUrl(item.page)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                      isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                      isActive ? 'bg-white/20 text-white backdrop-blur-sm' : 'text-white/70 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
@@ -55,10 +55,10 @@ export default function AdminTopNav() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button onClick={handleLogout} variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl hidden md:flex">
+              <Button onClick={handleLogout} variant="ghost" size="sm" className="text-white/90 hover:text-white hover:bg-white/10 rounded-xl hidden md:flex">
                 <LogOut className="w-4 h-4 mr-1" /> Déconnexion
               </Button>
-              <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-xl hover:bg-gray-100">
+              <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-xl hover:bg-white/10 text-white">
                 {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
@@ -69,7 +69,7 @@ export default function AdminTopNav() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)}>
-          <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg p-4 space-y-1" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-16 left-0 right-0 bg-gradient-to-b from-indigo-600 to-indigo-700 border-b border-indigo-800/30 shadow-lg p-4 space-y-1 backdrop-blur-md" onClick={(e) => e.stopPropagation()}>
             {navItems.map(item => {
               const isActive = location.pathname.includes(item.page);
               return (
@@ -78,7 +78,7 @@ export default function AdminTopNav() {
                   to={createPageUrl(item.page)}
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium ${
-                    isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+                    isActive ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -86,7 +86,7 @@ export default function AdminTopNav() {
                 </Link>
               );
             })}
-            <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 w-full">
+            <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white w-full">
               <LogOut className="w-4 h-4" /> Déconnexion
             </button>
           </div>
