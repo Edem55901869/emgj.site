@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Plus, Edit3, Trash2, Check, X, UserPlus, Crown, Loader2, Circle } from 'lucide-react';
+import { Users, Plus, Edit3, Trash2, Check, X, UserPlus, Crown, Loader2, Circle, MessageCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import GroupChat from '../components/groups/GroupChat';
 
 const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
 const FORMATIONS = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
@@ -18,6 +19,8 @@ const FORMATIONS = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master',
 export default function AdminGroups() {
   const [createOpen, setCreateOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(null);
+  const [chatOpen, setChatOpen] = useState(null);
+  const [editingGroup, setEditingGroup] = useState(null);
   const [form, setForm] = useState({ name: '', description: '', domain: '', formation_type: '' });
   const queryClient = useQueryClient();
 
@@ -76,6 +79,11 @@ export default function AdminGroups() {
     },
   });
 
+  const uploadGroupPhoto = async (groupId, file) => {
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    updateMutation.mutate({ id: groupId, data: { cover_image: file_url } });
+  };
+
   const groupMembers = manageOpen ? memberships.filter(m => m.group_id === manageOpen.id) : [];
   const groupAdminList = manageOpen ? groupAdmins.filter(ga => ga.group_id === manageOpen.id) : [];
 
@@ -123,9 +131,14 @@ export default function AdminGroups() {
                         <Badge className="bg-amber-50 text-amber-700 text-xs">{memberships.filter(m => m.group_id === group.id && m.status === 'en_attente').length} demandes</Badge>
                       )}
                     </div>
-                    <Button onClick={() => setManageOpen(group)} variant="outline" className="w-full rounded-xl text-blue-600 border-blue-200 hover:bg-blue-50">
-                      Gérer le groupe
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button onClick={() => setChatOpen(group)} variant="outline" className="flex-1 rounded-xl text-green-600 border-green-200 hover:bg-green-50">
+                        <MessageCircle className="w-4 h-4 mr-1" /> Discussion
+                      </Button>
+                      <Button onClick={() => setManageOpen(group)} variant="outline" className="flex-1 rounded-xl text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Gérer
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
@@ -161,7 +174,30 @@ export default function AdminGroups() {
             <DialogHeader><DialogTitle>Gérer : {manageOpen?.name}</DialogTitle></DialogHeader>
             {manageOpen && (
               <div className="space-y-4 pt-2">
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Input
+                    value={editingGroup?.name || manageOpen.name}
+                    onChange={(e) => setEditingGroup({ ...manageOpen, name: e.target.value })}
+                    placeholder="Nom du groupe"
+                    className="flex-1 rounded-xl h-9"
+                  />
+                  {editingGroup && (
+                    <Button onClick={() => {
+                      updateMutation.mutate({ id: manageOpen.id, data: { name: editingGroup.name } });
+                      setEditingGroup(null);
+                    }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl">
+                      <Check className="w-3 h-3" />
+                    </Button>
+                  )}
+                  <Button onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => uploadGroupPhoto(manageOpen.id, e.target.files[0]);
+                    input.click();
+                  }} size="sm" variant="outline" className="rounded-xl">
+                    <Upload className="w-3 h-3 mr-1" /> Photo
+                  </Button>
                   <Button onClick={() => deleteMutation.mutate(manageOpen.id)} variant="outline" size="sm" className="text-red-600 border-red-200 rounded-xl">
                     <Trash2 className="w-3 h-3 mr-1" /> Supprimer
                   </Button>
@@ -220,6 +256,9 @@ export default function AdminGroups() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Group Chat */}
+        {chatOpen && <GroupChat group={chatOpen} open={!!chatOpen} onClose={() => setChatOpen(null)} />}
       </div>
     </AdminGuard>
   );
