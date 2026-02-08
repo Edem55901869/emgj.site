@@ -48,10 +48,24 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Home from './pages/Home';
+import Connexion from './pages/Connexion';
+import StudentDashboard from './pages/StudentDashboard';
+import StudentCourses from './pages/StudentCourses';
+import StudentGroups from './pages/StudentGroups';
+import StudentLibrary from './pages/StudentLibrary';
+import StudentMore from './pages/StudentMore';
+import StudentConferences from './pages/StudentConferences';
 
 
 export const PAGES = {
     "Home": Home,
+    "Connexion": Connexion,
+    "StudentDashboard": StudentDashboard,
+    "StudentCourses": StudentCourses,
+    "StudentGroups": StudentGroups,
+    "StudentLibrary": StudentLibrary,
+    "StudentMore": StudentMore,
+    "StudentConferences": StudentConferences,
 }
 
 export const pagesConfig = {
