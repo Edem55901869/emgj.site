@@ -16,9 +16,14 @@ export default function Connexion() {
   const [adminLoading, setAdminLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleStudentLogin = () => {
-    const nextUrl = window.location.origin + createPageUrl('StudentDashboard');
-    base44.auth.redirectToLogin(nextUrl);
+  const handleStudentLogin = async () => {
+    try {
+      const nextUrl = window.location.origin + createPageUrl('StudentDashboard');
+      await base44.auth.redirectToLogin(nextUrl);
+    } catch (error) {
+      // Si l'app n'est pas publiée, afficher un message
+      toast.error('Veuillez publier l\'application pour activer l\'authentification');
+    }
   };
 
   const handleAdminLogin = async (e) => {
@@ -134,12 +139,17 @@ export default function Connexion() {
                   Connectez-vous ou créez votre compte
                 </p>
               </div>
-              <Button
-                onClick={handleStudentLogin}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base rounded-xl shadow-lg shadow-blue-600/25"
-              >
-                Se connecter / S'inscrire
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={handleStudentLogin}
+                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base rounded-xl shadow-lg shadow-blue-600/25"
+                >
+                  Se connecter / S'inscrire
+                </Button>
+                <p className="text-xs text-blue-200/60 text-center">
+                  💡 L'authentification nécessite que l'application soit publiée
+                </p>
+              </div>
             </motion.div>
           )}
 
