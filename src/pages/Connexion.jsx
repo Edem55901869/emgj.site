@@ -17,7 +17,8 @@ export default function Connexion() {
   const navigate = useNavigate();
 
   const handleStudentLogin = () => {
-    base44.auth.redirectToLogin(createPageUrl('StudentDashboard'));
+    const nextUrl = window.location.origin + createPageUrl('StudentDashboard');
+    base44.auth.redirectToLogin(nextUrl);
   };
 
   const handleAdminLogin = async (e) => {
