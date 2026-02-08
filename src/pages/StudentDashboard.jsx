@@ -172,7 +172,11 @@ export default function StudentDashboard() {
 
   const filteredPosts = posts
     .filter(p => !searchQuery || p.title?.toLowerCase().includes(searchQuery.toLowerCase()) || p.content?.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => sortBy === 'recent' ? new Date(b.created_date) - new Date(a.created_date) : new Date(a.created_date) - new Date(b.created_date));
+    .sort((a, b) => {
+      const dateA = new Date(a.created_date);
+      const dateB = new Date(b.created_date);
+      return sortBy === 'recent' ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
