@@ -23,6 +23,7 @@ export default function AdminCourses() {
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [audioSource, setAudioSource] = useState('url');
+  const [qcmQuestions, setQcmQuestions] = useState([{ question: '', correct_answer: '' }]);
   const queryClient = useQueryClient();
 
   const { data: courses = [], isLoading } = useQuery({
@@ -55,11 +56,31 @@ export default function AdminCourses() {
         cover_image
       };
 
+      let course;
       if (editingCourse) {
-        return base44.entities.Course.update(editingCourse.id, courseData);
+        course = await base44.entities.Course.update(editingCourse.id, courseData);
       } else {
-        return base44.entities.Course.create(courseData);
+        course = await base44.entities.Course.create(courseData);
       }
+
+      // Sauvegarder les questions QCM
+      if (qcmQuestions.some(q => q.question && q.correct_answer)) {
+        const validQuestions = qcmQuestions.filter(q => q.question && q.correct_answer);
+        const existingEval = await base44.entities.CourseEvaluation.filter({ course_id: course.id });
+        
+        if (existingEval.length > 0) {
+          await base44.entities.CourseEvaluation.update(existingEval[0].id, {
+            questions: validQuestions
+          });
+        } else {
+          await base44.entities.CourseEvaluation.create({
+            course_id: course.id,
+            questions: validQuestions
+          });
+        }
+      }
+
+      return course;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCourses'] });
@@ -78,11 +99,12 @@ export default function AdminCourses() {
   });
 
   const resetForm = () => {
-    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '' });
+    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '', order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFile(null);
     setCoverFile(null);
     setAudioSource('url');
+    setQcmQuestions([{ question: '', correct_answer: '' }]);
   };
 
   const handleEdit = (course) => {
@@ -204,6 +226,56 @@ export default function AdminCourses() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Image de couverture</label>
                 <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files[0])} className="rounded-xl" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Ordre</label>
+                  <Input type="number" value={form.order || ''} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || null })} placeholder="1, 2, 3..." className="rounded-xl h-11" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Cours prérequis</label>
+                  <Select value={form.prerequisite_course_id || ''} onValueChange={(v) => setForm({ ...form, prerequisite_course_id: v })}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Aucun" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={null}>Aucun</SelectItem>
+                      {courses.filter(c => c.id !== editingCourse?.id).map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Questions QCM</label>
+                <div className="space-y-3 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
+                  {qcmQuestions.map((q, i) => (
+                    <div key={i} className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                      <Input 
+                        value={q.question} 
+                        onChange={(e) => {
+                          const newQ = [...qcmQuestions];
+                          newQ[i].question = e.target.value;
+                          setQcmQuestions(newQ);
+                        }}
+                        placeholder={`Question ${i + 1}`}
+                        className="rounded-xl h-10"
+                      />
+                      <Input 
+                        value={q.correct_answer} 
+                        onChange={(e) => {
+                          const newQ = [...qcmQuestions];
+                          newQ[i].correct_answer = e.target.value;
+                          setQcmQuestions(newQ);
+                        }}
+                        placeholder="Réponse correcte"
+                        className="rounded-xl h-10"
+                      />
+                    </div>
+                  ))}
+                  <Button type="button" onClick={() => setQcmQuestions([...qcmQuestions, { question: '', correct_answer: '' }])} variant="outline" size="sm" className="w-full rounded-xl">
+                    + Ajouter une question
+                  </Button>
+                </div>
               </div>
               <Button
                 onClick={() => saveMutation.mutate(form)}

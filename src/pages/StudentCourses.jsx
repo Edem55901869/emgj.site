@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Search, Headphones, User, Loader2, Play } from 'lucide-react';
+import { BookOpen, Search, Headphones, User, Loader2, Lock, CheckCircle, Award } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StudentBottomNav from '../components/student/StudentBottomNav';
+import CourseQCM from '../components/course/CourseQCM';
 
 export default function StudentCourses() {
   const [student, setStudent] = useState(null);
+  const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
+  const [sortBy, setSortBy] = useState('order');
   const [loading, setLoading] = useState(true);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showQCM, setShowQCM] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const user = await base44.auth.me();
-      const students = await base44.entities.Student.filter({ user_email: user.email });
+      const u = await base44.auth.me();
+      setUser(u);
+      const students = await base44.entities.Student.filter({ user_email: u.email });
       if (students.length > 0) setStudent(students[0]);
       setLoading(false);
     };
@@ -29,9 +35,35 @@ export default function StudentCourses() {
     enabled: !!student,
   });
 
-  const filteredCourses = courses
+  const { data: progress = [] } = useQuery({
+    queryKey: ['courseProgress'],
+    queryFn: () => base44.entities.StudentCourseProgress.filter({ student_email: user?.email }),
+    enabled: !!user,
+    refetchInterval: 2000,
+  });
+
+  const { data: evaluations = [] } = useQuery({
+    queryKey: ['evaluations'],
+    queryFn: () => base44.entities.CourseEvaluation.list(),
+  });
+
+  const sortedCourses = courses
     .filter(c => !search || c.title?.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => sortBy === 'recent' ? new Date(b.created_date) - new Date(a.created_date) : a.title?.localeCompare(b.title));
+    .sort((a, b) => {
+      if (sortBy === 'order') return (a.order || 999) - (b.order || 999);
+      return sortBy === 'recent' ? new Date(b.created_date) - new Date(a.created_date) : a.title?.localeCompare(b.title);
+    });
+
+  const isCourseUnlocked = (course) => {
+    if (!course.prerequisite_course_id) return true;
+    return progress.some(p => p.course_id === course.prerequisite_course_id && p.passed);
+  };
+
+  const getCourseStatus = (course) => {
+    const prog = progress.find(p => p.course_id === course.id);
+    if (!prog) return null;
+    return prog.passed ? 'validé' : 'échoué';
+  };
 
   if (loading || isLoading) {
     return (
@@ -55,6 +87,7 @@ export default function StudentCourses() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="order">Ordre</SelectItem>
               <SelectItem value="recent">Récent</SelectItem>
               <SelectItem value="title">A-Z</SelectItem>
             </SelectContent>
@@ -63,11 +96,14 @@ export default function StudentCourses() {
         <div className="flex gap-2">
           <Badge className="bg-white/20 text-white border-white/30">{student?.domain}</Badge>
           <Badge className="bg-white/20 text-white border-white/30">{student?.formation_type}</Badge>
+          <Badge className="bg-white/20 text-white border-white/30">
+            {progress.filter(p => p.passed).length} / {courses.length} validés
+          </Badge>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {filteredCourses.length === 0 ? (
+        {sortedCourses.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Headphones className="w-10 h-10 text-gray-300" />
@@ -75,43 +111,87 @@ export default function StudentCourses() {
             <p className="text-gray-500">Aucun cours disponible</p>
           </div>
         ) : (
-          filteredCourses.map(course => (
-            <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all">
-              {course.cover_image && (
-                <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-500 relative overflow-hidden">
-                  <img src={course.cover_image} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                </div>
-              )}
-              <div className="p-5">
-                <div className="flex items-start gap-4 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                    <Headphones className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 text-lg mb-1">{course.title}</h3>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
-                      <User className="w-3 h-3" />
-                      {course.teacher_name}
-                    </p>
-                    {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
-                  </div>
-                </div>
-                {(course.audio_file || course.audio_url) && (
-                  <div className="mt-4">
-                    <audio 
-                      src={course.audio_file || course.audio_url} 
-                      controls 
-                      className="w-full rounded-xl"
-                      style={{ height: '50px' }}
-                    />
+          sortedCourses.map((course, index) => {
+            const unlocked = isCourseUnlocked(course);
+            const status = getCourseStatus(course);
+            const evaluation = evaluations.find(e => e.course_id === course.id);
+
+            return (
+              <div key={course.id} className={`bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl transition-all ${!unlocked ? 'opacity-60' : ''}`}>
+                {course.cover_image && (
+                  <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-500 relative overflow-hidden">
+                    <img src={course.cover_image} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    {!unlocked && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                        <div className="text-center text-white">
+                          <Lock className="w-12 h-12 mx-auto mb-2" />
+                          <p className="text-sm">Cours verrouillé</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+                <div className="p-5">
+                  <div className="flex items-start gap-4 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                      {status === 'validé' ? <CheckCircle className="w-6 h-6 text-white" /> : <Headphones className="w-6 h-6 text-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-1">
+                        <h3 className="font-bold text-gray-900 text-lg">{course.title}</h3>
+                        {course.order && <Badge className="bg-gray-100 text-gray-700">#{course.order}</Badge>}
+                      </div>
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
+                        <User className="w-3 h-3" />
+                        {course.teacher_name}
+                      </p>
+                      {status && (
+                        <Badge className={status === 'validé' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+                          {status === 'validé' ? '✓ Validé' : '✗ Échoué'}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
+                  {unlocked && (course.audio_file || course.audio_url) && (
+                    <div className="space-y-3">
+                      <audio 
+                        src={course.audio_file || course.audio_url} 
+                        controls 
+                        className="w-full rounded-xl"
+                        style={{ height: '50px' }}
+                      />
+                      {evaluation && !status && (
+                        <button onClick={() => { setSelectedCourse(course); setShowQCM(true); }} className="w-full py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:from-green-700 hover:to-emerald-700 transition-all">
+                          <Award className="w-4 h-4 inline mr-2" />
+                          Passer l'évaluation
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      <Dialog open={showQCM} onOpenChange={setShowQCM}>
+        <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Évaluation - {selectedCourse?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedCourse && (
+            <CourseQCM
+              course={selectedCourse}
+              evaluation={evaluations.find(e => e.course_id === selectedCourse.id)}
+              studentEmail={user?.email}
+              onSuccess={() => setShowQCM(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <StudentBottomNav />
     </div>

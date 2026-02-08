@@ -13,6 +13,8 @@ import { fr } from 'date-fns/locale';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import ProfileSetupForm from '../components/student/ProfileSetupForm';
 import PublicChat from '../components/PublicChat';
+import CommentThread from '../components/blog/CommentThread';
+import NotificationService from '../components/NotificationService';
 
 export default function StudentDashboard() {
   const [user, setUser] = useState(null);
@@ -88,18 +90,41 @@ export default function StudentDashboard() {
     queryClient.invalidateQueries({ queryKey: ['blogBookmarks'] });
   };
 
-  const addComment = async (postId) => {
-    const content = commentInputs[postId];
+  const addComment = async (postId, parentId = null) => {
+    const content = parentId ? commentInputs[`${postId}-${parentId}`] : commentInputs[postId];
     if (!content?.trim()) return;
-    await base44.entities.BlogComment.create({
+    
+    const comment = await base44.entities.BlogComment.create({
       post_id: postId,
       content: content.trim(),
       author_name: `${studentProfile.first_name} ${studentProfile.last_name}`,
-      author_email: user.email
+      author_email: user.email,
+      parent_comment_id: parentId
     });
-    setCommentInputs({ ...commentInputs, [postId]: '' });
+
+    if (parentId) {
+      const parentComment = allComments.find(c => c.id === parentId);
+      if (parentComment && parentComment.author_email !== user.email) {
+        await base44.entities.Notification.create({
+          recipient_email: parentComment.author_email,
+          type: 'info',
+          title: 'Nouvelle réponse à votre commentaire',
+          message: `${studentProfile.first_name} ${studentProfile.last_name} a répondu: "${content.trim()}"`
+        });
+      }
+      setCommentInputs({ ...commentInputs, [`${postId}-${parentId}`]: '' });
+    } else {
+      setCommentInputs({ ...commentInputs, [postId]: '' });
+    }
+    
     queryClient.invalidateQueries({ queryKey: ['blogComments'] });
     toast.success('Commentaire ajouté');
+  };
+
+  const deleteComment = async (commentId) => {
+    await base44.entities.BlogComment.delete(commentId);
+    queryClient.invalidateQueries({ queryKey: ['blogComments'] });
+    toast.success('Commentaire supprimé');
   };
 
   if (loading) {
@@ -320,15 +345,23 @@ export default function StudentDashboard() {
                 {/* Comments */}
                 {showComments[post.id] && (
                   <div className="px-5 pb-4 border-t border-gray-50">
-                    <div className="max-h-40 overflow-y-auto space-y-2 py-3">
-                      {postComments.map(c => (
-                        <div key={c.id} className="text-sm">
-                          <span className="font-semibold text-gray-800">{c.author_name}</span>
-                          <span className="text-gray-600 ml-2">{c.content}</span>
-                        </div>
+                    <div className="max-h-96 overflow-y-auto space-y-3 py-3">
+                      {postComments.filter(c => !c.parent_comment_id).map(c => (
+                        <CommentThread
+                          key={c.id}
+                          comment={c}
+                          replies={postComments.filter(r => r.parent_comment_id === c.id)}
+                          currentUserEmail={user.email}
+                          isAdmin={false}
+                          onReply={(parentId, content) => {
+                            setCommentInputs({ ...commentInputs, [`${post.id}-${parentId}`]: content });
+                            addComment(post.id, parentId);
+                          }}
+                          onDelete={deleteComment}
+                        />
                       ))}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mt-3">
                       <Textarea
                         value={commentInputs[post.id] || ''}
                         onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
@@ -349,6 +382,7 @@ export default function StudentDashboard() {
 
       <StudentBottomNav />
       <PublicChat isAdmin={false} />
+      <NotificationService userEmail={user?.email} enabled={studentProfile?.status === 'certifié'} />
     </div>
   );
 }
