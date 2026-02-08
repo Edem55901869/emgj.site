@@ -16,7 +16,7 @@ const teachers = [
 
 export default function TeachersSection() {
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-slate-900 to-slate-800">
+    <section id="teachers" className="py-24 px-6 bg-gradient-to-b from-slate-900 to-slate-800 scroll-mt-16">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

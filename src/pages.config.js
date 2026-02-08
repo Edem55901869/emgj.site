@@ -67,12 +67,13 @@ import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentGroups from './pages/StudentGroups';
+import StudentHelp from './pages/StudentHelp';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentMore from './pages/StudentMore';
-import StudentProfile from './pages/StudentProfile';
 import StudentNotifications from './pages/StudentNotifications';
+import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
-import StudentHelp from './pages/StudentHelp';
+import Contact from './pages/Contact';
 
 
 export const PAGES = {
@@ -96,12 +97,13 @@ export const PAGES = {
     "StudentCourses": StudentCourses,
     "StudentDashboard": StudentDashboard,
     "StudentGroups": StudentGroups,
+    "StudentHelp": StudentHelp,
     "StudentLibrary": StudentLibrary,
     "StudentMore": StudentMore,
-    "StudentProfile": StudentProfile,
     "StudentNotifications": StudentNotifications,
+    "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
-    "StudentHelp": StudentHelp,
+    "Contact": Contact,
 }
 
 export const pagesConfig = {

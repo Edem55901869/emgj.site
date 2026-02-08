@@ -40,7 +40,7 @@ export default function CarouselSection() {
   };
 
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-white to-blue-50/30">
+    <section id="about" className="py-24 px-6 bg-gradient-to-b from-white to-blue-50/30 scroll-mt-16">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium text-xs uppercase tracking-wider rounded-full mb-4">🎓 Présence Internationale</span>

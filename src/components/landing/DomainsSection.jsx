@@ -65,7 +65,7 @@ const formations = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master',
 
 export default function DomainsSection() {
   return (
-    <section id="domaines" className="py-24 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white">
+    <section id="domaines" className="py-24 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white scroll-mt-16">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
