@@ -2,6 +2,7 @@ import React from 'react';
 import HeroSection from '../components/landing/HeroSection';
 import DomainsSection from '../components/landing/DomainsSection';
 import CarouselSection from '../components/landing/CarouselSection';
+import TeachersSection from '../components/landing/TeachersSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import ContactSection from '../components/landing/ContactSection';
 import FooterSection from '../components/landing/FooterSection';
@@ -12,6 +13,7 @@ export default function Home() {
       <HeroSection />
       <DomainsSection />
       <CarouselSection />
+      <TeachersSection />
       <TestimonialsSection />
       <ContactSection />
       <FooterSection />

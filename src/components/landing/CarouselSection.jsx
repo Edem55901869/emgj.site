@@ -40,11 +40,12 @@ export default function CarouselSection() {
   };
 
   return (
-    <section className="py-24 px-6 bg-gray-50">
+    <section className="py-24 px-6 bg-gradient-to-b from-white to-blue-50/30">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <span className="text-blue-600 font-semibold text-sm uppercase tracking-widest">Notre établissement</span>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mt-3">Découvrez EMGJ</h2>
+          <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium text-xs uppercase tracking-wider rounded-full mb-4">🎓 Présence Internationale</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-3 mb-4">Présence Internationale</h2>
+          <p className="text-gray-600 text-lg">Nos étudiants viennent de 17 pays différents</p>
         </div>
 
         <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 aspect-[16/7]">
