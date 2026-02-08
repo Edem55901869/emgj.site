@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Plus, Trash2, Loader2 } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,10 +16,13 @@ const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENT
 const FORMATIONS = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
 
 export default function AdminCourses() {
-  const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '' });
-  const [pdfFile, setPdfFile] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '' });
+  const [audioFile, setAudioFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [audioSource, setAudioSource] = useState('url');
   const queryClient = useQueryClient();
 
   const { data: courses = [], isLoading } = useQuery({
@@ -27,23 +30,42 @@ export default function AdminCourses() {
     queryFn: () => base44.entities.Course.list('-created_date', 100),
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data) => {
-      let pdf_url = '';
-      if (pdfFile) {
+      let audio_file = data.audio_file || '';
+      let cover_image = data.cover_image || '';
+
+      if (audioFile && audioSource === 'file') {
         setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-        pdf_url = file_url;
-        setUploading(false);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: audioFile });
+        audio_file = file_url;
       }
-      return base44.entities.Course.create({ ...data, pdf_url });
+
+      if (coverFile) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: coverFile });
+        cover_image = file_url;
+      }
+
+      setUploading(false);
+
+      const courseData = {
+        ...data,
+        audio_file: audioSource === 'file' ? audio_file : '',
+        audio_url: audioSource === 'url' ? data.audio_url : '',
+        cover_image
+      };
+
+      if (editingCourse) {
+        return base44.entities.Course.update(editingCourse.id, courseData);
+      } else {
+        return base44.entities.Course.create(courseData);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminCourses'] });
-      setCreateOpen(false);
-      setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: '' });
-      setPdfFile(null);
-      toast.success('Cours publié');
+      setDialogOpen(false);
+      resetForm();
+      toast.success(editingCourse ? 'Cours modifié' : 'Cours publié');
     },
   });
 
@@ -55,14 +77,32 @@ export default function AdminCourses() {
     },
   });
 
+  const resetForm = () => {
+    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '' });
+    setEditingCourse(null);
+    setAudioFile(null);
+    setCoverFile(null);
+    setAudioSource('url');
+  };
+
+  const handleEdit = (course) => {
+    setEditingCourse(course);
+    setForm(course);
+    setAudioSource(course.audio_file ? 'file' : 'url');
+    setDialogOpen(true);
+  };
+
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Cours</h1>
-            <Button onClick={() => setCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Cours Audio</h1>
+              <p className="text-gray-500 text-sm mt-1">Gérez les cours en format audio</p>
+            </div>
+            <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
               <Plus className="w-4 h-4 mr-2" /> Nouveau cours
             </Button>
           </div>
@@ -70,61 +110,107 @@ export default function AdminCourses() {
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map(course => (
-                <div key={course.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
+                <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                  {course.cover_image && (
+                    <div className="h-40 bg-gradient-to-br from-blue-500 to-purple-500 relative overflow-hidden">
+                      <img src={course.cover_image} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-sm">{course.title}</h3>
-                      <p className="text-xs text-gray-500">{course.teacher_name}</p>
+                  )}
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-1">{course.title}</h3>
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <Headphones className="w-3 h-3" />
+                          {course.teacher_name}
+                        </p>
+                      </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteMutation.mutate(course.id)}>
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </Button>
+                    {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{course.domain}</Badge>
+                      <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{course.formation_type}</Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleEdit(course)} variant="outline" size="sm" className="flex-1 rounded-xl">
+                        <Edit className="w-3 h-3 mr-1" /> Modifier
+                      </Button>
+                      <Button onClick={() => deleteMutation.mutate(course.id)} variant="outline" size="sm" className="rounded-xl text-red-600 border-red-200 hover:bg-red-50">
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{course.domain}</Badge>
-                    <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{course.formation_type}</Badge>
-                  </div>
-                  {course.pdf_url && <a href={course.pdf_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mt-2 block">📄 Voir le PDF</a>}
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogContent className="max-w-md rounded-2xl">
-            <DialogHeader><DialogTitle>Publier un cours</DialogTitle></DialogHeader>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingCourse ? 'Modifier le cours' : 'Nouveau cours audio'}</DialogTitle>
+            </DialogHeader>
             <div className="space-y-4 pt-2">
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du cours" className="rounded-xl h-11" />
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
-              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
-                <SelectContent>
-                  {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de formation" /></SelectTrigger>
-                <SelectContent>
-                  {FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Document PDF</label>
-                <Input type="file" accept=".pdf" onChange={(e) => setPdfFile(e.target.files[0])} className="rounded-xl" />
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Titre *</label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du cours" className="rounded-xl h-11" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine *</label>
+                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
+                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
+                  <SelectContent>
+                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Formation *</label>
+                <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })}>
+                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de formation" /></SelectTrigger>
+                  <SelectContent>
+                    {FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Enseignant *</label>
+                <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Source audio *</label>
+                <div className="flex gap-2 mb-3">
+                  <Button type="button" onClick={() => setAudioSource('url')} variant={audioSource === 'url' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
+                    <LinkIcon className="w-4 h-4 mr-1" /> Lien externe
+                  </Button>
+                  <Button type="button" onClick={() => setAudioSource('file')} variant={audioSource === 'file' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
+                    <Upload className="w-4 h-4 mr-1" /> Fichier
+                  </Button>
+                </div>
+                {audioSource === 'url' ? (
+                  <Input value={form.audio_url} onChange={(e) => setForm({ ...form, audio_url: e.target.value })} placeholder="https://drive.google.com/..." className="rounded-xl h-11" />
+                ) : (
+                  <Input type="file" accept="audio/*" onChange={(e) => setAudioFile(e.target.files[0])} className="rounded-xl" />
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Image de couverture</label>
+                <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files[0])} className="rounded-xl" />
               </div>
               <Button
-                onClick={() => createMutation.mutate(form)}
-                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || createMutation.isPending || uploading}
-                className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-11"
+                onClick={() => saveMutation.mutate(form)}
+                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || saveMutation.isPending || uploading}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
-                {(createMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publier le cours'}
+                {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingCourse ? 'Mettre à jour' : 'Publier le cours')}
               </Button>
             </div>
           </DialogContent>

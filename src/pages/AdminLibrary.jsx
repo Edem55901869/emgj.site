@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Library, Plus, Trash2, Download, Loader2 } from 'lucide-react';
+import { Library, Plus, Trash2, Download, Loader2, FileText, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,9 +15,11 @@ import AdminGuard from '../components/admin/AdminGuard';
 const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
 
 export default function AdminLibrary() {
-  const [createOpen, setCreateOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingDoc, setEditingDoc] = useState(null);
   const [form, setForm] = useState({ title: '', author: '', domain: '', description: '' });
   const [pdfFile, setPdfFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
@@ -26,21 +28,43 @@ export default function AdminLibrary() {
     queryFn: () => base44.entities.LibraryDocument.list('-created_date', 100),
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (data) => {
-      if (!pdfFile) { toast.error('Veuillez sélectionner un PDF'); return; }
-      setUploading(true);
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+      let pdf_url = data.pdf_url || '';
+      let cover_image = data.cover_image || '';
+
+      if (pdfFile) {
+        if (!editingDoc && !pdfFile) { 
+          toast.error('Veuillez sélectionner un PDF');
+          return;
+        }
+        setUploading(true);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+        pdf_url = file_url;
+      }
+
+      if (coverFile) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: coverFile });
+        cover_image = file_url;
+      }
+
       setUploading(false);
-      return base44.entities.LibraryDocument.create({ ...data, pdf_url: file_url });
+
+      if (editingDoc) {
+        return base44.entities.LibraryDocument.update(editingDoc.id, { ...data, pdf_url, cover_image });
+      } else {
+        if (!pdf_url) {
+          toast.error('PDF requis');
+          return;
+        }
+        return base44.entities.LibraryDocument.create({ ...data, pdf_url, cover_image });
+      }
     },
     onSuccess: (result) => {
       if (!result) return;
       queryClient.invalidateQueries({ queryKey: ['adminDocs'] });
-      setCreateOpen(false);
-      setForm({ title: '', author: '', domain: '', description: '' });
-      setPdfFile(null);
-      toast.success('Document publié');
+      resetForm();
+      toast.success(editingDoc ? 'Document modifié' : 'Document publié');
     },
   });
 
@@ -52,37 +76,69 @@ export default function AdminLibrary() {
     },
   });
 
+  const resetForm = () => {
+    setDialogOpen(false);
+    setEditingDoc(null);
+    setForm({ title: '', author: '', domain: '', description: '' });
+    setPdfFile(null);
+    setCoverFile(null);
+  };
+
+  const handleEdit = (doc) => {
+    setEditingDoc(doc);
+    setForm(doc);
+    setDialogOpen(true);
+  };
+
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Bibliothèque</h1>
-            <Button onClick={() => setCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-xl">
-              <Plus className="w-4 h-4 mr-2" /> Nouveau document
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Bibliothèque</h1>
+              <p className="text-gray-500 text-sm mt-1">Documents et ressources pédagogiques</p>
+            </div>
+            <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
+              <Plus className="w-4 h-4 mr-2" /> Ajouter
             </Button>
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {docs.map(doc => (
-                <div key={doc.id} className="bg-white rounded-2xl border border-gray-100 p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-                      <Library className="w-5 h-5 text-red-500" />
+                <div key={doc.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div className="h-48 bg-gradient-to-br from-red-500 via-pink-500 to-purple-500 relative overflow-hidden">
+                    {doc.cover_image ? (
+                      <img src={doc.cover_image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FileText className="w-20 h-20 text-white/30" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute top-3 right-3 flex gap-1">
+                      <Button onClick={() => handleEdit(doc)} variant="ghost" size="icon" className="h-8 w-8 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm rounded-lg">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button onClick={() => deleteMutation.mutate(doc.id)} variant="ghost" size="icon" className="h-8 w-8 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteMutation.mutate(doc.id)}>
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </Button>
                   </div>
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{doc.title}</h3>
-                  <p className="text-xs text-gray-500 mb-2">{doc.author}</p>
-                  {doc.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs mb-2">{doc.domain}</Badge>}
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <Download className="w-3 h-3" /> {doc.downloads_count || 0} téléchargements
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{doc.title}</h3>
+                    <p className="text-xs text-gray-500 mb-2">{doc.author}</p>
+                    {doc.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs mb-2">{doc.domain}</Badge>}
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {doc.downloads_count || 0}</span>
+                      {doc.pdf_url && (
+                        <a href={doc.pdf_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Ouvrir</a>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -90,29 +146,45 @@ export default function AdminLibrary() {
           )}
         </div>
 
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogContent className="max-w-md rounded-2xl">
-            <DialogHeader><DialogTitle>Publier un document</DialogTitle></DialogHeader>
+        <Dialog open={dialogOpen} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg rounded-2xl">
+            <DialogHeader><DialogTitle>{editingDoc ? 'Modifier le document' : 'Nouveau document'}</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du document" className="rounded-xl h-11" />
-              <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Nom de l'auteur" className="rounded-xl h-11" />
-              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
-                <SelectContent>
-                  {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Document PDF *</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Titre *</label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du document" className="rounded-xl h-11" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Auteur *</label>
+                <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Nom de l'auteur" className="rounded-xl h-11" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine</label>
+                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
+                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Choisir un domaine" /></SelectTrigger>
+                  <SelectContent>
+                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Document PDF {!editingDoc && '*'}</label>
                 <Input type="file" accept=".pdf" onChange={(e) => setPdfFile(e.target.files[0])} className="rounded-xl" />
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Image de couverture</label>
+                <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files[0])} className="rounded-xl" />
+              </div>
               <Button
-                onClick={() => createMutation.mutate(form)}
-                disabled={!form.title || !form.author || !pdfFile || createMutation.isPending || uploading}
-                className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-11"
+                onClick={() => saveMutation.mutate(form)}
+                disabled={!form.title || !form.author || (!editingDoc && !pdfFile) || saveMutation.isPending || uploading}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
-                {(createMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publier'}
+                {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingDoc ? 'Mettre à jour' : 'Publier')}
               </Button>
             </div>
           </DialogContent>
