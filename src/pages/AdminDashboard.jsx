@@ -11,6 +11,7 @@ import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import PublicChat from '../components/PublicChat';
 
 export default function AdminDashboard() {
   const { data: students = [], isLoading: sLoading } = useQuery({ queryKey: ['adminStudents'], queryFn: () => base44.entities.Student.list('-created_date', 500) });
@@ -237,6 +238,7 @@ export default function AdminDashboard() {
             </>
           )}
         </div>
+        <PublicChat isAdmin={true} />
       </div>
     </AdminGuard>
   );

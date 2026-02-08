@@ -65,6 +65,10 @@ import AdminGroups from './pages/AdminGroups';
 import AdminBulletins from './pages/AdminBulletins';
 import AdminQuestions from './pages/AdminQuestions';
 import AdminTuition from './pages/AdminTuition';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminAI from './pages/AdminAI';
+import AdminHosting from './pages/AdminHosting';
+import AdminSettings from './pages/AdminSettings';
 
 
 export const PAGES = {
@@ -86,6 +90,10 @@ export const PAGES = {
     "AdminBulletins": AdminBulletins,
     "AdminQuestions": AdminQuestions,
     "AdminTuition": AdminTuition,
+    "AdminAnalytics": AdminAnalytics,
+    "AdminAI": AdminAI,
+    "AdminHosting": AdminHosting,
+    "AdminSettings": AdminSettings,
 }
 
 export const pagesConfig = {

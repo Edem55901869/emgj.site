@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 const navItems = [
   { name: 'Tableau de bord', icon: LayoutDashboard, page: 'AdminDashboard' },
@@ -11,6 +12,17 @@ const navItems = [
   { name: 'Blog', icon: Newspaper, page: 'AdminBlog' },
   { name: 'Bibliothèque', icon: Library, page: 'AdminLibrary' },
   { name: 'Conférences', icon: Radio, page: 'AdminConferences' },
+];
+
+const moreItems = [
+  { name: 'Groupes', icon: MessageCircle, page: 'AdminGroups' },
+  { name: 'Bulletins', icon: FileText, page: 'AdminBulletins' },
+  { name: 'Questions', icon: HelpCircle, page: 'AdminQuestions' },
+  { name: 'Scolarité', icon: DollarSign, page: 'AdminTuition' },
+  { name: 'Analytique', icon: BarChart3, page: 'AdminAnalytics' },
+  { name: 'Assistant IA', icon: Bot, page: 'AdminAI' },
+  { name: 'Hébergement', icon: Cloud, page: 'AdminHosting' },
+  { name: 'Paramètres', icon: Settings, page: 'AdminSettings' },
 ];
 
 export default function AdminTopNav() {
@@ -55,9 +67,26 @@ export default function AdminTopNav() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button onClick={handleLogout} variant="ghost" size="sm" className="text-white/90 hover:text-white hover:bg-white/10 rounded-xl hidden md:flex">
-                <LogOut className="w-4 h-4 mr-1" /> Déconnexion
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-white/90 hover:text-white hover:bg-white/10 rounded-xl hidden md:flex">
+                    <MoreHorizontal className="w-4 h-4 mr-1" /> Plus
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {moreItems.map(item => (
+                    <DropdownMenuItem key={item.name} onClick={() => navigate(createPageUrl(item.page))}>
+                      <item.icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-xl hover:bg-white/10 text-white">
                 {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -86,7 +115,25 @@ export default function AdminTopNav() {
                 </Link>
               );
             })}
-            <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white w-full">
+            <div className="border-t border-white/10 pt-2 mt-2">
+              {moreItems.map(item => {
+                const isActive = location.pathname.includes(item.page);
+                return (
+                  <Link
+                    key={item.name}
+                    to={createPageUrl(item.page)}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium ${
+                      isActive ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
+            <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white w-full mt-2">
               <LogOut className="w-4 h-4" /> Déconnexion
             </button>
           </div>

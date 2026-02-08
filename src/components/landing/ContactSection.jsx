@@ -13,10 +13,18 @@ export default function ContactSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSending(true);
-    // Simulated send
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success('Message envoyé avec succès !');
-    setForm({ name: '', email: '', message: '' });
+    try {
+      await base44.entities.ContactMessage.create({
+        name: form.name,
+        email: form.email,
+        message: form.message,
+        status: 'nouveau'
+      });
+      toast.success('Message envoyé avec succès !');
+      setForm({ name: '', email: '', message: '' });
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi');
+    }
     setSending(false);
   };
 

@@ -35,9 +35,17 @@ export default function Connexion() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f2042] to-[#0a1628] flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-blue-500/10 rounded-full blur-3xl" />
-      <div className="absolute w-[400px] h-[400px] bottom-0 left-0 bg-blue-400/8 rounded-full blur-3xl" />
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=1920&q=80" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-indigo-900/85 to-purple-900/90" />
+      </div>
+      <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-blue-400/20 rounded-full blur-3xl z-0" />
+      <div className="absolute w-[400px] h-[400px] bottom-0 left-0 bg-purple-400/15 rounded-full blur-3xl z-0" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

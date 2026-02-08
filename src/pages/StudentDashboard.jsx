@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import ProfileSetupForm from '../components/student/ProfileSetupForm';
+import PublicChat from '../components/PublicChat';
 
 export default function StudentDashboard() {
   const [user, setUser] = useState(null);
@@ -299,6 +300,7 @@ export default function StudentDashboard() {
       </div>
 
       <StudentBottomNav />
+      <PublicChat isAdmin={false} />
     </div>
   );
 }
