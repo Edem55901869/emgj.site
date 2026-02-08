@@ -13,12 +13,14 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import ThemeSelector, { themes } from '../components/blog/ThemeSelector';
 
 const mediaIcons = { text: FileText, image: Image, video: Video, audio: Headphones, link: Link2 };
 
 export default function AdminBlog() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', content: '', media_type: 'text' });
+  const [form, setForm] = useState({ title: '', content: '', media_type: 'text', theme_id: null, theme_bg: null, theme_text: null });
+  const [selectedTheme, setSelectedTheme] = useState(themes[0]);
   const [mediaFile, setMediaFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
@@ -43,7 +45,8 @@ export default function AdminBlog() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPosts'] });
       setCreateOpen(false);
-      setForm({ title: '', content: '', media_type: 'text' });
+      setForm({ title: '', content: '', media_type: 'text', theme_id: null, theme_bg: null, theme_text: null });
+      setSelectedTheme(themes[0]);
       setMediaFile(null);
       toast.success('Publication créée');
     },
@@ -105,7 +108,23 @@ export default function AdminBlog() {
             <DialogHeader><DialogTitle>Nouvelle publication</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre" className="rounded-xl h-11" />
-              <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Contenu..." className="rounded-xl min-h-[100px]" />
+              <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Contenu..." className="rounded-xl min-h-[100px]" maxLength={280} />
+              <p className="text-xs text-gray-400 text-right">{form.content.length}/280 caractères</p>
+              
+              {form.media_type === 'text' && form.content.length <= 200 && (
+                <ThemeSelector 
+                  selected={selectedTheme} 
+                  onSelect={(theme) => {
+                    setSelectedTheme(theme);
+                    setForm({ 
+                      ...form, 
+                      theme_id: theme.id, 
+                      theme_bg: theme.bg, 
+                      theme_text: theme.text 
+                    });
+                  }} 
+                />
+              )}
               <Select value={form.media_type} onValueChange={(v) => setForm({ ...form, media_type: v })}>
                 <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
                 <SelectContent>

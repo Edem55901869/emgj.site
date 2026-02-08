@@ -170,7 +170,7 @@ export default function PublicChat({ isAdmin = false }) {
 
       {/* Chat Panel */}
       {open && (
-        <div className="fixed bottom-36 right-6 w-96 h-[550px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-40" style={{
+        <div className="fixed bottom-36 right-6 w-[95vw] max-w-md h-[70vh] max-h-[550px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-40" style={{
           backgroundImage: 'url(https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=60)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
