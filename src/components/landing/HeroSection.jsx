@@ -4,18 +4,31 @@ import { GraduationCap, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import Navigation from './Navigation';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#0f2042] to-[#0a1628]">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute w-[600px] h-[600px] -top-48 -left-48 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute w-[400px] h-[400px] top-1/2 right-0 bg-blue-400/8 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute w-[300px] h-[300px] bottom-0 left-1/3 bg-white/5 rounded-full blur-3xl animate-pulse delay-500" />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40" />
-      </div>
+    <>
+      <Navigation />
+      <section 
+        id="hero"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-indigo-900/90 to-purple-900/95" />
+        
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute w-[600px] h-[600px] -top-48 -left-48 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute w-[400px] h-[400px] top-1/2 right-0 bg-blue-400/8 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute w-[300px] h-[300px] bottom-0 left-1/3 bg-white/5 rounded-full blur-3xl animate-pulse delay-500" />
+        </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         <motion.div
@@ -98,8 +111,9 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
-    </section>
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      </section>
+    </>
   );
 }

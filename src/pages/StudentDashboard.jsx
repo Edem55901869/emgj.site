@@ -176,23 +176,48 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-white" />
+      {/* Header with Cover */}
+      <div className="relative mb-4">
+        <div 
+          className="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-indigo-900/60 to-purple-900/60" />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 -mt-12 relative">
+          <div className="flex items-end gap-3">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 border-white">
+                {studentProfile.profile_photo ? (
+                  <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold text-blue-600">
+                    {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
+                  </span>
+                )}
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">EMGJ</h1>
-                <p className="text-xs text-gray-500">Fil d'actualité</p>
-              </div>
+              {studentProfile.status === 'certifié' && (
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center shadow-lg">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
-            <Badge className="bg-blue-50 text-blue-700 border-blue-100">
-              {studentProfile.domain}
-            </Badge>
+            <div className="flex-1 pb-2">
+              <h2 className="text-white font-bold text-base drop-shadow-lg">{studentProfile.first_name} {studentProfile.last_name}</h2>
+              <Badge className="bg-white/90 text-blue-700 border-0 text-xs mt-1">
+                {studentProfile.domain}
+              </Badge>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="mb-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
