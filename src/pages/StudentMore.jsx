@@ -57,7 +57,7 @@ export default function StudentMore() {
       <div className="max-w-2xl mx-auto px-4 -mt-2">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
           <button
-            onClick={() => navigate(createPageUrl('StudentProfile') + `?id=${student?.id}`)}
+            onClick={() => navigate(createPageUrl('StudentProfile'))}
             className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
           >
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
@@ -70,7 +70,10 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors relative">
+          <button 
+            onClick={() => navigate(createPageUrl('StudentNotifications'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors relative"
+          >
             <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
               <Bell className="w-6 h-6 text-purple-600" />
             </div>
@@ -84,7 +87,10 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => navigate(createPageUrl('StudentSettings'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
             <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
               <Settings className="w-6 h-6 text-gray-600" />
             </div>
@@ -95,7 +101,10 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          <button className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => navigate(createPageUrl('StudentHelp'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
             <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
               <HelpCircle className="w-6 h-6 text-amber-600" />
             </div>

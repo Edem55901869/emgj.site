@@ -150,21 +150,48 @@ export default function AdminStudents() {
 
         {/* Student Detail Dialog */}
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-md rounded-2xl">
+          <DialogContent className="max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Détails de l'étudiant</DialogTitle>
             </DialogHeader>
             {selectedStudent && (
               <div className="space-y-4 pt-2">
+                {selectedStudent.profile_photo && (
+                  <div className="flex justify-center">
+                    <img src={selectedStudent.profile_photo} alt="" className="w-24 h-24 rounded-2xl object-cover" />
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><p className="text-gray-500">Nom</p><p className="font-medium">{selectedStudent.first_name} {selectedStudent.last_name}</p></div>
-                  <div><p className="text-gray-500">Email</p><p className="font-medium text-xs">{selectedStudent.user_email}</p></div>
-                  <div><p className="text-gray-500">Pays / Ville</p><p className="font-medium">{selectedStudent.country}, {selectedStudent.city}</p></div>
-                  <div><p className="text-gray-500">WhatsApp</p><p className="font-medium">{selectedStudent.whatsapp}</p></div>
-                  <div><p className="text-gray-500">Domaine</p><p className="font-medium">{selectedStudent.domain}</p></div>
-                  <div><p className="text-gray-500">Formation</p><p className="font-medium">{selectedStudent.formation_type}</p></div>
-                  <div><p className="text-gray-500">Statut</p><Badge className={`${statusColors[selectedStudent.status]}`}>{selectedStudent.status}</Badge></div>
-                  <div><p className="text-gray-500">Inscrit le</p><p className="font-medium">{selectedStudent.created_date && format(new Date(selectedStudent.created_date), 'd MMM yyyy', { locale: fr })}</p></div>
+                  <div className="col-span-2">
+                    <p className="text-gray-500 mb-1">Nom</p>
+                    <Input defaultValue={`${selectedStudent.first_name} ${selectedStudent.last_name}`} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-gray-500 mb-1">Email</p>
+                    <Input defaultValue={selectedStudent.user_email} disabled className="rounded-xl h-10 text-xs" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1">Pays</p>
+                    <Input defaultValue={selectedStudent.country} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1">Ville</p>
+                    <Input defaultValue={selectedStudent.city} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-gray-500 mb-1">WhatsApp</p>
+                    <Input defaultValue={selectedStudent.whatsapp} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1">Domaine</p>
+                    <Input defaultValue={selectedStudent.domain} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-1">Formation</p>
+                    <Input defaultValue={selectedStudent.formation_type} disabled className="rounded-xl h-10" />
+                  </div>
+                  <div><p className="text-gray-500">Statut</p><Badge className={`${statusColors[selectedStudent.status]} mt-1`}>{selectedStudent.status}</Badge></div>
+                  <div><p className="text-gray-500">Inscrit le</p><p className="font-medium text-xs mt-1">{selectedStudent.created_date && format(new Date(selectedStudent.created_date), 'd MMM yyyy', { locale: fr })}</p></div>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Button onClick={async () => {

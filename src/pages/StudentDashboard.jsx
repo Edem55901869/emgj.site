@@ -176,35 +176,22 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header with Profile Banner */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative">
-        <div className="h-24 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center opacity-20">
-            <span className="text-white text-lg font-bold">EMGJ</span>
-          </div>
-        </div>
-        <div className="max-w-2xl mx-auto px-4 pb-4 -mt-10 relative z-10">
-          <div className="flex items-end gap-3 mb-3">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 border-white">
-                {studentProfile.profile_photo ? (
-                  <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-bold text-blue-600">
-                    {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
-                  </span>
-                )}
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              {studentProfile.status === 'certifié' && (
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
-              )}
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">EMGJ</h1>
+                <p className="text-xs text-gray-500">Fil d'actualité</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h2 className="text-white font-bold text-lg">{studentProfile.first_name} {studentProfile.last_name}</h2>
-              <p className="text-white/80 text-xs">{studentProfile.domain}</p>
-            </div>
+            <Badge className="bg-blue-50 text-blue-700 border-blue-100">
+              {studentProfile.domain}
+            </Badge>
           </div>
           <div className="flex gap-2">
             <div className="relative flex-1">

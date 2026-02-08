@@ -70,6 +70,9 @@ import StudentGroups from './pages/StudentGroups';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentMore from './pages/StudentMore';
 import StudentProfile from './pages/StudentProfile';
+import StudentNotifications from './pages/StudentNotifications';
+import StudentSettings from './pages/StudentSettings';
+import StudentHelp from './pages/StudentHelp';
 
 
 export const PAGES = {
@@ -96,6 +99,9 @@ export const PAGES = {
     "StudentLibrary": StudentLibrary,
     "StudentMore": StudentMore,
     "StudentProfile": StudentProfile,
+    "StudentNotifications": StudentNotifications,
+    "StudentSettings": StudentSettings,
+    "StudentHelp": StudentHelp,
 }
 
 export const pagesConfig = {
