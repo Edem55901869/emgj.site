@@ -61,6 +61,10 @@ import StudentDashboard from './pages/StudentDashboard';
 import StudentGroups from './pages/StudentGroups';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentMore from './pages/StudentMore';
+import AdminGroups from './pages/AdminGroups';
+import AdminBulletins from './pages/AdminBulletins';
+import AdminQuestions from './pages/AdminQuestions';
+import AdminTuition from './pages/AdminTuition';
 
 
 export const PAGES = {
@@ -78,6 +82,10 @@ export const PAGES = {
     "StudentGroups": StudentGroups,
     "StudentLibrary": StudentLibrary,
     "StudentMore": StudentMore,
+    "AdminGroups": AdminGroups,
+    "AdminBulletins": AdminBulletins,
+    "AdminQuestions": AdminQuestions,
+    "AdminTuition": AdminTuition,
 }
 
 export const pagesConfig = {
