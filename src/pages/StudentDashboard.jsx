@@ -48,6 +48,14 @@ export default function StudentDashboard() {
     queryKey: ['blogLikes'],
     queryFn: () => base44.entities.BlogLike.filter({ user_email: user?.email }),
     enabled: !!user && studentProfile?.status === 'certifié',
+    refetchInterval: 5000,
+  });
+
+  const { data: allLikes = [] } = useQuery({
+    queryKey: ['allBlogLikes'],
+    queryFn: () => base44.entities.BlogLike.list('-created_date', 1000),
+    enabled: studentProfile?.status === 'certifié',
+    refetchInterval: 5000,
   });
 
   const { data: bookmarks = [] } = useQuery({
@@ -60,6 +68,7 @@ export default function StudentDashboard() {
     queryKey: ['blogComments'],
     queryFn: () => base44.entities.BlogComment.list('-created_date', 200),
     enabled: studentProfile?.status === 'certifié',
+    refetchInterval: 5000,
   });
 
   const createProfileMutation = useMutation({
@@ -284,7 +293,7 @@ export default function StudentDashboard() {
             const isLiked = likes.some(l => l.post_id === post.id);
             const isBookmarked = bookmarks.some(b => b.post_id === post.id);
             const postComments = allComments.filter(c => c.post_id === post.id);
-            const postLikes = likes.filter(l => l.post_id === post.id).length;
+            const postLikes = allLikes.filter(l => l.post_id === post.id).length;
 
             return (
               <motion.div
@@ -294,7 +303,7 @@ export default function StudentDashboard() {
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm"
               >
                 {post.media_url && post.media_type === 'image' && (
-                  <img src={post.media_url} alt="" className="w-full h-64 object-cover" />
+                  <img src={post.media_url} alt="" className="w-full h-96 object-cover" />
                 )}
                 <div className={post.theme_id && post.media_type === 'text' ? `p-8 min-h-[200px] flex flex-col justify-center ${post.theme_bg}` : 'p-5'}>
                   {post.theme_id && post.media_type === 'text' ? (
@@ -304,8 +313,8 @@ export default function StudentDashboard() {
                     </div>
                   ) : (
                     <>
-                      <h3 className="font-bold text-gray-900 text-lg mb-2">{post.title}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                      <h3 className="font-bold text-gray-900 text-xl mb-2">{post.title}</h3>
+                      <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{post.content}</p>
                       {post.media_url && post.media_type === 'video' && (
                         <video src={post.media_url} controls className="w-full rounded-xl mt-3" />
                       )}
@@ -324,15 +333,14 @@ export default function StudentDashboard() {
                   )}
                 </div>
 
-                {/* Actions */}
                 <div className="px-5 py-3 border-t border-gray-50 flex items-center gap-4">
                   <button onClick={() => toggleLike(post.id)} className={`flex items-center gap-1.5 text-sm transition-colors ${isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500' : ''}`} />
-                    <span>{postLikes || ''}</span>
+                    <span className="font-semibold">{postLikes || ''}</span>
                   </button>
                   <button onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-blue-500 transition-colors">
                     <MessageCircle className="w-4 h-4" />
-                    <span>{postComments.length || ''}</span>
+                    <span className="font-semibold">{postComments.length || ''}</span>
                   </button>
                   <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Lien copié !'); }} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-green-500 transition-colors">
                     <Share2 className="w-4 h-4" />
@@ -342,7 +350,6 @@ export default function StudentDashboard() {
                   </button>
                 </div>
 
-                {/* Comments */}
                 {showComments[post.id] && (
                   <div className="px-5 pb-4 border-t border-gray-50">
                     <div className="max-h-96 overflow-y-auto space-y-3 py-3">
