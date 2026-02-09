@@ -10,6 +10,18 @@ import StudentBottomNav from '../components/student/StudentBottomNav';
 import CourseQCM from '../components/course/CourseQCM';
 import { convertGoogleDriveUrl } from '../components/utils/googleDriveHelper';
 
+const getAudioUrl = (course) => {
+  const url = course.audio_file || course.audio_url;
+  if (!url) return null;
+  
+  // Si c'est un lien Google Drive, utiliser la fonction backend de streaming
+  if (url.includes('drive.google.com')) {
+    return `/api/functions/streamGoogleDriveAudio?url=${encodeURIComponent(url)}`;
+  }
+  
+  return url;
+};
+
 export default function StudentCourses() {
   const [student, setStudent] = useState(null);
   const [user, setUser] = useState(null);
@@ -174,8 +186,9 @@ export default function StudentCourses() {
                   {unlocked && (course.audio_file || course.audio_url) && (
                     <div className="space-y-3">
                       <audio 
-                        src={convertGoogleDriveUrl(course.audio_file || course.audio_url)} 
+                        src={getAudioUrl(course)} 
                         controls 
+                        preload="metadata"
                         className="w-full rounded-xl"
                         style={{ height: '50px' }}
                       />
