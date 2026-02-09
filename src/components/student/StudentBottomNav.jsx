@@ -35,7 +35,11 @@ export default function StudentBottomNav() {
     refetchInterval: 5000,
   });
 
-  const readMessages = JSON.parse(localStorage.getItem('read_public_messages') || '[]');
+  const readMessagesStr = localStorage.getItem('read_public_messages') || '[]';
+  let readMessages = [];
+  try {
+    readMessages = JSON.parse(readMessagesStr);
+  } catch {}
   const unreadCount = publicMessages.filter(m => !readMessages.includes(m.id)).length;
 
   return (

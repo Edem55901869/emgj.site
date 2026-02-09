@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, Loader2, Heart, MessageCircle, Share2, Image as ImageIcon, Video, Headphones, Link2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Heart, MessageCircle, Image as ImageIcon, Video, Headphones, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,6 +26,17 @@ export default function AdminBlog() {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['adminPosts'],
     queryFn: () => base44.entities.BlogPost.list('-created_date', 100),
+  });
+
+  const { data: allLikes = [] } = useQuery({
+    queryKey: ['allLikes'],
+    queryFn: () => base44.entities.BlogLike.list('-created_date', 1000),
+  });
+
+  const { data: allComments = [] } = useQuery({
+    queryKey: ['allComments'],
+    queryFn: () => base44.entities.BlogComment.list('-created_date', 1000),
+    refetchInterval: 5000,
   });
 
   const saveMutation = useMutation({
@@ -97,46 +108,75 @@ export default function AdminBlog() {
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
             <div className="space-y-4">
-              {posts.map(post => (
-                <div key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all">
-                  {post.media_url && post.media_type === 'image' && (
-                    <img src={post.media_url} alt="" className="w-full h-80 object-cover" />
-                  )}
-                  <div className={post.theme_id && post.media_type === 'text' ? `p-8 min-h-[200px] flex flex-col justify-center ${post.theme_bg}` : 'p-5'}>
-                    {post.theme_id && post.media_type === 'text' ? (
-                      <div className={`text-center ${post.theme_text}`}>
-                        <h3 className="font-bold text-2xl mb-3">{post.title}</h3>
-                        <p className="text-lg leading-relaxed">{post.content}</p>
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className="font-bold text-gray-900 text-xl mb-2">{post.title}</h3>
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                        {post.media_url && post.media_type === 'video' && (
-                          <video src={post.media_url} controls className="w-full rounded-xl mt-3" />
-                        )}
-                        {post.media_url && post.media_type === 'audio' && (
-                          <audio src={post.media_url} controls className="w-full mt-3" />
-                        )}
-                      </>
+              {posts.map(post => {
+                const postLikes = allLikes.filter(l => l.post_id === post.id);
+                const postComments = allComments.filter(c => c.post_id === post.id);
+                
+                return (
+                  <div key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                    {post.media_url && post.media_type === 'image' && (
+                      <img src={post.media_url} alt="" className="w-full h-80 object-cover" />
                     )}
-                  </div>
-                  <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
-                    <div className="flex gap-4 text-sm text-gray-400">
-                      <span className="flex items-center gap-1"><Heart className="w-4 h-4" /> {post.likes_count || 0}</span>
-                      <span className="flex items-center gap-1"><MessageCircle className="w-4 h-4" /> {post.comments_count || 0}</span>
+                    <div className={post.theme_id && post.media_type === 'text' ? `p-8 min-h-[200px] flex flex-col justify-center ${post.theme_bg}` : 'p-5'}>
+                      {post.theme_id && post.media_type === 'text' ? (
+                        <div className={`text-center ${post.theme_text}`}>
+                          <h3 className="font-bold text-2xl mb-3">{post.title}</h3>
+                          <p className="text-lg leading-relaxed">{post.content}</p>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="font-bold text-gray-900 text-xl mb-2">{post.title}</h3>
+                          <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                          {post.media_url && post.media_type === 'video' && (
+                            <video src={post.media_url} controls className="w-full rounded-xl mt-3" />
+                          )}
+                          {post.media_url && post.media_type === 'audio' && (
+                            <audio src={post.media_url} controls className="w-full mt-3" />
+                          )}
+                        </>
+                      )}
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleEdit(post)} variant="ghost" size="sm" className="rounded-xl">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button onClick={() => deleteMutation.mutate(post.id)} variant="ghost" size="sm" className="rounded-xl text-red-600">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    <div className="px-5 py-3 border-t border-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex gap-4">
+                          <span className="flex items-center gap-1.5 text-sm">
+                            <Heart className={`w-4 h-4 ${postLikes.length > 0 ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
+                            <span className="font-semibold text-gray-700">{postLikes.length}</span>
+                          </span>
+                          <span className="flex items-center gap-1.5 text-sm">
+                            <MessageCircle className={`w-4 h-4 ${postComments.length > 0 ? 'text-blue-500' : 'text-gray-400'}`} />
+                            <span className="font-semibold text-gray-700">{postComments.length}</span>
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleEdit(post)} variant="ghost" size="sm" className="rounded-xl">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button onClick={() => deleteMutation.mutate(post.id)} variant="ghost" size="sm" className="rounded-xl text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {postComments.length > 0 && (
+                        <div className="border-t border-gray-100 pt-3">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">Commentaires récents:</p>
+                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {postComments.slice(0, 3).map(comment => (
+                              <div key={comment.id} className="text-sm bg-gray-50 rounded-lg p-2">
+                                <span className="font-semibold text-gray-800">{comment.author_name}</span>
+                                <span className="text-gray-600 ml-2">{comment.content}</span>
+                              </div>
+                            ))}
+                          </div>
+                          {postComments.length > 3 && (
+                            <p className="text-xs text-gray-400 mt-2">+ {postComments.length - 3} autres commentaires</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

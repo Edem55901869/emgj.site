@@ -36,8 +36,9 @@ export default function StudentMore() {
 
   const unreadCount = notifications.filter(n => n.status === 'nouveau').length;
 
-  const handleLogout = () => {
-    base44.auth.logout();
+  const handleLogout = async () => {
+    await base44.auth.logout();
+    navigate(createPageUrl('Connexion'));
   };
 
   if (loading) {
