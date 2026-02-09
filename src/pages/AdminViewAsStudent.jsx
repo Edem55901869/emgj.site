@@ -8,14 +8,14 @@ import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
-
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-const FORMATIONS = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/lib/domainFormationMapping';
 
 export default function AdminViewAsStudent() {
   const navigate = useNavigate();
   const [domain, setDomain] = useState('');
   const [formationType, setFormationType] = useState('');
+
+  const availableFormations = domain ? FORMATION_BY_DOMAIN[domain] : [];
 
   const handleSwitch = () => {
     if (!domain || !formationType) {
@@ -50,8 +50,8 @@ export default function AdminViewAsStudent() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Domaine</label>
-                <Select value={domain} onValueChange={setDomain}>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Domaine *</label>
+                <Select value={domain} onValueChange={(v) => { setDomain(v); setFormationType(''); }}>
                   <SelectTrigger className="rounded-xl h-12">
                     <SelectValue placeholder="Sélectionnez un domaine" />
                   </SelectTrigger>
@@ -64,13 +64,13 @@ export default function AdminViewAsStudent() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Type de formation</label>
-                <Select value={formationType} onValueChange={setFormationType}>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Type de formation *</label>
+                <Select value={formationType} onValueChange={setFormationType} disabled={!domain}>
                   <SelectTrigger className="rounded-xl h-12">
-                    <SelectValue placeholder="Sélectionnez un type de formation" />
+                    <SelectValue placeholder={domain ? "Sélectionnez un type de formation" : "Sélectionnez d'abord un domaine"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {FORMATIONS.map(f => (
+                    {availableFormations.map(f => (
                       <SelectItem key={f} value={f}>{f}</SelectItem>
                     ))}
                   </SelectContent>

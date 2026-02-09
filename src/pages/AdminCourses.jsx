@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,14 +11,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
-
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/lib/domainFormationMapping';
 
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDomain, setFilterDomain] = useState('');
+  const [filterFormation, setFilterFormation] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const [audioFile, setAudioFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -114,26 +116,105 @@ export default function AdminCourses() {
     setDialogOpen(true);
   };
 
+  // Filtrage et tri des cours
+  const filteredAndSortedCourses = courses
+    .filter(course => {
+      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          course.teacher_name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDomain = !filterDomain || course.domain === filterDomain;
+      const matchesFormation = !filterFormation || course.formation_type === filterFormation;
+      return matchesSearch && matchesDomain && matchesFormation;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'recent') return new Date(b.created_date) - new Date(a.created_date);
+      if (sortBy === 'oldest') return new Date(a.created_date) - new Date(b.created_date);
+      if (sortBy === 'title') return a.title.localeCompare(b.title);
+      if (sortBy === 'teacher') return a.teacher_name.localeCompare(b.teacher_name);
+      return 0;
+    });
+
+  const availableFormations = filterDomain ? FORMATION_BY_DOMAIN[filterDomain] : [];
+
   return (
     <AdminGuard>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Cours Audio</h1>
-              <p className="text-gray-500 text-sm mt-1">Gérez les cours en format audio</p>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Cours Audio</h1>
+                <p className="text-gray-500 text-sm mt-1">Gérez les cours en format audio</p>
+              </div>
+              <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
+                <Plus className="w-4 h-4 mr-2" /> Nouveau cours
+              </Button>
             </div>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
-              <Plus className="w-4 h-4 mr-2" /> Nouveau cours
-            </Button>
+
+            {/* Barre de recherche et filtres */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Rechercher par titre ou enseignant..."
+                    className="pl-10 h-11 rounded-xl"
+                  />
+                </div>
+                <Select value={filterDomain} onValueChange={(v) => { setFilterDomain(v); setFilterFormation(''); }}>
+                  <SelectTrigger className="w-full md:w-64 h-11 rounded-xl">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Tous les domaines" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Tous les domaines</SelectItem>
+                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={filterFormation} onValueChange={setFilterFormation} disabled={!filterDomain}>
+                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl">
+                    <SelectValue placeholder="Toutes formations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={null}>Toutes formations</SelectItem>
+                    {availableFormations.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Plus récents</SelectItem>
+                    <SelectItem value="oldest">Plus anciens</SelectItem>
+                    <SelectItem value="title">Par titre (A-Z)</SelectItem>
+                    <SelectItem value="teacher">Par enseignant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">{filteredAndSortedCourses.length} cours trouvé{filteredAndSortedCourses.length > 1 ? 's' : ''}</span>
+                {(searchQuery || filterDomain || filterFormation) && (
+                  <button onClick={() => { setSearchQuery(''); setFilterDomain(''); setFilterFormation(''); }} className="text-blue-600 hover:text-blue-700 font-medium">
+                    Réinitialiser les filtres
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+          ) : filteredAndSortedCourses.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">Aucun cours trouvé</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map(course => (
+              {filteredAndSortedCourses.map(course => (
                 <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
                   {course.cover_image && (
                     <div className="h-40 bg-gradient-to-br from-blue-500 to-purple-500 relative overflow-hidden">
@@ -187,7 +268,7 @@ export default function AdminCourses() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine *</label>
-                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
+                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v, formation_type: '' })}>
                   <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
                   <SelectContent>
                     {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -196,10 +277,12 @@ export default function AdminCourses() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Formation *</label>
-                <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })}>
-                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de formation" /></SelectTrigger>
+                <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })} disabled={!form.domain}>
+                  <SelectTrigger className="rounded-xl h-11">
+                    <SelectValue placeholder={form.domain ? "Type de formation" : "Sélectionnez d'abord un domaine"} />
+                  </SelectTrigger>
                   <SelectContent>
-                    {FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                    {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

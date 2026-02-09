@@ -12,9 +12,7 @@ import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import GroupChat from '../components/groups/GroupChat';
-
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/lib/domainFormationMapping';
 
 export default function AdminGroups() {
   const [createOpen, setCreateOpen] = useState(false);
@@ -187,13 +185,17 @@ export default function AdminGroups() {
             <div className="space-y-4 pt-2">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom du groupe" className="rounded-xl h-11" />
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
-              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
+              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v, formation_type: '' })}>
                 <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine (optionnel)" /></SelectTrigger>
                 <SelectContent>{DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
               </Select>
-              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Formation (optionnel)" /></SelectTrigger>
-                <SelectContent>{FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })} disabled={!form.domain}>
+                <SelectTrigger className="rounded-xl h-11">
+                  <SelectValue placeholder={form.domain ? "Formation (optionnel)" : "Sélectionnez d'abord un domaine"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                </SelectContent>
               </Select>
               
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">

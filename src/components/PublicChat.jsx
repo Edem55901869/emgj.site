@@ -47,8 +47,10 @@ const THEMES = [
   },
 ];
 
-export default function PublicChat({ isAdmin = false }) {
-  const [open, setOpen] = useState(false);
+export default function PublicChat({ isAdmin = false, open: externalOpen, onClose }) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onClose ? (val) => { if (!val) onClose(); } : setInternalOpen;
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
   const [recording, setRecording] = useState(false);

@@ -187,7 +187,7 @@ export default function AdminTopNav() {
         <MessagesSquare className="w-6 h-6" />
       </button>
 
-      {showChat && <PublicChat />}
+      {showChat && <PublicChat isAdmin={true} open={showChat} onClose={() => setShowChat(false)} />}
     </>
   );
 }
