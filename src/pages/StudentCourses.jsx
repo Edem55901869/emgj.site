@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import CourseQCM from '../components/course/CourseQCM';
+import { convertGoogleDriveUrl } from '../components/utils/googleDriveHelper';
 
 export default function StudentCourses() {
   const [student, setStudent] = useState(null);
@@ -173,7 +174,7 @@ export default function StudentCourses() {
                   {unlocked && (course.audio_file || course.audio_url) && (
                     <div className="space-y-3">
                       <audio 
-                        src={course.audio_file || course.audio_url} 
+                        src={convertGoogleDriveUrl(course.audio_file || course.audio_url)} 
                         controls 
                         className="w-full rounded-xl"
                         style={{ height: '50px' }}
