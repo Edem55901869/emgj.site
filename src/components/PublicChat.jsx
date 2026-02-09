@@ -10,11 +10,41 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const THEMES = [
-  { name: 'Bleu', gradient: 'from-blue-900/95 via-indigo-900/95 to-purple-900/95', bubbleSelf: 'bg-blue-600/90', bubbleOther: 'bg-white/90' },
-  { name: 'Vert', gradient: 'from-green-900/95 via-emerald-900/95 to-teal-900/95', bubbleSelf: 'bg-green-600/90', bubbleOther: 'bg-white/90' },
-  { name: 'Rose', gradient: 'from-pink-900/95 via-rose-900/95 to-red-900/95', bubbleSelf: 'bg-pink-600/90', bubbleOther: 'bg-white/90' },
-  { name: 'Violet', gradient: 'from-purple-900/95 via-violet-900/95 to-indigo-900/95', bubbleSelf: 'bg-purple-600/90', bubbleOther: 'bg-white/90' },
-  { name: 'Orange', gradient: 'from-orange-900/95 via-amber-900/95 to-yellow-900/95', bubbleSelf: 'bg-orange-600/90', bubbleOther: 'bg-white/90' },
+  { 
+    name: 'Bleu', 
+    gradient: 'from-blue-900/95 via-indigo-900/95 to-purple-900/95', 
+    bubbleSelf: 'bg-blue-600', 
+    bubbleOther: 'bg-white',
+    pattern: `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 15l-7.5 7.5L15 15l7.5-7.5L30 15zM15 30l-7.5 7.5L0 30l7.5-7.5L15 30z'/%3E%3C/g%3E%3C/svg%3E`
+  },
+  { 
+    name: 'Vert', 
+    gradient: 'from-green-900/95 via-emerald-900/95 to-teal-900/95', 
+    bubbleSelf: 'bg-green-600', 
+    bubbleOther: 'bg-white',
+    pattern: `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='45' cy='15' r='3'/%3E%3Ccircle cx='15' cy='45' r='3'/%3E%3Ccircle cx='45' cy='45' r='3'/%3E%3C/g%3E%3C/svg%3E`
+  },
+  { 
+    name: 'Rose', 
+    gradient: 'from-pink-900/95 via-rose-900/95 to-red-900/95', 
+    bubbleSelf: 'bg-pink-600', 
+    bubbleOther: 'bg-white',
+    pattern: `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 0l5 15h16l-13 10 5 15-13-10-13 10 5-15-13-10h16z'/%3E%3C/g%3E%3C/svg%3E`
+  },
+  { 
+    name: 'Violet', 
+    gradient: 'from-purple-900/95 via-violet-900/95 to-indigo-900/95', 
+    bubbleSelf: 'bg-purple-600', 
+    bubbleOther: 'bg-white',
+    pattern: `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Crect x='10' y='10' width='15' height='15'/%3E%3Crect x='35' y='10' width='15' height='15'/%3E%3Crect x='10' y='35' width='15' height='15'/%3E%3Crect x='35' y='35' width='15' height='15'/%3E%3C/g%3E%3C/svg%3E`
+  },
+  { 
+    name: 'Orange', 
+    gradient: 'from-orange-900/95 via-amber-900/95 to-yellow-900/95', 
+    bubbleSelf: 'bg-orange-600', 
+    bubbleOther: 'bg-white',
+    pattern: `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 10l5 10-5 10-5-10zM10 30l10 5-10 5-10-5zM50 30l10 5-10 5-10-5z'/%3E%3C/g%3E%3C/svg%3E`
+  },
 ];
 
 export default function PublicChat({ isAdmin = false }) {
@@ -170,9 +200,8 @@ export default function PublicChat({ isAdmin = false }) {
       {/* Chat Panel */}
       {open && (
         <div className="fixed bottom-20 right-6 w-[95vw] max-w-md h-[70vh] max-h-[550px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50" style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=60)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundImage: `url("${currentTheme.pattern}")`,
+          backgroundColor: '#0a1628'
         }}>
           <div className={`absolute inset-0 bg-gradient-to-br ${currentTheme.gradient} rounded-2xl`} />
           
@@ -230,7 +259,7 @@ export default function PublicChat({ isAdmin = false }) {
           <div className="relative flex-1 overflow-y-auto p-4 space-y-3">
             {regularMessages.map(msg => (
               <div key={msg.id} className={`flex gap-2 ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2 backdrop-blur-sm ${msg.sender_email === user.email ? currentTheme.bubbleSelf + ' text-white' : currentTheme.bubbleOther} ${msg.is_important ? 'border-2 border-amber-400' : ''}`}>
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-md ${msg.sender_email === user.email ? currentTheme.bubbleSelf + ' text-white' : currentTheme.bubbleOther + ' border border-gray-100'} ${msg.is_important ? 'border-2 border-amber-400 shadow-lg' : ''}`}>
                   {msg.sender_email !== user.email && (
                     <p className="text-xs font-semibold text-blue-600 mb-1">{msg.sender_name}</p>
                   )}
