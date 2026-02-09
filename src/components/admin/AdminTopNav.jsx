@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
@@ -20,6 +20,8 @@ const moreItems = [
   { name: 'Questions', icon: HelpCircle, page: 'AdminQuestions' },
   { name: 'Scolarité', icon: DollarSign, page: 'AdminTuition' },
   { name: 'Analytique', icon: BarChart3, page: 'AdminAnalytics' },
+  { name: 'Gérer administrateurs', icon: Shield, page: 'AdminManagement' },
+  { name: 'Voir en tant qu\'étudiant', icon: Eye, page: 'AdminViewAsStudent' },
   { name: 'Assistant IA', icon: Bot, page: 'AdminAI' },
   { name: 'Hébergement', icon: Cloud, page: 'AdminHosting' },
   { name: 'Paramètres', icon: Settings, page: 'AdminSettings' },
