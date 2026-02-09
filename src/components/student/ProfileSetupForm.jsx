@@ -5,8 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react';
 
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-const FORMATION_TYPES = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
+
+const FORMATION_BY_DOMAIN = {
+  'THÉOLOGIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
+  'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
+  'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
+  'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat']
+};
 
 export default function ProfileSetupForm({ onSubmit, loading }) {
   const [step, setStep] = useState(1);
@@ -121,7 +130,7 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine *</label>
-              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
+              <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v, formation_type: '' })}>
                 <SelectTrigger className="h-12 rounded-xl">
                   <SelectValue placeholder="Choisissez un domaine" />
                 </SelectTrigger>
@@ -134,12 +143,12 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Type de formation *</label>
-              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })}>
+              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })} disabled={!form.domain}>
                 <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Choisissez un type" />
+                  <SelectValue placeholder={form.domain ? "Choisissez un type" : "Sélectionnez d'abord un domaine"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {FORMATION_TYPES.map(f => (
+                  {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => (
                     <SelectItem key={f} value={f}>{f}</SelectItem>
                   ))}
                 </SelectContent>

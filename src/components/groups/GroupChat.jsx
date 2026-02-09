@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Image as ImageIcon, Mic, Loader2, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tantml:parameter>
+import { Send, Image as ImageIcon, Mic, Loader2, X, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,11 +9,21 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+const THEMES = [
+  { name: 'Bleu', header: 'from-blue-600 to-indigo-600', bubbleSelf: 'bg-blue-600', bubbleOther: 'bg-white', bg: 'bg-gray-50' },
+  { name: 'Vert', header: 'from-green-600 to-emerald-600', bubbleSelf: 'bg-green-600', bubbleOther: 'bg-white', bg: 'bg-green-50' },
+  { name: 'Rose', header: 'from-pink-600 to-rose-600', bubbleSelf: 'bg-pink-600', bubbleOther: 'bg-white', bg: 'bg-pink-50' },
+  { name: 'Violet', header: 'from-purple-600 to-violet-600', bubbleSelf: 'bg-purple-600', bubbleOther: 'bg-white', bg: 'bg-purple-50' },
+  { name: 'Orange', header: 'from-orange-600 to-amber-600', bubbleSelf: 'bg-orange-600', bubbleOther: 'bg-white', bg: 'bg-orange-50' },
+];
+
 export default function GroupChat({ group, open, onClose }) {
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [themeIndex, setThemeIndex] = useState(0);
+  const [showThemes, setShowThemes] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -119,21 +129,37 @@ export default function GroupChat({ group, open, onClose }) {
 
   if (!user) return null;
 
+  const currentTheme = THEMES[themeIndex];
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-full sm:max-w-2xl h-[90vh] sm:h-[80vh] flex flex-col p-0 rounded-none sm:rounded-2xl">
-        <DialogHeader className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-2xl">
-          <DialogTitle className="flex items-center gap-2 text-white">
-            💬 {group?.name}
-          </DialogTitle>
+        <DialogHeader className={`p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r ${currentTheme.header} text-white rounded-t-2xl`}>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-white">
+              💬 {group?.name}
+            </DialogTitle>
+            <button onClick={() => setShowThemes(!showThemes)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+              <Palette className="w-4 h-4 text-white" />
+            </button>
+          </div>
+          {showThemes && (
+            <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
+              {THEMES.map((theme, i) => (
+                <button key={i} onClick={() => { setThemeIndex(i); setShowThemes(false); }} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+                  {theme.name}
+                </button>
+              ))}
+            </div>
+          )}
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 bg-gray-50">
+        <div className={`flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 ${currentTheme.bg}`}>
           {sortedMessages.map(msg => (
             <div key={msg.id} className={`flex gap-2 ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 py-2 ${msg.sender_email === user.email ? 'bg-blue-600 text-white' : 'bg-white border border-gray-100 shadow-sm'}`}>
+              <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 py-2 ${msg.sender_email === user.email ? currentTheme.bubbleSelf + ' text-white' : currentTheme.bubbleOther + ' border border-gray-100 shadow-sm'}`}>
                 {msg.sender_email !== user.email && (
-                  <p className="text-xs font-semibold text-blue-600 mb-1">{msg.sender_name}</p>
+                  <p className={`text-xs font-semibold mb-1 ${msg.sender_email === user.email ? 'text-white/80' : 'text-blue-600'}`}>{msg.sender_name}</p>
                 )}
                 {msg.message_type === 'image' && msg.media_url && (
                   <img src={msg.media_url} alt="" className="rounded-xl max-w-full mb-2" />
@@ -145,7 +171,7 @@ export default function GroupChat({ group, open, onClose }) {
                   <audio src={msg.media_url} controls className="mb-2" />
                 )}
                 <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
-                <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-blue-200' : 'text-gray-400'}`}>
+                <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                   {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
                 </p>
               </div>
@@ -176,7 +202,7 @@ export default function GroupChat({ group, open, onClose }) {
               disabled={recording}
               className="flex-1 h-9 rounded-full bg-gray-50 border-gray-200 text-sm"
             />
-            <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending || recording} size="icon" className="bg-blue-600 hover:bg-blue-700 rounded-full h-9 w-9 flex-shrink-0">
+            <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending || recording} size="icon" className={`${currentTheme.bubbleSelf} hover:opacity-90 rounded-full h-9 w-9 flex-shrink-0`}>
               {sendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>

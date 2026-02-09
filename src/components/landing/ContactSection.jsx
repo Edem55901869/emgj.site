@@ -98,9 +98,9 @@ export default function ContactSection() {
             className="space-y-8 flex flex-col justify-center"
           >
             {[
-              { icon: Mail, label: 'Email', value: 'contact@emgj.org' },
-              { icon: Phone, label: 'Téléphone', value: '+229 XX XX XX XX' },
-              { icon: MapPin, label: 'Adresse', value: 'Cotonou, Bénin' },
+              { icon: Mail, label: 'Email', value: 'emgj2020@gmail.com' },
+              { icon: Phone, label: 'Téléphone', value: '+228 92 61 49 61' },
+              { icon: MapPin, label: 'Adresse', value: 'Lomé, Togo' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-5">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">

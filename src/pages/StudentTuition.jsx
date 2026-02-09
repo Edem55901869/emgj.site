@@ -180,7 +180,17 @@ export default function StudentTuition() {
                 <h3 className="font-bold text-blue-900 mb-1">Frais de scolarité</h3>
                 <p className="text-2xl font-bold text-blue-600 mb-2">{myConfig.amount} {myConfig.currency}</p>
                 <p className="text-sm text-blue-700 mb-3">{myConfig.domain} - {myConfig.formation_type}</p>
-                <Button onClick={() => setProofDialog(true)} className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+                
+                {myConfig.payment_link && (
+                  <a href={myConfig.payment_link} target="_blank" rel="noopener noreferrer" className="block mb-3">
+                    <Button variant="outline" className="w-full rounded-xl border-blue-300 text-blue-700 hover:bg-blue-50">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Payer en ligne
+                    </Button>
+                  </a>
+                )}
+
+                <Button onClick={() => setProofDialog(true)} className="bg-blue-600 hover:bg-blue-700 rounded-xl w-full">
                   <Upload className="w-4 h-4 mr-2" />
                   Envoyer une preuve de paiement
                 </Button>

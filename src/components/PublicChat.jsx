@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageCircle, Send, X, Image as ImageIcon, Mic, Trash2, Pin, Star, Loader2 } from 'lucide-react';
+import { MessageCircle, Send, X, Image as ImageIcon, Mic, Trash2, Pin, Star, Loader2, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -9,12 +9,22 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+const THEMES = [
+  { name: 'Bleu', gradient: 'from-blue-900/95 via-indigo-900/95 to-purple-900/95', bubbleSelf: 'bg-blue-600/90', bubbleOther: 'bg-white/90' },
+  { name: 'Vert', gradient: 'from-green-900/95 via-emerald-900/95 to-teal-900/95', bubbleSelf: 'bg-green-600/90', bubbleOther: 'bg-white/90' },
+  { name: 'Rose', gradient: 'from-pink-900/95 via-rose-900/95 to-red-900/95', bubbleSelf: 'bg-pink-600/90', bubbleOther: 'bg-white/90' },
+  { name: 'Violet', gradient: 'from-purple-900/95 via-violet-900/95 to-indigo-900/95', bubbleSelf: 'bg-purple-600/90', bubbleOther: 'bg-white/90' },
+  { name: 'Orange', gradient: 'from-orange-900/95 via-amber-900/95 to-yellow-900/95', bubbleSelf: 'bg-orange-600/90', bubbleOther: 'bg-white/90' },
+];
+
 export default function PublicChat({ isAdmin = false }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [themeIndex, setThemeIndex] = useState(0);
+  const [showThemes, setShowThemes] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -153,40 +163,48 @@ export default function PublicChat({ isAdmin = false }) {
 
   if (!user) return null;
 
+  const currentTheme = THEMES[themeIndex];
+
   return (
     <>
-      {/* Floating Button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-20 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-white z-40"
-      >
-        {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-        {!open && messages.length > 0 && (
-          <Badge className="absolute -top-1 -right-1 bg-red-500 text-white border-none text-xs w-5 h-5 flex items-center justify-center p-0">
-            {messages.length > 99 ? '99+' : messages.length}
-          </Badge>
-        )}
-      </button>
-
       {/* Chat Panel */}
       {open && (
-        <div className="fixed bottom-36 right-6 w-[95vw] max-w-md h-[70vh] max-h-[550px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-40" style={{
+        <div className="fixed bottom-20 right-6 w-[95vw] max-w-md h-[70vh] max-h-[550px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50" style={{
           backgroundImage: 'url(https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=60)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-indigo-900/95 to-purple-900/95 rounded-2xl" />
+          <div className={`absolute inset-0 bg-gradient-to-br ${currentTheme.gradient} rounded-2xl`} />
           
           {/* Header */}
           <div className="relative p-4 border-b border-white/10 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">💬 Discussion publique</h3>
-              {isAdmin && (
-                <Button onClick={() => deleteAllMutation.mutate()} variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-lg h-7">
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowThemes(!showThemes)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                  <Palette className="w-4 h-4 text-white/70" />
+                </button>
+                {isAdmin && (
+                  <Button onClick={() => deleteAllMutation.mutate()} variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-lg h-7">
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+                <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+              </div>
             </div>
+            
+            {/* Theme Selector */}
+            {showThemes && (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                {THEMES.map((theme, i) => (
+                  <button key={i} onClick={() => { setThemeIndex(i); setShowThemes(false); }} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+                    {theme.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Pinned Messages */}
@@ -212,7 +230,7 @@ export default function PublicChat({ isAdmin = false }) {
           <div className="relative flex-1 overflow-y-auto p-4 space-y-3">
             {regularMessages.map(msg => (
               <div key={msg.id} className={`flex gap-2 ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2 backdrop-blur-sm ${msg.sender_email === user.email ? 'bg-blue-600/90 text-white' : 'bg-white/90'} ${msg.is_important ? 'border-2 border-amber-400' : ''}`}>
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2 backdrop-blur-sm ${msg.sender_email === user.email ? currentTheme.bubbleSelf + ' text-white' : currentTheme.bubbleOther} ${msg.is_important ? 'border-2 border-amber-400' : ''}`}>
                   {msg.sender_email !== user.email && (
                     <p className="text-xs font-semibold text-blue-600 mb-1">{msg.sender_name}</p>
                   )}
@@ -224,18 +242,18 @@ export default function PublicChat({ isAdmin = false }) {
                   )}
                   <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-blue-200' : 'text-gray-400'}`}>
+                    <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                       {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
                     </p>
                     {isAdmin && (
                       <div className="flex gap-1">
-                        <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : msg.sender_email === user.email ? 'text-blue-200' : 'text-gray-400'}`}>
+                        <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                           <Pin className="w-3 h-3" />
                         </button>
-                        <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : msg.sender_email === user.email ? 'text-blue-200' : 'text-gray-400'}`}>
+                        <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                           <Star className="w-3 h-3" />
                         </button>
-                        <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${msg.sender_email === user.email ? 'text-blue-200' : 'text-gray-400'}`}>
+                        <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                           <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
