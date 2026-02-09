@@ -30,28 +30,56 @@ export default function Connexion() {
     e.preventDefault();
     setAdminLoading(true);
     
-    // Vérifier le mot de passe principal
-    if (adminEmail === 'agnimakaedeme@gmail.com' && adminPassword === 'EDEMS229') {
-      localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin', loggedIn: true }));
-      toast.success('Connexion administrateur réussie !');
-      navigate(createPageUrl('AdminDashboard'));
-    } else {
-      // Vérifier les mots de passe de secours
-      try {
-        const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
-        const validBackup = passwords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
+    try {
+      // Vérifier le mot de passe principal
+      if (adminEmail === 'agnimakaedeme@gmail.com' && adminPassword === 'EDEMS229') {
+        localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
+        toast.success('Connexion administrateur réussie !');
+        navigate(createPageUrl('AdminDashboard'));
+        setAdminLoading(false);
+        return;
+      }
+
+      // Vérifier les mots de passe de secours du principal
+      const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
+      const validBackup = passwords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
+      
+      if (validBackup) {
+        localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
+        toast.success('Connexion administrateur réussie !');
+        navigate(createPageUrl('AdminDashboard'));
+        setAdminLoading(false);
+        return;
+      }
+
+      // Vérifier les admins secondaires
+      const admins = await base44.entities.AdminUser.filter({ email: adminEmail });
+      const admin = admins[0];
+      
+      if (admin && admin.password === adminPassword && admin.is_active) {
+        localStorage.setItem('emgj_admin', JSON.stringify({ 
+          email: adminEmail, 
+          role: admin.role,
+          permissions: admin.permissions || [],
+          loggedIn: true 
+        }));
         
-        if (validBackup) {
-          localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin', loggedIn: true }));
-          toast.success('Connexion administrateur réussie !');
-          navigate(createPageUrl('AdminDashboard'));
-        } else {
-          toast.error('Identifiants incorrects');
-        }
-      } catch {
+        await base44.entities.AdminAction.create({
+          admin_email: adminEmail,
+          admin_name: `${admin.first_name} ${admin.last_name}`,
+          action_type: 'Connexion',
+          description: 'Connexion réussie à la plateforme'
+        });
+        
+        toast.success('Connexion réussie !');
+        navigate(createPageUrl('AdminDashboard'));
+      } else {
         toast.error('Identifiants incorrects');
       }
+    } catch (error) {
+      toast.error('Erreur de connexion');
     }
+    
     setAdminLoading(false);
   };
 

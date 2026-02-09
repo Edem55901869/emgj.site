@@ -31,6 +31,25 @@ export default function StudentDashboard() {
   }, []);
 
   const loadUser = async () => {
+    // Vérifier si on est en mode admin preview
+    const adminView = localStorage.getItem('admin_student_view');
+    if (adminView) {
+      const viewData = JSON.parse(adminView);
+      // Créer un profil virtuel pour l'admin
+      setUser({ email: 'admin@preview.emgj' });
+      setStudentProfile({
+        first_name: 'Admin',
+        last_name: 'Preview',
+        domain: viewData.domain,
+        formation_type: viewData.formation_type,
+        status: 'certifié',
+        profile_completed: true,
+        user_email: 'admin@preview.emgj'
+      });
+      setLoading(false);
+      return;
+    }
+
     const u = await base44.auth.me();
     setUser(u);
     const students = await base44.entities.Student.filter({ user_email: u.email });

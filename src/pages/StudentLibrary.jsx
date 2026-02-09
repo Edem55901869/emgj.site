@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Library, Search, Download, FileText, Loader2, Eye } from 'lucide-react';
@@ -12,6 +12,14 @@ export default function StudentLibrary() {
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('all');
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const adminView = localStorage.getItem('admin_student_view');
+    if (adminView) {
+      const viewData = JSON.parse(adminView);
+      setDomainFilter(viewData.domain);
+    }
+  }, []);
 
   const { data: docs = [], isLoading } = useQuery({
     queryKey: ['libraryDocs'],
