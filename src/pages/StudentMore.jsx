@@ -145,27 +145,7 @@ export default function StudentMore() {
           </button>
         </div>
 
-        {notifications.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <h2 className="text-sm font-bold text-gray-700 px-2">Notifications récentes</h2>
-            {notifications.slice(0, 5).map(notif => (
-              <div key={notif.id} className={`bg-white rounded-xl border p-4 ${notif.status === 'nouveau' ? 'border-blue-200' : 'border-gray-100'}`}>
-                <div className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    notif.type === 'success' ? 'bg-green-500' : notif.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 text-sm">{notif.title}</p>
-                    <p className="text-xs text-gray-600 mt-1">{notif.message}</p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {notif.created_date && format(new Date(notif.created_date), "d MMM 'à' HH:mm", { locale: fr })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+
 
         <Button onClick={handleLogout} variant="outline" className="w-full mt-6 rounded-xl h-12 text-red-600 border-red-200 hover:bg-red-50">
           <LogOut className="w-4 h-4 mr-2" />
