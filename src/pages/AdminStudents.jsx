@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
 
 export default function AdminStudents() {
   const [search, setSearch] = useState('');
