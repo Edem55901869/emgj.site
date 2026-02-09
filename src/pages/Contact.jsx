@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Send, Loader2, MessageCircle, Facebook } from 'lucide-react';
+import { MapPin, Phone, Mail, Send, Loader2, MessageCircle, Facebook, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -104,8 +104,21 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">WhatsApp</p>
-                    <a href="https://wa.me/22892614961?text=Bonjour,%20je%20souhaite%20obtenir%20des%20informations%20sur%20l'École%20Missionnaire%20Génération%20Joël" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Discuter sur WhatsApp</a>
+                    <a href="https://wa.me/22892614961?text=Bonjour,%0A%0AJe%20souhaiterais%20obtenir%20des%20informations%20concernant%20la%20Formation%20Théologique%20Génération%20Joël.%0A%0AMerci%20de%20votre%20attention." target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Discuter sur WhatsApp</a>
                   </div>
+                </div>
+              </div>
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-sm font-medium text-gray-700 mb-3">Suivez-nous sur les réseaux sociaux</p>
+                <div className="flex gap-3">
+                  <a href="https://www.facebook.com/profile.php?id=61576165315442" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors">
+                    <Facebook className="w-5 h-5" />
+                    Facebook
+                  </a>
+                  <a href="https://www.tiktok.com/@apotre_nestor?_r=1&_t=ZS-93INNWc0915" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-medium transition-colors">
+                    <Music className="w-5 h-5" />
+                    TikTok
+                  </a>
                 </div>
               </div>
             </div>
@@ -193,13 +206,13 @@ export default function Contact() {
               <h3 className="text-2xl font-bold mb-2">Samuel Edem</h3>
               <p className="text-blue-300 font-medium mb-4">Évangéliste & Développeur Web</p>
               <p className="text-gray-300 leading-relaxed mb-6">
-                Par la grâce de Dieu, je suis évangéliste et développeur web passionné par la création de solutions digitales au service du Royaume. 
-                Je réside au Bénin et je suis disponible pour vos projets de développement web, d'applications et bien plus encore. 
-                Ensemble, utilisons la technologie pour faire avancer le Royaume de Dieu !
+                Par la grâce de Dieu, je suis évangéliste et développeur web passionné par la création de solutions digitales professionnelles au service du Royaume. 
+                Basé au Bénin, je mets mon expertise à votre disposition pour donner vie à vos projets numériques : sites web, applications sur mesure, plateformes e-learning et bien plus encore. 
+                Ensemble, utilisons la technologie comme outil d'évangélisation et de croissance pour le Royaume de Dieu.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://wa.me/2290147659277?text=Bonjour%20Samuel,%0A%0AJe%20vous%20contacte%20car%20j'ai%20un%20projet%20de%20développement%20web%20que%20j'aimerais%20discuter%20avec%20vous.%0A%0AMerci%20!"
+                  href="https://wa.me/2290147659277?text=Bonjour%20M.%20Samuel%20Edem,%0A%0AJ'aimerais%20discuter%20d'un%20projet%20de%20développement%20web%20avec%20vous.%0A%0APourriez-vous%20me%20fournir%20plus%20d'informations%20sur%20vos%20services%20et%20disponibilités%20?%0A%0ACordialement."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-medium transition-colors shadow-lg"

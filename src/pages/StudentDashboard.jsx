@@ -238,7 +238,7 @@ export default function StudentDashboard() {
         <div 
           className="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80)',
+            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/87434d389_IMG-20260209-WA0009.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
