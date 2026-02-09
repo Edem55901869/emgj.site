@@ -14,11 +14,14 @@ export default function ContactSection() {
     e.preventDefault();
     
     // Préparer le message WhatsApp formaté
-    const whatsappMessage = `📩 *Nouveau message de contact FTGJ*\n\n` +
-      `👤 *Nom :* ${form.name}\n` +
-      `📧 *Email :* ${form.email}\n\n` +
-      `💬 *Message :*\n${form.message}\n\n` +
-      `_Envoyé depuis le site web FTGJ_`;
+    const whatsappMessage = `*Bonjour l'équipe de FTGJ*,\n\n` +
+      `Je vous contacte via le formulaire de votre site web officiel.\n\n` +
+      `📋 *INFORMATIONS DE CONTACT*\n` +
+      `👤 Nom : ${form.name}\n` +
+      `📧 Email : ${form.email}\n\n` +
+      `✉️ *MESSAGE*\n${form.message}\n\n` +
+      `_Message envoyé automatiquement depuis le site web FTGJ_\n` +
+      `_Merci de votre attention._`;
     
     const whatsappUrl = `https://wa.me/22892614961?text=${encodeURIComponent(whatsappMessage)}`;
     

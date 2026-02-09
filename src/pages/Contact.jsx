@@ -104,7 +104,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">WhatsApp</p>
-                    <a href="https://wa.me/22892614961?text=Bonjour,%0A%0AJe%20souhaiterais%20obtenir%20des%20informations%20concernant%20la%20Formation%20Théologique%20Génération%20Joël.%0A%0AMerci%20de%20votre%20attention." target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Discuter sur WhatsApp</a>
+                    <a href="https://wa.me/22892614961?text=*Bonjour%20l'équipe%20de%20FTGJ*,%0A%0AJe%20vous%20contacte%20via%20votre%20site%20web%20officiel.%0A%0A*Objet%20:*%20Demande%20d'informations%20sur%20les%20formations%0A%0AJ'aimerais%20obtenir%20des%20renseignements%20détaillés%20concernant%20:%0A-%20Les%20programmes%20de%20formation%20disponibles%0A-%20Les%20conditions%20d'admission%0A-%20Les%20frais%20de%20scolarité%0A-%20Les%20modalités%20d'inscription%0A%0AJe%20reste%20disponible%20pour%20tout%20complément%20d'information.%0A%0ACordialement." target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Discuter sur WhatsApp</a>
                   </div>
                 </div>
               </div>
@@ -212,7 +212,7 @@ export default function Contact() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://wa.me/2290147659277?text=Bonjour%20M.%20Samuel%20Edem,%0A%0AJ'aimerais%20discuter%20d'un%20projet%20de%20développement%20web%20avec%20vous.%0A%0APourriez-vous%20me%20fournir%20plus%20d'informations%20sur%20vos%20services%20et%20disponibilités%20?%0A%0ACordialement."
+                  href="https://wa.me/2290147659277?text=*Bonjour%20M.%20Samuel%20Edem*,%0A%0AJe%20vous%20contacte%20via%20le%20site%20web%20de%20FTGJ%20pour%20une%20collaboration%20professionnelle.%0A%0A*Objet%20:*%20Projet%20de%20développement%20web%0A%0A*Contexte%20:*%0AJe%20représente%20[Nom%20de%20votre%20organisation/ministère]%20et%20nous%20recherchons%20un%20développeur%20web%20compétent%20pour%20[décrire%20brièvement%20votre%20besoin].%0A%0A*Demande%20:*%0A-%20Disponibilité%20pour%20un%20échange%20téléphonique%0A-%20Devis%20estimatif%0A-%20Délais%20de%20réalisation%0A-%20Portfolio%20de%20projets%20similaires%0A%0AJe%20reste%20à%20votre%20disposition%20pour%20tout%20complément%20d'information.%0A%0A*Cordialement*,"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 rounded-xl font-medium transition-colors shadow-lg"

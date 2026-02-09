@@ -245,29 +245,28 @@ export default function StudentDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-indigo-900/60 to-purple-900/60" />
         </div>
-        <div className="max-w-2xl mx-auto px-4 -mt-12 relative">
-          <div className="flex items-end gap-3">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 border-white">
-                {studentProfile.profile_photo ? (
-                  <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-bold text-blue-600">
+        <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+                  <span className="text-2xl font-bold text-white">
                     {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
                   </span>
+                </div>
+                {studentProfile.status === 'certifié' && (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white flex items-center justify-center shadow-lg">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  </div>
                 )}
               </div>
-              {studentProfile.status === 'certifié' && (
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center shadow-lg">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 pb-2">
-              <h2 className="text-white font-bold text-base drop-shadow-lg">{studentProfile.first_name} {studentProfile.last_name}</h2>
-              <Badge className="bg-white/90 text-blue-700 border-0 text-xs mt-1">
-                {studentProfile.domain}
-              </Badge>
+              <div className="flex-1">
+                <h2 className="text-gray-900 font-bold text-lg">{studentProfile.first_name} {studentProfile.last_name}</h2>
+                <p className="text-gray-500 text-xs mt-0.5">{studentProfile.formation_type}</p>
+                <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-xs mt-1.5">
+                  {studentProfile.domain}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>

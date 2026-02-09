@@ -79,54 +79,46 @@ export default function StudentProfile() {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Cover */}
       <div className="relative">
-        <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500" 
+        <div className="h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden" 
           style={{
             backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/87434d389_IMG-20260209-WA0009.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 to-purple-900/60" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 to-purple-900/70" />
           <Button
             onClick={() => navigate(createPageUrl('StudentMore'))}
             variant="ghost"
             size="icon"
-            className="absolute top-4 left-4 bg-black/20 hover:bg-black/30 text-white rounded-full backdrop-blur-sm z-10"
+            className="absolute top-4 left-4 bg-black/30 hover:bg-black/40 text-white rounded-full backdrop-blur-sm z-10"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-        </div>
-        
-        <div className="relative px-6 -mt-16 pb-4">
-          <div className="flex items-end gap-4">
-            <div className="relative">
-              <div className="w-28 h-28 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 border-white">
-                {student.profile_photo ? (
-                  <img src={student.profile_photo} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl font-bold text-blue-600">
-                    {student.first_name?.[0]}{student.last_name?.[0]}
-                  </span>
-                )}
+          
+          <div className="absolute bottom-6 left-6 right-6">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-5 border border-white/50">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-white">
+                      {student.first_name?.[0]}{student.last_name?.[0]}
+                    </span>
+                  </div>
+                  {student.status === 'certifié' && (
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center shadow-lg">
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-gray-900 font-bold text-xl">{student.first_name} {student.last_name}</h2>
+                  <p className="text-gray-500 text-sm mt-0.5">{student.formation_type}</p>
+                  <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-xs mt-1.5">
+                    {student.domain}
+                  </Badge>
+                </div>
               </div>
-              {student.status === 'certifié' && (
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-green-500 border-4 border-white flex items-center justify-center shadow-lg">
-                  <CheckCircle2 className="w-5 h-5 text-white" />
-                </div>
-              )}
-              <label className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700 transition-colors">
-                <Camera className="w-4 h-4 text-white" />
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-              </label>
-              {uploading && (
-                <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 mb-2">
-              <h2 className="text-2xl font-bold text-gray-900">{student.first_name} {student.last_name}</h2>
-              <p className="text-gray-500 text-sm mt-0.5">{student.domain}</p>
             </div>
           </div>
         </div>
