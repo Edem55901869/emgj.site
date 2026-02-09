@@ -66,6 +66,7 @@ export default function AdminTopNav() {
 
   const handleLogout = () => {
     localStorage.removeItem('emgj_admin');
+    localStorage.removeItem('admin_student_view');
     navigate(createPageUrl('Connexion'));
   };
 

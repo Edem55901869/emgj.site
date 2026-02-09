@@ -53,6 +53,7 @@ export default function StudentMore() {
   const unreadCount = notifications.filter(n => n.status === 'nouveau').length;
 
   const handleLogout = async () => {
+    localStorage.removeItem('admin_student_view');
     await base44.auth.logout();
     navigate(createPageUrl('Connexion'));
   };
