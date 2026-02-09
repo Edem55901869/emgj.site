@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye } from 'lucide-react';
@@ -27,10 +27,42 @@ const moreItems = [
   { name: 'Paramètres', icon: Settings, page: 'AdminSettings' },
 ];
 
+const PERMISSION_MAP = {
+  'AdminDashboard': 'dashboard',
+  'AdminCourses': 'courses',
+  'AdminStudents': 'students',
+  'AdminBlog': 'blog',
+  'AdminLibrary': 'library',
+  'AdminConferences': 'conferences',
+  'AdminGroups': 'groups',
+  'AdminBulletins': 'bulletins',
+  'AdminQuestions': 'questions',
+  'AdminTuition': 'tuition',
+  'AdminAnalytics': 'analytics',
+  'AdminManagement': 'admin',
+  'AdminViewAsStudent': 'admin',
+  'AdminAI': 'admin',
+  'AdminHosting': 'admin',
+  'AdminSettings': 'settings',
+};
+
 export default function AdminTopNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    const adminData = JSON.parse(localStorage.getItem('emgj_admin') || '{}');
+    setAdmin(adminData);
+  }, []);
+
+  const hasPermission = (page) => {
+    if (!admin) return false;
+    if (admin.role === 'admin_principal') return true;
+    const permission = PERMISSION_MAP[page];
+    return admin.permissions?.includes(permission);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('emgj_admin');
@@ -51,7 +83,7 @@ export default function AdminTopNav() {
 
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-1">
-              {navItems.map(item => {
+              {navItems.filter(item => hasPermission(item.page)).map(item => {
                 const isActive = location.pathname.includes(item.page);
                 return (
                   <Link
@@ -76,7 +108,7 @@ export default function AdminTopNav() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  {moreItems.map(item => (
+                  {moreItems.filter(item => hasPermission(item.page)).map(item => (
                     <DropdownMenuItem key={item.name} onClick={() => navigate(createPageUrl(item.page))}>
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.name}
@@ -101,7 +133,7 @@ export default function AdminTopNav() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)}>
           <div className="absolute top-16 left-0 right-0 bg-gradient-to-b from-indigo-600 to-indigo-700 border-b border-indigo-800/30 shadow-lg p-4 space-y-1 backdrop-blur-md" onClick={(e) => e.stopPropagation()}>
-            {navItems.map(item => {
+            {navItems.filter(item => hasPermission(item.page)).map(item => {
               const isActive = location.pathname.includes(item.page);
               return (
                 <Link
@@ -118,7 +150,7 @@ export default function AdminTopNav() {
               );
             })}
             <div className="border-t border-white/10 pt-2 mt-2">
-              {moreItems.map(item => {
+              {moreItems.filter(item => hasPermission(item.page)).map(item => {
                 const isActive = location.pathname.includes(item.page);
                 return (
                   <Link
