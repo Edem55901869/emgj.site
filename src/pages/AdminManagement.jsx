@@ -183,7 +183,7 @@ export default function AdminManagement() {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={resetForm}>
-          <DialogContent className="max-w-3xl rounded-3xl max-h-[92vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/20">
+          <DialogContent className="max-w-3xl rounded-3xl max-h-[92vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle className="text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {editingAdmin ? '✏️ Modifier l\'administrateur' : '✨ Nouvel administrateur'}

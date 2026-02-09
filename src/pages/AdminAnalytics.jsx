@@ -1,7 +1,7 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Globe, Smartphone, Monitor, Tablet, Loader2, TrendingUp, Users, Eye } from 'lucide-react';
+import { BarChart3, Globe, Smartphone, Monitor, Tablet, Loader2, TrendingUp, Users, Eye, BookOpen, Clock as ClockIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +10,9 @@ import AdminGuard from '../components/admin/AdminGuard';
 
 export default function AdminAnalytics() {
   const { data: visitors = [], isLoading } = useQuery({ queryKey: ['siteVisitors'], queryFn: () => base44.entities.SiteVisitor.list('-created_date', 500) });
+  const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
+  const { data: allProgress = [] } = useQuery({ queryKey: ['allProgress'], queryFn: () => base44.entities.StudentCourseProgress.list() });
+  const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: () => base44.entities.Course.list() });
 
   const countryStats = visitors.reduce((acc, v) => {
     acc[v.country] = (acc[v.country] || 0) + 1;
@@ -26,6 +29,14 @@ export default function AdminAnalytics() {
 
   const deviceIcons = { mobile: Smartphone, desktop: Monitor, tablet: Tablet };
   const deviceColors = { mobile: 'from-blue-500 to-blue-600', desktop: 'from-indigo-500 to-indigo-600', tablet: 'from-purple-500 to-purple-600' };
+
+  // Stats cours
+  const coursesByDomain = courses.reduce((acc, c) => {
+    acc[c.domain] = (acc[c.domain] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topCourseDomains = Object.entries(coursesByDomain).sort((a, b) => b[1] - a[1]);
 
   return (
     <AdminGuard>
@@ -88,7 +99,7 @@ export default function AdminAnalytics() {
                 </Card>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card className="border-none shadow-lg">
                   <CardHeader className="border-b border-gray-100">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -144,6 +155,65 @@ export default function AdminAnalytics() {
                         </div>
                       );
                     })}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Statistiques des cours */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-green-600" />
+                      Cours suivis par domaine
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-3">
+                    {topCourseDomains.map(([domain, count]) => {
+                      const progressCount = allProgress.filter(p => {
+                        const course = courses.find(c => c.id === p.course_id);
+                        return course?.domain === domain;
+                      }).length;
+                      return (
+                        <div key={domain} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-gray-900 text-sm">{domain}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">{progressCount} suivis</span>
+                              <Badge className="bg-green-50 text-green-700 border-green-100 text-xs">{count} cours</Badge>
+                            </div>
+                          </div>
+                          <Progress value={(progressCount / Math.max(1, count * students.length)) * 100} className="h-2" />
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <ClockIcon className="w-5 h-5 text-purple-600" />
+                      Engagement étudiant
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-4">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                      <p className="text-sm text-gray-600 mb-1">Total de tentatives d'examen</p>
+                      <p className="text-3xl font-bold text-blue-600">{allProgress.reduce((sum, p) => sum + (p.attempts || 1), 0)}</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                      <p className="text-sm text-gray-600 mb-1">Taux de réussite moyen</p>
+                      <p className="text-3xl font-bold text-green-600">
+                        {allProgress.length > 0 ? ((allProgress.filter(p => p.passed).length / allProgress.length) * 100).toFixed(0) : 0}%
+                      </p>
+                    </div>
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
+                      <p className="text-sm text-gray-600 mb-1">Moyenne générale</p>
+                      <p className="text-3xl font-bold text-purple-600">
+                        {allProgress.length > 0 ? (allProgress.reduce((sum, p) => sum + p.score, 0) / allProgress.length).toFixed(1) : 0}/20
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

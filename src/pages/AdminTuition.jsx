@@ -15,6 +15,16 @@ import AdminGuard from '../components/admin/AdminGuard';
 const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
 const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
 
+const FORMATION_BY_DOMAIN = {
+  'THÉOLOGIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
+  'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
+  'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
+  'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat']
+};
+
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
   const [configForm, setConfigForm] = useState({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '' });

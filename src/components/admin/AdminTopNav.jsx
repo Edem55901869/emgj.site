@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import PublicChat from '../PublicChat';
 
 const navItems = [
   { name: 'Tableau de bord', icon: LayoutDashboard, page: 'AdminDashboard' },
@@ -51,6 +52,7 @@ export default function AdminTopNav() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admin, setAdmin] = useState(null);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     const adminData = JSON.parse(localStorage.getItem('emgj_admin') || '{}');
@@ -176,6 +178,16 @@ export default function AdminTopNav() {
           </div>
         </div>
       )}
+
+      {/* Bouton de discussion flottant */}
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
+      >
+        <MessagesSquare className="w-6 h-6" />
+      </button>
+
+      {showChat && <PublicChat />}
     </>
   );
 }

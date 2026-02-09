@@ -140,7 +140,7 @@ export default function AdminStudents() {
               <SelectTrigger className="w-48 h-10 rounded-xl"><SelectValue placeholder="Domaine" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les domaines</SelectItem>
-                {['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
+                {['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
                   <SelectItem key={d} value={d}>{d}</SelectItem>
                 ))}
               </SelectContent>
@@ -273,7 +273,7 @@ export default function AdminStudents() {
                       <Select defaultValue={selectedStudent.domain} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { domain: v } })}>
                         <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
+                          {['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
                             <SelectItem key={d} value={d}>{d}</SelectItem>
                           ))}
                         </SelectContent>
@@ -284,7 +284,7 @@ export default function AdminStudents() {
                       <Select defaultValue={selectedStudent.formation_type} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { formation_type: v } })}>
                         <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'].map(f => (
+                          {['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'].map(f => (
                             <SelectItem key={f} value={f}>{f}</SelectItem>
                           ))}
                         </SelectContent>
