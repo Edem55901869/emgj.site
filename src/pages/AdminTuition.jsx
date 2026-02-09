@@ -96,7 +96,7 @@ export default function AdminTuition() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
@@ -156,6 +156,8 @@ export default function AdminTuition() {
               </CardContent>
             </Card>
           </div>
+
+
 
           {/* Configurations */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 mb-6">
@@ -270,7 +272,7 @@ export default function AdminTuition() {
         </div>
 
         <Dialog open={configDialog} onOpenChange={setConfigDialog}>
-          <DialogContent className="max-w-md rounded-3xl bg-gradient-to-br from-white to-blue-50/20">
+          <DialogContent className="max-w-md rounded-3xl bg-white">
             <DialogHeader><DialogTitle className="text-xl">Nouvelle configuration</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <Select value={configForm.domain} onValueChange={(v) => setConfigForm({ ...configForm, domain: v })}>

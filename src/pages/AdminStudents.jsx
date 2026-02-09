@@ -194,7 +194,7 @@ export default function AdminStudents() {
         </div>
 
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-3xl rounded-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/20">
+          <DialogContent className="max-w-3xl rounded-3xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle className="text-2xl">Profil de l'étudiant</DialogTitle>
             </DialogHeader>

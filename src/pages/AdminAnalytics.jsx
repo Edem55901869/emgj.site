@@ -29,12 +29,12 @@ export default function AdminAnalytics() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Analytique</h1>
-            <p className="text-gray-500 mt-1">Vue d'ensemble du trafic et des visiteurs</p>
+            <h1 className="text-3xl font-bold text-gray-900">Analytique & Statistiques</h1>
+            <p className="text-gray-600 mt-1">Vue d'ensemble du trafic et des visiteurs</p>
           </div>
 
           {isLoading ? (

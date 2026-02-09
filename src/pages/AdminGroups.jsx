@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Plus, Edit3, Trash2, Check, X, UserPlus, Crown, Loader2, Circle, MessageCircle, Upload } from 'lucide-react';
+import { Users, Plus, Edit3, Trash2, Check, X, UserPlus, Crown, Loader2, Circle, MessageCircle, Upload, Lock, Unlock, Image as ImageIcon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +21,9 @@ export default function AdminGroups() {
   const [manageOpen, setManageOpen] = useState(null);
   const [chatOpen, setChatOpen] = useState(null);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', domain: '', formation_type: '' });
+  const [form, setForm] = useState({ name: '', description: '', domain: '', formation_type: '', is_public: false });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: groups = [], isLoading } = useQuery({ queryKey: ['adminGroups'], queryFn: () => base44.entities.Group.list('-created_date', 100) });
@@ -33,7 +35,7 @@ export default function AdminGroups() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminGroups'] });
       setCreateOpen(false);
-      setForm({ name: '', description: '', domain: '', formation_type: '' });
+      setForm({ name: '', description: '', domain: '', formation_type: '', is_public: false });
       toast.success('Groupe créé');
     },
   });
@@ -80,8 +82,16 @@ export default function AdminGroups() {
   });
 
   const uploadGroupPhoto = async (groupId, file) => {
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    updateMutation.mutate({ id: groupId, data: { cover_image: file_url } });
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.Group.update(groupId, { cover_image: file_url });
+      queryClient.invalidateQueries({ queryKey: ['adminGroups'] });
+      toast.success('Photo mise à jour');
+    } catch (error) {
+      toast.error('Erreur lors du téléchargement');
+    }
+    setUploading(false);
   };
 
   const groupMembers = manageOpen ? memberships.filter(m => m.group_id === manageOpen.id) : [];
@@ -89,13 +99,13 @@ export default function AdminGroups() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Groupes</h1>
-              <p className="text-gray-500 mt-1">Gérez les groupes d'étudiants</p>
+              <h1 className="text-3xl font-bold text-gray-900">Gestion des groupes</h1>
+              <p className="text-gray-600 mt-1">Créez et gérez les communautés d'étudiants</p>
             </div>
             <Button onClick={() => setCreateOpen(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg">
               <Plus className="w-4 h-4 mr-2" /> Créer un groupe
@@ -105,39 +115,63 @@ export default function AdminGroups() {
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {groups.map(group => {
                 const members = memberships.filter(m => m.group_id === group.id && m.status === 'accepté');
-                const hasOnline = false; // Simulate online status
+                const pendingCount = memberships.filter(m => m.group_id === group.id && m.status === 'en_attente').length;
                 return (
-                  <div key={group.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg transition-all relative group">
-                    {hasOnline && <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 rounded-full animate-pulse" />}
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">{group.name}</h3>
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{group.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mb-3">
-                      {group.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{group.domain}</Badge>}
-                      {group.formation_type && <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{group.formation_type}</Badge>}
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                      <span>{members.length} membres</span>
-                      {memberships.filter(m => m.group_id === group.id && m.status === 'en_attente').length > 0 && (
-                        <Badge className="bg-amber-50 text-amber-700 text-xs">{memberships.filter(m => m.group_id === group.id && m.status === 'en_attente').length} demandes</Badge>
+                  <div key={group.id} className="bg-white rounded-3xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group/card">
+                    {/* Cover Image */}
+                    <div className="h-36 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 relative overflow-hidden">
+                      {group.cover_image ? (
+                        <img src={group.cover_image} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Users className="w-16 h-16 text-white/30" />
+                        </div>
                       )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      <div className="absolute top-3 right-3 flex gap-1.5">
+                        {group.is_public ? (
+                          <Badge className="bg-green-500/90 text-white border-0 backdrop-blur-sm">
+                            <Globe className="w-3 h-3 mr-1" /> Public
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-amber-500/90 text-white border-0 backdrop-blur-sm">
+                            <Lock className="w-3 h-3 mr-1" /> Privé
+                          </Badge>
+                        )}
+                        {pendingCount > 0 && (
+                          <Badge className="bg-red-500 text-white border-0">{pendingCount}</Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => setChatOpen(group)} variant="outline" className="flex-1 rounded-xl text-green-600 border-green-200 hover:bg-green-50">
-                        <MessageCircle className="w-4 h-4 mr-1" /> Discussion
-                      </Button>
-                      <Button onClick={() => setManageOpen(group)} variant="outline" className="flex-1 rounded-xl text-blue-600 border-blue-200 hover:bg-blue-50">
-                        Gérer
-                      </Button>
+
+                    {/* Content */}
+                    <div className="p-5">
+                      <h3 className="font-bold text-gray-900 text-lg mb-2">{group.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{group.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {group.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{group.domain}</Badge>}
+                        {group.formation_type && <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{group.formation_type}</Badge>}
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span className="font-medium">{members.length} membres</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button onClick={() => setChatOpen(group)} variant="outline" size="sm" className="flex-1 rounded-xl border-green-200 text-green-600 hover:bg-green-50">
+                          <MessageCircle className="w-4 h-4 mr-1" /> Chat
+                        </Button>
+                        <Button onClick={() => { setManageOpen(group); setEditingGroup(group); }} variant="outline" size="sm" className="flex-1 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50">
+                          <Edit3 className="w-4 h-4 mr-1" /> Gérer
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -148,8 +182,8 @@ export default function AdminGroups() {
 
         {/* Create Dialog */}
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogContent className="max-w-md rounded-2xl">
-            <DialogHeader><DialogTitle>Créer un groupe</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-md rounded-3xl">
+            <DialogHeader><DialogTitle className="text-xl">Créer un groupe</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom du groupe" className="rounded-xl h-11" />
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description..." className="rounded-xl" />
@@ -161,50 +195,132 @@ export default function AdminGroups() {
                 <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Formation (optionnel)" /></SelectTrigger>
                 <SelectContent>{FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
               </Select>
-              <Button onClick={() => createMutation.mutate(form)} disabled={!form.name || createMutation.isPending} className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-11">
-                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer'}
+              
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={form.is_public} 
+                    onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900 flex items-center gap-2">
+                      {form.is_public ? <Globe className="w-4 h-4 text-green-600" /> : <Lock className="w-4 h-4 text-amber-600" />}
+                      Groupe {form.is_public ? 'public' : 'privé'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {form.is_public ? 'Les étudiants peuvent rejoindre librement' : 'Les étudiants doivent faire une demande'}
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <Button onClick={() => createMutation.mutate(form)} disabled={!form.name || createMutation.isPending} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11">
+                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer le groupe'}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         {/* Manage Dialog */}
-        <Dialog open={!!manageOpen} onOpenChange={() => setManageOpen(null)}>
-          <DialogContent className="max-w-2xl rounded-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Gérer : {manageOpen?.name}</DialogTitle></DialogHeader>
-            {manageOpen && (
-              <div className="space-y-4 pt-2">
-                <div className="flex gap-2 flex-wrap">
-                  <Input
-                    value={editingGroup?.name || manageOpen.name}
-                    onChange={(e) => setEditingGroup({ ...manageOpen, name: e.target.value })}
-                    placeholder="Nom du groupe"
-                    className="flex-1 rounded-xl h-9"
-                  />
-                  {editingGroup && (
-                    <Button onClick={() => {
-                      updateMutation.mutate({ id: manageOpen.id, data: { name: editingGroup.name } });
-                      setEditingGroup(null);
-                    }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl">
-                      <Check className="w-3 h-3" />
-                    </Button>
+        <Dialog open={!!manageOpen} onOpenChange={() => { setManageOpen(null); setEditingGroup(null); }}>
+          <DialogContent className="max-w-3xl rounded-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Gérer le groupe</DialogTitle>
+            </DialogHeader>
+            {manageOpen && editingGroup && (
+              <div className="space-y-5 pt-2">
+                {/* Photo de couverture */}
+                <div className="relative h-40 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl overflow-hidden group/cover">
+                  {editingGroup.cover_image ? (
+                    <img src={editingGroup.cover_image} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ImageIcon className="w-16 h-16 text-white/30" />
+                    </div>
                   )}
-                  <Button onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.onchange = (e) => uploadGroupPhoto(manageOpen.id, e.target.files[0]);
-                    input.click();
-                  }} size="sm" variant="outline" className="rounded-xl">
-                    <Upload className="w-3 h-3 mr-1" /> Photo
-                  </Button>
-                  <Button onClick={() => deleteMutation.mutate(manageOpen.id)} variant="outline" size="sm" className="text-red-600 border-red-200 rounded-xl">
-                    <Trash2 className="w-3 h-3 mr-1" /> Supprimer
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = (e) => uploadGroupPhoto(manageOpen.id, e.target.files[0]);
+                      input.click();
+                    }} size="sm" className="bg-white/90 text-gray-900 hover:bg-white rounded-xl">
+                      <Upload className="w-4 h-4 mr-2" /> {uploading ? 'Upload...' : 'Changer la photo'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Informations du groupe */}
+                <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Nom du groupe</label>
+                    <Input
+                      value={editingGroup.name}
+                      onChange={(e) => setEditingGroup({ ...editingGroup, name: e.target.value })}
+                      placeholder="Nom du groupe"
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                    <Textarea
+                      value={editingGroup.description || ''}
+                      onChange={(e) => setEditingGroup({ ...editingGroup, description: e.target.value })}
+                      placeholder="Description..."
+                      className="rounded-xl"
+                    />
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={editingGroup.is_public || false} 
+                        onChange={(e) => setEditingGroup({ ...editingGroup, is_public: e.target.checked })}
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-900 flex items-center gap-2">
+                          {editingGroup.is_public ? <Globe className="w-4 h-4 text-green-600" /> : <Lock className="w-4 h-4 text-amber-600" />}
+                          Groupe {editingGroup.is_public ? 'public' : 'privé'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {editingGroup.is_public ? 'Adhésion libre pour tous' : 'Adhésion sur demande uniquement'}
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  <Button 
+                    onClick={() => {
+                      updateMutation.mutate({ id: manageOpen.id, data: editingGroup });
+                      setEditingGroup({ ...editingGroup });
+                    }} 
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
+                  >
+                    <Check className="w-4 h-4 mr-2" /> Enregistrer les modifications
                   </Button>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Demandes d'adhésion</h4>
+                {/* Actions dangereuses */}
+                <div className="bg-red-50 rounded-2xl p-4 border border-red-200">
+                  <Button onClick={() => {
+                    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
+                      deleteMutation.mutate(manageOpen.id);
+                    }
+                  }} variant="outline" className="w-full text-red-600 border-red-300 hover:bg-red-100 rounded-xl">
+                    <Trash2 className="w-4 h-4 mr-2" /> Supprimer le groupe
+                  </Button>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 border border-gray-200">
+                  <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                    Demandes d'adhésion
+                  </h4>
                   {groupMembers.filter(m => m.status === 'en_attente').length === 0 ? (
                     <p className="text-sm text-gray-500">Aucune demande</p>
                   ) : (

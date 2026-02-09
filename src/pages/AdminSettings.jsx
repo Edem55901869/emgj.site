@@ -72,7 +72,7 @@ export default function AdminSettings() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-4xl mx-auto">
           <div className="mb-6">
