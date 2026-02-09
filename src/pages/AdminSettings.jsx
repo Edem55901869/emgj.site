@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X } from 'lucide-react';
+import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X, Key } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,22 @@ export default function AdminSettings() {
   const [showPasswords, setShowPasswords] = useState({});
   const [newPassword, setNewPassword] = useState('');
   const [editingPassword, setEditingPassword] = useState(null);
+  const [currentAdmin, setCurrentAdmin] = useState(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const loadAdmin = async () => {
+      const adminData = localStorage.getItem('emgj_admin');
+      if (adminData) {
+        const admin = JSON.parse(adminData);
+        const admins = await base44.entities.AdminUser.filter({ email: admin.email });
+        if (admins.length > 0) {
+          setCurrentAdmin(admins[0]);
+        }
+      }
+    };
+    loadAdmin();
+  }, []);
 
   const { data: passwords = [], isLoading } = useQuery({
     queryKey: ['adminPasswords'],
@@ -184,12 +199,24 @@ export default function AdminSettings() {
             <CardContent className="pt-5 space-y-3">
               <div className="flex justify-between p-3 rounded-xl bg-gray-50">
                 <span className="text-sm text-gray-600">Email</span>
-                <span className="text-sm font-medium text-gray-900">agnimakaedeme@gmail.com</span>
+                <span className="text-sm font-medium text-gray-900">{currentAdmin?.email || 'agnimakaedeme@gmail.com'}</span>
               </div>
               <div className="flex justify-between p-3 rounded-xl bg-gray-50">
                 <span className="text-sm text-gray-600">Rôle</span>
-                <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100">Administrateur</Badge>
+                <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100">
+                  {currentAdmin?.role === 'admin_principal' ? 'Administrateur Principal' : 'Administrateur Secondaire'}
+                </Badge>
               </div>
+              {currentAdmin?.permissions && currentAdmin.permissions.length > 0 && (
+                <div className="p-3 rounded-xl bg-gray-50">
+                  <span className="text-sm text-gray-600 block mb-2">Fonctionnalités autorisées</span>
+                  <div className="flex flex-wrap gap-1">
+                    {currentAdmin.permissions.map(p => (
+                      <Badge key={p} className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{p}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

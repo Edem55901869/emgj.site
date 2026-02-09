@@ -76,6 +76,8 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
+import AdminManagement from './pages/AdminManagement';
+import AdminViewAsStudent from './pages/AdminViewAsStudent';
 
 
 export const PAGES = {
@@ -108,6 +110,8 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
+    "AdminManagement": AdminManagement,
+    "AdminViewAsStudent": AdminViewAsStudent,
 }
 
 export const pagesConfig = {

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Home, BookOpen, Users, Library, MoreHorizontal } from 'lucide-react';
+import { Home, BookOpen, Users, Library, MoreHorizontal, ArrowLeft } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const navItems = [
   { name: 'Accueil', icon: Home, page: 'StudentDashboard' },
@@ -16,7 +17,9 @@ const navItems = [
 
 export default function StudentBottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [isAdminView, setIsAdminView] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -26,6 +29,11 @@ export default function StudentBottomNav() {
       } catch {}
     };
     loadUser();
+
+    const adminView = localStorage.getItem('admin_student_view');
+    if (adminView) {
+      setIsAdminView(true);
+    }
   }, []);
 
   const { data: publicMessages = [] } = useQuery({
@@ -37,8 +45,22 @@ export default function StudentBottomNav() {
 
   const hasOnlineStudents = publicMessages.length > 0;
 
+  const handleBackToAdmin = () => {
+    localStorage.removeItem('admin_student_view');
+    toast.success('Retour au mode administrateur');
+    navigate(createPageUrl('AdminDashboard'));
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-t border-blue-700/30 shadow-lg shadow-blue-900/20">
+      {isAdminView && (
+        <div className="bg-amber-500 px-4 py-2 flex items-center justify-between">
+          <p className="text-white text-xs font-semibold">Mode prévisualisation étudiant</p>
+          <Button onClick={handleBackToAdmin} size="sm" className="bg-white text-amber-700 hover:bg-gray-100 h-7 px-3 rounded-lg text-xs">
+            <ArrowLeft className="w-3 h-3 mr-1" /> Retour admin
+          </Button>
+        </div>
+      )}
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {navItems.map((item) => {
           const url = createPageUrl(item.page);
