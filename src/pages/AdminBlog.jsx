@@ -22,6 +22,7 @@ export default function AdminBlog() {
   const [mediaFile, setMediaFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [commentReplies, setCommentReplies] = useState({});
+  const [showComments, setShowComments] = useState({});
   const queryClient = useQueryClient();
 
   const { data: posts = [], isLoading } = useQuery({
