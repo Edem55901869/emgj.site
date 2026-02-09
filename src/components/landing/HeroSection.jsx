@@ -60,9 +60,18 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-blue-100/80 max-w-3xl mx-auto mb-8 leading-relaxed"
+          className="text-lg md:text-xl text-blue-100/90 max-w-3xl mx-auto mb-3 leading-relaxed italic"
         >
-          Connaissance • Puissance • Prophétie
+          "Et après cela, je répandrai mon esprit sur toute chair; vos fils et vos filles prophétiseront..."
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.25 }}
+          className="text-sm md:text-base text-blue-200/70 max-w-3xl mx-auto mb-8"
+        >
+          — Joël 2:28
         </motion.p>
 
         <motion.div

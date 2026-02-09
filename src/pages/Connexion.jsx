@@ -60,27 +60,37 @@ export default function Connexion() {
       const admins = await base44.entities.AdminUser.filter({ email: adminEmail });
       const admin = admins[0];
       
-      if (admin && admin.password === adminPassword && admin.is_active) {
-        localStorage.removeItem('admin_student_view');
-        localStorage.setItem('emgj_admin', JSON.stringify({ 
-          email: adminEmail, 
-          role: admin.role,
-          permissions: admin.permissions || [],
-          loggedIn: true 
-        }));
+      if (admin) {
+        if (!admin.is_active) {
+          toast.error('Compte désactivé');
+          setAdminLoading(false);
+          return;
+        }
         
-        await base44.entities.AdminAction.create({
-          admin_email: adminEmail,
-          admin_name: `${admin.first_name} ${admin.last_name}`,
-          action_type: 'Connexion',
-          description: 'Connexion réussie à la plateforme'
-        });
-        
-        toast.success('Connexion réussie !');
-        navigate(createPageUrl('AdminDashboard'));
-      } else {
-        toast.error('Identifiants incorrects');
+        if (admin.password === adminPassword) {
+          localStorage.removeItem('admin_student_view');
+          localStorage.setItem('emgj_admin', JSON.stringify({ 
+            email: adminEmail, 
+            role: admin.role,
+            permissions: admin.permissions || [],
+            loggedIn: true 
+          }));
+          
+          await base44.entities.AdminAction.create({
+            admin_email: adminEmail,
+            admin_name: `${admin.first_name} ${admin.last_name}`,
+            action_type: 'Connexion',
+            description: 'Connexion réussie à la plateforme'
+          });
+          
+          toast.success('Connexion réussie !');
+          navigate(createPageUrl('AdminDashboard'));
+          setAdminLoading(false);
+          return;
+        }
       }
+      
+      toast.error('Identifiants incorrects');
     } catch (error) {
       toast.error('Erreur de connexion');
     }
