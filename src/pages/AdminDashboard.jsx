@@ -24,18 +24,25 @@ export default function AdminDashboard() {
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list('-created_date', 500) });
   const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: () => base44.entities.Course.list() });
+  const { data: allProgress = [] } = useQuery({ queryKey: ['allProgress'], queryFn: () => base44.entities.StudentCourseProgress.list() });
   const { data: posts = [] } = useQuery({ queryKey: ['posts'], queryFn: () => base44.entities.BlogPost.list() });
   const { data: docs = [] } = useQuery({ queryKey: ['docs'], queryFn: () => base44.entities.LibraryDocument.list() });
   const { data: conferences = [] } = useQuery({ queryKey: ['conferences'], queryFn: () => base44.entities.Conference.list() });
   const { data: questions = [] } = useQuery({ queryKey: ['questions'], queryFn: () => base44.entities.CourseQuestion.list() });
   const { data: activities = [] } = useQuery({ queryKey: ['activities'], queryFn: () => base44.entities.RecentActivity.list('-created_date', 10) });
 
+  const studentsCompleted = students.filter(student => {
+    const studentCourses = courses.filter(c => c.domain === student.domain && c.formation_type === student.formation_type);
+    if (studentCourses.length === 0) return false;
+    return studentCourses.every(course => allProgress.some(p => p.student_email === student.user_email && p.course_id === course.id && p.passed));
+  }).length;
+
   const stats = [
     { label: 'Étudiants', value: students.length, icon: Users, color: 'from-blue-500 to-indigo-500', pending: students.filter(s => s.status === 'en_attente').length },
     { label: 'Cours', value: courses.length, icon: BookOpen, color: 'from-green-500 to-emerald-500' },
+    { label: 'Complétés', value: studentsCompleted, icon: Award, color: 'from-yellow-500 to-amber-500', link: true },
     { label: 'Publications', value: posts.length, icon: Newspaper, color: 'from-purple-500 to-pink-500' },
     { label: 'Documents', value: docs.length, icon: Library, color: 'from-red-500 to-orange-500' },
-    { label: 'Conférences', value: conferences.length, icon: Radio, color: 'from-amber-500 to-yellow-500' },
     { label: 'Questions', value: questions.filter(q => q.status === 'en_attente').length, icon: MessageCircle, color: 'from-cyan-500 to-blue-500' },
   ];
 

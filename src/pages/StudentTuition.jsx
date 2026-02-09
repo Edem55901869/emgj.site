@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, DollarSign, Calendar, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, DollarSign, Calendar, CheckCircle, Clock, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
@@ -13,12 +13,15 @@ import StudentBottomNav from '../components/student/StudentBottomNav';
 export default function StudentTuition() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const u = await base44.auth.me();
       setUser(u);
+      const students = await base44.entities.Student.filter({ user_email: u.email });
+      if (students.length > 0) setStudent(students[0]);
       setLoading(false);
     };
     load();
@@ -29,6 +32,14 @@ export default function StudentTuition() {
     queryFn: () => base44.entities.Tuition.filter({ student_email: user?.email }),
     enabled: !!user,
   });
+
+  const { data: configs = [] } = useQuery({
+    queryKey: ['tuitionConfigs'],
+    queryFn: () => base44.entities.TuitionConfig.list(),
+    enabled: !!student,
+  });
+
+  const myConfig = configs.find(c => c.domain === student?.domain && c.formation_type === student?.formation_type);
 
   const getStatusIcon = (status) => {
     switch(status) {
@@ -71,6 +82,29 @@ export default function StudentTuition() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 -mt-2">
+        {myConfig && (
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-4 border border-blue-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-blue-900 mb-1">Frais de scolarité</h3>
+                <p className="text-2xl font-bold text-blue-600 mb-2">{myConfig.amount} {myConfig.currency}</p>
+                <p className="text-sm text-blue-700 mb-3">{myConfig.domain} - {myConfig.formation_type}</p>
+                {myConfig.payment_link && (
+                  <a href={myConfig.payment_link} target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Procéder au paiement
+                    </Button>
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {tuitions.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl shadow-sm">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, Loader2, Heart, MessageCircle, Image as ImageIcon, Video, Headphones, Link2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Heart, MessageCircle, Image as ImageIcon, Video, Headphones, Link2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,7 @@ export default function AdminBlog() {
   const [selectedTheme, setSelectedTheme] = useState(themes[0]);
   const [mediaFile, setMediaFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [commentReplies, setCommentReplies] = useState({});
   const queryClient = useQueryClient();
 
   const { data: posts = [], isLoading } = useQuery({
@@ -37,6 +38,23 @@ export default function AdminBlog() {
     queryKey: ['allComments'],
     queryFn: () => base44.entities.BlogComment.list('-created_date', 1000),
     refetchInterval: 5000,
+  });
+
+  const replyToCommentMutation = useMutation({
+    mutationFn: async ({ postId, parentId, content }) => {
+      return await base44.entities.BlogComment.create({
+        post_id: postId,
+        content,
+        author_name: 'Administration',
+        author_email: 'admin@emgj.com',
+        parent_comment_id: parentId
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allComments'] });
+      setCommentReplies({});
+      toast.success('Réponse envoyée');
+    },
   });
 
   const saveMutation = useMutation({
@@ -159,18 +177,44 @@ export default function AdminBlog() {
                       </div>
                       {postComments.length > 0 && (
                         <div className="border-t border-gray-100 pt-3">
-                          <p className="text-xs font-semibold text-gray-500 mb-2">Commentaires récents:</p>
-                          <div className="space-y-2 max-h-32 overflow-y-auto">
-                            {postComments.slice(0, 3).map(comment => (
-                              <div key={comment.id} className="text-sm bg-gray-50 rounded-lg p-2">
-                                <span className="font-semibold text-gray-800">{comment.author_name}</span>
-                                <span className="text-gray-600 ml-2">{comment.content}</span>
+                          <p className="text-xs font-semibold text-gray-500 mb-2">Commentaires:</p>
+                          <div className="space-y-3 max-h-64 overflow-y-auto">
+                            {postComments.filter(c => !c.parent_comment_id).map(comment => (
+                              <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                                <div className="flex items-start gap-2 mb-2">
+                                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                                    {comment.author_name?.[0]}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-gray-800">{comment.author_name}</p>
+                                    <p className="text-sm text-gray-700">{comment.content}</p>
+                                  </div>
+                                </div>
+                                {postComments.filter(r => r.parent_comment_id === comment.id).map(reply => (
+                                  <div key={reply.id} className="ml-8 mt-2 bg-white rounded-lg p-2 border border-gray-100">
+                                    <p className="text-xs font-semibold text-blue-600">{reply.author_name}</p>
+                                    <p className="text-xs text-gray-600">{reply.content}</p>
+                                  </div>
+                                ))}
+                                <div className="ml-8 mt-2 flex gap-2">
+                                  <Input
+                                    value={commentReplies[comment.id] || ''}
+                                    onChange={(e) => setCommentReplies({ ...commentReplies, [comment.id]: e.target.value })}
+                                    placeholder="Répondre..."
+                                    className="h-8 text-xs rounded-lg"
+                                  />
+                                  <Button
+                                    onClick={() => replyToCommentMutation.mutate({ postId: post.id, parentId: comment.id, content: commentReplies[comment.id] })}
+                                    disabled={!commentReplies[comment.id]}
+                                    size="sm"
+                                    className="h-8 px-3 rounded-lg"
+                                  >
+                                    <Send className="w-3 h-3" />
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                           </div>
-                          {postComments.length > 3 && (
-                            <p className="text-xs text-gray-400 mt-2">+ {postComments.length - 3} autres commentaires</p>
-                          )}
                         </div>
                       )}
                     </div>

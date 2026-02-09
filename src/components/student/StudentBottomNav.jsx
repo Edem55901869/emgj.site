@@ -35,12 +35,7 @@ export default function StudentBottomNav() {
     refetchInterval: 5000,
   });
 
-  const readMessagesStr = localStorage.getItem('read_public_messages') || '[]';
-  let readMessages = [];
-  try {
-    readMessages = JSON.parse(readMessagesStr);
-  } catch {}
-  const unreadCount = publicMessages.filter(m => !readMessages.includes(m.id)).length;
+  const hasOnlineStudents = publicMessages.length > 0;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-t border-blue-700/30 shadow-lg shadow-blue-900/20">
@@ -49,7 +44,7 @@ export default function StudentBottomNav() {
           const url = createPageUrl(item.page);
           const isActive = location.pathname.includes(item.page) || 
             (item.page === 'StudentDashboard' && location.pathname.includes('StudentDashboard'));
-          const showBadge = item.name === 'Groupes' && unreadCount > 0;
+          const showOnlineIndicator = item.name === 'Groupes' && hasOnlineStudents;
           
           return (
             <Link
@@ -63,10 +58,8 @@ export default function StudentBottomNav() {
             >
               <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
               <span className="text-[10px] font-medium">{item.name}</span>
-              {showBadge && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center bg-red-500 text-white text-[10px] px-1.5 rounded-full border-2 border-blue-600">
-                  {unreadCount}
-                </Badge>
+              {showOnlineIndicator && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-blue-600 animate-pulse" />
               )}
             </Link>
           );

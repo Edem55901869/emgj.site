@@ -64,6 +64,7 @@ import AdminTuition from './pages/AdminTuition';
 import Connexion from './pages/Connexion';
 import Contact from './pages/Contact';
 import Home from './pages/Home';
+import StudentBulletins from './pages/StudentBulletins';
 import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
 import StudentDashboard from './pages/StudentDashboard';
@@ -75,7 +76,6 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import StudentBulletins from './pages/StudentBulletins';
 
 
 export const PAGES = {
@@ -96,6 +96,7 @@ export const PAGES = {
     "Connexion": Connexion,
     "Contact": Contact,
     "Home": Home,
+    "StudentBulletins": StudentBulletins,
     "StudentConferences": StudentConferences,
     "StudentCourses": StudentCourses,
     "StudentDashboard": StudentDashboard,
@@ -107,7 +108,6 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "StudentBulletins": StudentBulletins,
 }
 
 export const pagesConfig = {

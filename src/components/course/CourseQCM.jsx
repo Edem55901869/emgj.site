@@ -58,7 +58,18 @@ Format JSON strict:
         }
       });
 
-      setQuestions(response.questions);
+      // Mélanger les options pour chaque question
+      const shuffledQuestions = response.questions.map(q => {
+        const correctAnswer = q.options[q.correctIndex];
+        const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+        return {
+          ...q,
+          options: shuffled,
+          correctIndex: shuffled.indexOf(correctAnswer)
+        };
+      });
+
+      setQuestions(shuffledQuestions);
       setGenerating(false);
     } catch (error) {
       toast.error('Erreur lors de la génération du QCM');

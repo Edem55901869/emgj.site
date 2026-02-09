@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Library, Search, Download, FileText, Loader2 } from 'lucide-react';
+import { Library, Search, Download, FileText, Loader2, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,33 +62,41 @@ export default function StudentLibrary() {
             <p className="text-gray-500">Aucun document disponible</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="space-y-3">
             {filteredDocs.map(doc => (
-              <div key={doc.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                <div className="h-48 bg-gradient-to-br from-red-500 via-pink-500 to-purple-500 relative overflow-hidden">
-                  {doc.cover_image ? (
-                    <img src={doc.cover_image} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <FileText className="w-16 h-16 text-white/30" />
+              <div key={doc.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-lg transition-all">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-20 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {doc.cover_image ? (
+                      <img src={doc.cover_image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <FileText className="w-8 h-8 text-white" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 text-lg mb-1">{doc.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">Par {doc.author}</p>
+                        {doc.description && (
+                          <p className="text-xs text-gray-500 line-clamp-2 mb-2">{doc.description}</p>
+                        )}
+                        <div className="flex items-center gap-2">
+                          {doc.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{doc.domain}</Badge>}
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Download className="w-3 h-3" /> {doc.downloads_count || 0} téléchargements
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
                   <Button 
                     onClick={() => handleDownload(doc)} 
-                    size="icon" 
-                    className="absolute top-3 right-3 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="bg-blue-600 hover:bg-blue-700 rounded-xl flex-shrink-0"
                   >
-                    <Download className="w-4 h-4" />
+                    <Eye className="w-4 h-4 mr-2" />
+                    Consulter
                   </Button>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2">{doc.title}</h3>
-                  <p className="text-xs text-gray-500 mb-2">{doc.author}</p>
-                  {doc.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs mb-2">{doc.domain}</Badge>}
-                  <p className="text-xs text-gray-400 flex items-center gap-1">
-                    <Download className="w-3 h-3" /> {doc.downloads_count || 0}
-                  </p>
                 </div>
               </div>
             ))}
