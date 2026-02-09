@@ -4,18 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react';
-
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-
-const FORMATION_BY_DOMAIN = {
-  'THÉOLOGIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
-  'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
-  'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
-  'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat']
-};
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
 
 export default function ProfileSetupForm({ onSubmit, loading }) {
   const [step, setStep] = useState(1);

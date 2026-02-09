@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import GroupChat from '../components/groups/GroupChat';
-import { DOMAINS, FORMATION_BY_DOMAIN } from '@/lib/domainFormationMapping';
+import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
 
 export default function AdminGroups() {
   const [createOpen, setCreateOpen] = useState(false);

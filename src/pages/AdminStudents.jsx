@@ -140,7 +140,7 @@ export default function AdminStudents() {
               <SelectTrigger className="w-48 h-10 rounded-xl"><SelectValue placeholder="Domaine" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les domaines</SelectItem>
-                {['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
+                {DOMAINS.map(d => (
                   <SelectItem key={d} value={d}>{d}</SelectItem>
                 ))}
               </SelectContent>
@@ -270,10 +270,22 @@ export default function AdminStudents() {
                     </div>
                     <div>
                       <p className="text-gray-500 mb-1">Domaine</p>
-                      <Select defaultValue={selectedStudent.domain} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { domain: v } })}>
+                      <Select 
+                        defaultValue={selectedStudent.domain} 
+                        onValueChange={(v) => {
+                          // Réinitialiser formation_type quand on change de domaine
+                          const newFormations = FORMATION_BY_DOMAIN[v];
+                          const currentFormation = selectedStudent.formation_type;
+                          const newFormationType = newFormations.includes(currentFormation) ? currentFormation : newFormations[0];
+                          updateMutation.mutate({ 
+                            id: selectedStudent.id, 
+                            data: { domain: v, formation_type: newFormationType } 
+                          });
+                        }}
+                      >
                         <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
+                          {DOMAINS.map(d => (
                             <SelectItem key={d} value={d}>{d}</SelectItem>
                           ))}
                         </SelectContent>
@@ -281,10 +293,14 @@ export default function AdminStudents() {
                     </div>
                     <div>
                       <p className="text-gray-500 mb-1">Formation</p>
-                      <Select defaultValue={selectedStudent.formation_type} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { formation_type: v } })}>
+                      <Select 
+                        key={selectedStudent.domain}
+                        defaultValue={selectedStudent.formation_type} 
+                        onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { formation_type: v } })}
+                      >
                         <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'].map(f => (
+                          {selectedStudent.domain && FORMATION_BY_DOMAIN[selectedStudent.domain]?.map(f => (
                             <SelectItem key={f} value={f}>{f}</SelectItem>
                           ))}
                         </SelectContent>
