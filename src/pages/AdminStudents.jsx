@@ -251,6 +251,28 @@ export default function AdminStudents() {
                       <Input defaultValue={selectedStudent.user_email} disabled className="rounded-xl h-10 text-xs" />
                     </div>
                     <div>
+                      <p className="text-gray-500 mb-1">Domaine</p>
+                      <Select defaultValue={selectedStudent.domain} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { domain: v } })}>
+                        <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {['THÉOLOGIE', 'LEADERSHIP', 'MISSIOLOGIE', 'PROPHÉTIQUE', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'].map(d => (
+                            <SelectItem key={d} value={d}>{d}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 mb-1">Formation</p>
+                      <Select defaultValue={selectedStudent.formation_type} onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { formation_type: v } })}>
+                        <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'].map(f => (
+                            <SelectItem key={f} value={f}>{f}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <p className="text-gray-500 mb-1">Pays</p>
                       <Input defaultValue={selectedStudent.country} disabled className="rounded-xl h-10" />
                     </div>

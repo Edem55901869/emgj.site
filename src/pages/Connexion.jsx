@@ -30,12 +30,27 @@ export default function Connexion() {
     e.preventDefault();
     setAdminLoading(true);
     
+    // Vérifier le mot de passe principal
     if (adminEmail === 'agnimakaedeme@gmail.com' && adminPassword === 'EDEMS229') {
       localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin', loggedIn: true }));
       toast.success('Connexion administrateur réussie !');
       navigate(createPageUrl('AdminDashboard'));
     } else {
-      toast.error('Identifiants incorrects');
+      // Vérifier les mots de passe de secours
+      try {
+        const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
+        const validBackup = passwords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
+        
+        if (validBackup) {
+          localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin', loggedIn: true }));
+          toast.success('Connexion administrateur réussie !');
+          navigate(createPageUrl('AdminDashboard'));
+        } else {
+          toast.error('Identifiants incorrects');
+        }
+      } catch {
+        toast.error('Identifiants incorrects');
+      }
     }
     setAdminLoading(false);
   };
@@ -146,9 +161,6 @@ export default function Connexion() {
                 >
                   Se connecter / S'inscrire
                 </Button>
-                <p className="text-xs text-blue-200/60 text-center">
-                  💡 L'authentification nécessite que l'application soit publiée
-                </p>
               </div>
             </motion.div>
           )}

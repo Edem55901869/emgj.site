@@ -41,6 +41,12 @@ export default function StudentGroups() {
     enabled: !!user,
   });
 
+  const { data: allMemberships = [] } = useQuery({
+    queryKey: ['allMemberships'],
+    queryFn: () => base44.entities.GroupMembership.list(),
+    enabled: !loading,
+  });
+
   const { data: messages = [] } = useQuery({
     queryKey: ['groupMessages', selectedGroup?.id],
     queryFn: () => base44.entities.GroupMessage.filter({ group_id: selectedGroup.id }, '-created_date', 100),
@@ -180,29 +186,34 @@ export default function StudentGroups() {
         ) : (
           groups.map(group => {
             const status = getMembershipStatus(group.id);
+            const memberCount = allMemberships.filter(m => m.group_id === group.id && m.status === 'accepté').length;
             return (
               <div
                 key={group.id}
                 className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => status === 'accepté' ? setSelectedGroup(group) : null}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-5 h-5 text-blue-600" />
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    {group.cover_image ? (
+                      <img src={group.cover_image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-5 h-5 text-blue-600" />
+                    )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900">{group.name}</h3>
-                    <p className="text-gray-500 text-sm">{group.description}</p>
-                    <p className="text-xs text-gray-400 mt-1">{group.members_count || 0} membres</p>
+                    <p className="text-gray-500 text-sm line-clamp-1">{group.description}</p>
+                    <p className="text-xs text-blue-600 mt-1">{memberCount} membre{memberCount !== 1 ? 's' : ''}</p>
                   </div>
                   {!status && (
-                    <Button onClick={(e) => { e.stopPropagation(); joinMutation.mutate(group.id); }} size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+                    <Button onClick={(e) => { e.stopPropagation(); joinMutation.mutate(group.id); }} size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl flex-shrink-0">
                       Rejoindre
                     </Button>
                   )}
-                  {status === 'en_attente' && <Badge className="bg-amber-50 text-amber-700 border-amber-200"><Clock className="w-3 h-3 mr-1" />En attente</Badge>}
-                  {status === 'accepté' && <Badge className="bg-green-50 text-green-700 border-green-200"><Check className="w-3 h-3 mr-1" />Membre</Badge>}
-                  {status === 'rejeté' && <Badge className="bg-red-50 text-red-700 border-red-200"><X className="w-3 h-3 mr-1" />Rejeté</Badge>}
+                  {status === 'en_attente' && <Badge className="bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0"><Clock className="w-3 h-3 mr-1" />En attente</Badge>}
+                  {status === 'accepté' && <Badge className="bg-green-50 text-green-700 border-green-200 flex-shrink-0"><Check className="w-3 h-3 mr-1" />Membre</Badge>}
+                  {status === 'rejeté' && <Badge className="bg-red-50 text-red-700 border-red-200 flex-shrink-0"><X className="w-3 h-3 mr-1" />Rejeté</Badge>}
                 </div>
               </div>
             );

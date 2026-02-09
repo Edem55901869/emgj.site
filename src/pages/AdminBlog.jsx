@@ -177,44 +177,49 @@ export default function AdminBlog() {
                       </div>
                       {postComments.length > 0 && (
                         <div className="border-t border-gray-100 pt-3">
-                          <p className="text-xs font-semibold text-gray-500 mb-2">Commentaires:</p>
-                          <div className="space-y-3 max-h-64 overflow-y-auto">
-                            {postComments.filter(c => !c.parent_comment_id).map(comment => (
-                              <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
-                                <div className="flex items-start gap-2 mb-2">
-                                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
-                                    {comment.author_name?.[0]}
+                          <button onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })} className="text-xs font-semibold text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1">
+                            <MessageCircle className="w-3 h-3" />
+                            Voir les commentaires ({postComments.length})
+                          </button>
+                          {showComments[post.id] && (
+                            <div className="space-y-3 max-h-64 overflow-y-auto mt-2">
+                              {postComments.filter(c => !c.parent_comment_id).map(comment => (
+                                <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                                  <div className="flex items-start gap-2 mb-2">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                                      {comment.author_name?.[0]}
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-xs font-semibold text-gray-800">{comment.author_name}</p>
+                                      <p className="text-sm text-gray-700">{comment.content}</p>
+                                    </div>
                                   </div>
-                                  <div className="flex-1">
-                                    <p className="text-xs font-semibold text-gray-800">{comment.author_name}</p>
-                                    <p className="text-sm text-gray-700">{comment.content}</p>
+                                  {postComments.filter(r => r.parent_comment_id === comment.id).map(reply => (
+                                    <div key={reply.id} className="ml-8 mt-2 bg-white rounded-lg p-2 border border-gray-100">
+                                      <p className="text-xs font-semibold text-blue-600">{reply.author_name}</p>
+                                      <p className="text-xs text-gray-600">{reply.content}</p>
+                                    </div>
+                                  ))}
+                                  <div className="ml-8 mt-2 flex gap-2">
+                                    <Input
+                                      value={commentReplies[comment.id] || ''}
+                                      onChange={(e) => setCommentReplies({ ...commentReplies, [comment.id]: e.target.value })}
+                                      placeholder="Répondre..."
+                                      className="h-8 text-xs rounded-lg"
+                                    />
+                                    <Button
+                                      onClick={() => replyToCommentMutation.mutate({ postId: post.id, parentId: comment.id, content: commentReplies[comment.id] })}
+                                      disabled={!commentReplies[comment.id]}
+                                      size="sm"
+                                      className="h-8 px-3 rounded-lg"
+                                    >
+                                      <Send className="w-3 h-3" />
+                                    </Button>
                                   </div>
                                 </div>
-                                {postComments.filter(r => r.parent_comment_id === comment.id).map(reply => (
-                                  <div key={reply.id} className="ml-8 mt-2 bg-white rounded-lg p-2 border border-gray-100">
-                                    <p className="text-xs font-semibold text-blue-600">{reply.author_name}</p>
-                                    <p className="text-xs text-gray-600">{reply.content}</p>
-                                  </div>
-                                ))}
-                                <div className="ml-8 mt-2 flex gap-2">
-                                  <Input
-                                    value={commentReplies[comment.id] || ''}
-                                    onChange={(e) => setCommentReplies({ ...commentReplies, [comment.id]: e.target.value })}
-                                    placeholder="Répondre..."
-                                    className="h-8 text-xs rounded-lg"
-                                  />
-                                  <Button
-                                    onClick={() => replyToCommentMutation.mutate({ postId: post.id, parentId: comment.id, content: commentReplies[comment.id] })}
-                                    disabled={!commentReplies[comment.id]}
-                                    size="sm"
-                                    className="h-8 px-3 rounded-lg"
-                                  >
-                                    <Send className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

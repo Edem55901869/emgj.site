@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Eye, EyeOff, Plus, Loader2 } from 'lucide-react';
+import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import AdminGuard from '../components/admin/AdminGuard';
 export default function AdminSettings() {
   const [showPasswords, setShowPasswords] = useState({});
   const [newPassword, setNewPassword] = useState('');
-  const [backupType, setBackupType] = useState('');
+  const [editingPassword, setEditingPassword] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: passwords = [], isLoading } = useQuery({
@@ -26,8 +26,24 @@ export default function AdminSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPasswords'] });
       setNewPassword('');
-      setBackupType('');
       toast.success('Mot de passe ajouté');
+    },
+  });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: ({ id, password_hash }) => base44.entities.AdminPassword.update(id, { password_hash }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPasswords'] });
+      setEditingPassword(null);
+      toast.success('Mot de passe modifié');
+    },
+  });
+
+  const deletePasswordMutation = useMutation({
+    mutationFn: (id) => base44.entities.AdminPassword.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPasswords'] });
+      toast.success('Mot de passe supprimé');
     },
   });
 
@@ -66,8 +82,9 @@ export default function AdminSettings() {
                         <div className="flex items-center gap-2">
                           <Input
                             type={showPasswords[pwd.id] ? 'text' : 'password'}
-                            value={pwd.password_hash}
-                            readOnly
+                            value={editingPassword?.id === pwd.id ? editingPassword.password_hash : pwd.password_hash}
+                            onChange={(e) => editingPassword?.id === pwd.id && setEditingPassword({ ...editingPassword, password_hash: e.target.value })}
+                            readOnly={editingPassword?.id !== pwd.id}
                             className="h-9 font-mono text-sm"
                           />
                           <Button
@@ -78,6 +95,44 @@ export default function AdminSettings() {
                           >
                             {showPasswords[pwd.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </Button>
+                          {editingPassword?.id === pwd.id ? (
+                            <>
+                              <Button
+                                size="icon"
+                                onClick={() => updatePasswordMutation.mutate({ id: pwd.id, password_hash: editingPassword.password_hash })}
+                                className="h-9 w-9 bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditingPassword(null)}
+                                className="h-9 w-9"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditingPassword({ id: pwd.id, password_hash: pwd.password_hash })}
+                                className="h-9 w-9"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deletePasswordMutation.mutate(pwd.id)}
+                                className="h-9 w-9 text-red-500 hover:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

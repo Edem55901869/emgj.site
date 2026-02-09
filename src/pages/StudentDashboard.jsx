@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, Bell } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -342,9 +342,7 @@ export default function StudentDashboard() {
                     <MessageCircle className="w-4 h-4" />
                     <span className="font-semibold">{postComments.length || ''}</span>
                   </button>
-                  <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Lien copié !'); }} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-green-500 transition-colors">
-                    <Share2 className="w-4 h-4" />
-                  </button>
+
                   <button onClick={() => toggleBookmark(post.id)} className={`ml-auto text-sm transition-colors ${isBookmarked ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'}`}>
                     <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-blue-600' : ''}`} />
                   </button>

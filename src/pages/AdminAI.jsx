@@ -22,11 +22,11 @@ export default function AdminAI() {
 
     try {
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Tu es un assistant IA expert de l'application ÉCOLE MISSIONNAIRE GÉNÉRATION JOËL (EMGJ). Tu connais parfaitement cette plateforme de formation théologique. Réponds aux questions de l'administrateur de manière claire et concise. Ne réponds PAS aux questions politiques. Question : ${input}`,
+        prompt: `Tu es Joël, l'assistant expert de l'application ÉCOLE MISSIONNAIRE GÉNÉRATION JOËL (EMGJ). Tu connais parfaitement cette plateforme de formation théologique. Réponds aux questions de l'administrateur de manière claire et concise. Ne réponds PAS aux questions politiques. Question : ${input}`,
       });
       setMessages(prev => [...prev, { role: 'assistant', content: response }]);
     } catch (error) {
-      toast.error('Erreur lors de la communication avec l\'IA');
+      toast.error('Erreur lors de la communication');
     }
     setLoading(false);
   };
@@ -37,7 +37,7 @@ export default function AdminAI() {
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Assistant IA</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Assistant Joël</h1>
             <p className="text-gray-500 mt-1">Posez vos questions sur l'application</p>
           </div>
 
@@ -46,7 +46,7 @@ export default function AdminAI() {
               {messages.length === 0 && (
                 <div className="text-center py-12">
                   <Bot className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                  <p className="text-gray-500">Commencez une conversation avec l'assistant IA</p>
+                  <p className="text-gray-500">Commencez une conversation avec Joël</p>
                 </div>
               )}
               {messages.map((msg, i) => (
