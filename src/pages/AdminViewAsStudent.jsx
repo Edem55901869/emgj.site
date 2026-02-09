@@ -36,16 +36,16 @@ export default function AdminViewAsStudent() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-lg">
+          <div className="bg-white/90 backdrop-blur-xl rounded-3xl border border-white/50 p-8 shadow-2xl shadow-blue-200/50">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <Eye className="w-10 h-10 text-blue-600" />
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/30">
+                <Eye className="w-12 h-12 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Voir en tant qu'étudiant</h1>
-              <p className="text-gray-500">Prévisualisez l'expérience étudiante avec un profil spécifique</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">Voir en tant qu'étudiant</h1>
+              <p className="text-gray-600">Prévisualisez l'expérience étudiante avec un profil virtuel</p>
             </div>
 
             <div className="space-y-4 mb-6">

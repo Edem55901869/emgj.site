@@ -26,6 +26,21 @@ export default function StudentTuition() {
 
   useEffect(() => {
     const load = async () => {
+      const adminView = localStorage.getItem('admin_student_view');
+      if (adminView) {
+        const viewData = JSON.parse(adminView);
+        setUser({ email: 'admin@preview.emgj' });
+        setStudent({
+          first_name: 'Admin',
+          last_name: 'Preview',
+          domain: viewData.domain,
+          formation_type: viewData.formation_type,
+          user_email: 'admin@preview.emgj'
+        });
+        setLoading(false);
+        return;
+      }
+
       const u = await base44.auth.me();
       setUser(u);
       const students = await base44.entities.Student.filter({ user_email: u.email });
@@ -35,10 +50,12 @@ export default function StudentTuition() {
     load();
   }, []);
 
+  const isPreview = user?.email === 'admin@preview.emgj';
+
   const { data: tuitions = [] } = useQuery({
     queryKey: ['studentTuitions'],
     queryFn: () => base44.entities.Tuition.filter({ student_email: user?.email }),
-    enabled: !!user,
+    enabled: !!user && !isPreview,
   });
 
   const { data: configs = [] } = useQuery({
@@ -50,7 +67,7 @@ export default function StudentTuition() {
   const { data: paymentProofs = [] } = useQuery({
     queryKey: ['paymentProofs'],
     queryFn: () => base44.entities.PaymentProof.filter({ student_email: user?.email }),
-    enabled: !!user,
+    enabled: !!user && !isPreview,
   });
 
   const myConfig = configs.find(c => c.domain === student?.domain && c.formation_type === student?.formation_type);

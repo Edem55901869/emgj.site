@@ -14,18 +14,19 @@ import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 
 const PERMISSIONS = [
-  { id: 'dashboard', label: 'Tableau de bord' },
-  { id: 'students', label: 'Gestion des étudiants' },
-  { id: 'courses', label: 'Gestion des cours' },
-  { id: 'blog', label: 'Publications blog' },
-  { id: 'library', label: 'Bibliothèque' },
-  { id: 'groups', label: 'Groupes' },
-  { id: 'tuition', label: 'Scolarité' },
-  { id: 'bulletins', label: 'Bulletins & Diplômes' },
-  { id: 'questions', label: 'Questions étudiants' },
-  { id: 'conferences', label: 'Conférences' },
-  { id: 'analytics', label: 'Analyses' },
-  { id: 'settings', label: 'Paramètres' },
+  { id: 'dashboard', label: '📊 Tableau de bord', description: 'Vue d\'ensemble statistiques' },
+  { id: 'students', label: '👥 Gestion des étudiants', description: 'Valider, bloquer, gérer profils' },
+  { id: 'courses', label: '📚 Gestion des cours', description: 'Créer et modifier les cours' },
+  { id: 'blog', label: '📰 Publications blog', description: 'Créer et gérer les posts' },
+  { id: 'library', label: '📖 Bibliothèque', description: 'Documents et ressources' },
+  { id: 'groups', label: '💬 Groupes', description: 'Gestion des groupes étudiants' },
+  { id: 'tuition', label: '💰 Scolarité', description: 'Paiements et frais' },
+  { id: 'bulletins', label: '🎓 Bulletins & Diplômes', description: 'Résultats académiques' },
+  { id: 'questions', label: '❓ Questions étudiants', description: 'Support et réponses' },
+  { id: 'conferences', label: '📻 Conférences', description: 'Conférences en direct' },
+  { id: 'analytics', label: '📈 Analyses', description: 'Statistiques détaillées' },
+  { id: 'settings', label: '⚙️ Paramètres', description: 'Configuration système' },
+  { id: 'admin', label: '🔐 Gestion admin', description: 'Gérer administrateurs' },
 ];
 
 export default function AdminManagement() {
@@ -182,8 +183,12 @@ export default function AdminManagement() {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={resetForm}>
-          <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editingAdmin ? 'Modifier' : 'Nouvel administrateur'}</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-3xl rounded-3xl max-h-[92vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/20">
+            <DialogHeader>
+              <DialogTitle className="text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                {editingAdmin ? '✏️ Modifier l\'administrateur' : '✨ Nouvel administrateur'}
+              </DialogTitle>
+            </DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} placeholder="Prénom" className="rounded-xl h-10" />
@@ -202,15 +207,19 @@ export default function AdminManagement() {
               
               <div>
                 <label className="text-sm font-semibold text-gray-900 mb-3 block">Fonctionnalités autorisées</label>
-                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-gray-50 rounded-xl">
+                <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto p-4 bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-2xl border border-gray-100">
                   {PERMISSIONS.map(perm => (
-                    <div key={perm.id} className="flex items-center gap-2">
+                    <div key={perm.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/80 transition-colors border border-transparent hover:border-blue-100">
                       <Checkbox
                         checked={form.permissions.includes(perm.id)}
                         onCheckedChange={() => togglePermission(perm.id)}
                         id={perm.id}
+                        className="mt-1"
                       />
-                      <label htmlFor={perm.id} className="text-sm text-gray-700 cursor-pointer">{perm.label}</label>
+                      <label htmlFor={perm.id} className="flex-1 cursor-pointer">
+                        <p className="text-sm font-medium text-gray-900">{perm.label}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{perm.description}</p>
+                      </label>
                     </div>
                   ))}
                 </div>

@@ -22,15 +22,24 @@ export default function StudentNotifications() {
   }, []);
 
   const loadUser = async () => {
+    const adminView = localStorage.getItem('admin_student_view');
+    if (adminView) {
+      setUser({ email: 'admin@preview.emgj' });
+      setLoading(false);
+      return;
+    }
+
     const u = await base44.auth.me();
     setUser(u);
     setLoading(false);
   };
 
+  const isPreview = user?.email === 'admin@preview.emgj';
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => base44.entities.Notification.filter({ recipient_email: user?.email }),
-    enabled: !!user,
+    enabled: !!user && !isPreview,
     refetchInterval: 5000,
   });
 

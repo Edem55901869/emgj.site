@@ -57,10 +57,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminGroups from './pages/AdminGroups';
 import AdminHosting from './pages/AdminHosting';
 import AdminLibrary from './pages/AdminLibrary';
+import AdminManagement from './pages/AdminManagement';
 import AdminQuestions from './pages/AdminQuestions';
 import AdminSettings from './pages/AdminSettings';
 import AdminStudents from './pages/AdminStudents';
 import AdminTuition from './pages/AdminTuition';
+import AdminViewAsStudent from './pages/AdminViewAsStudent';
 import Connexion from './pages/Connexion';
 import Contact from './pages/Contact';
 import Home from './pages/Home';
@@ -76,8 +78,6 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import AdminManagement from './pages/AdminManagement';
-import AdminViewAsStudent from './pages/AdminViewAsStudent';
 
 
 export const PAGES = {
@@ -91,10 +91,12 @@ export const PAGES = {
     "AdminGroups": AdminGroups,
     "AdminHosting": AdminHosting,
     "AdminLibrary": AdminLibrary,
+    "AdminManagement": AdminManagement,
     "AdminQuestions": AdminQuestions,
     "AdminSettings": AdminSettings,
     "AdminStudents": AdminStudents,
     "AdminTuition": AdminTuition,
+    "AdminViewAsStudent": AdminViewAsStudent,
     "Connexion": Connexion,
     "Contact": Contact,
     "Home": Home,
@@ -110,8 +112,6 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "AdminManagement": AdminManagement,
-    "AdminViewAsStudent": AdminViewAsStudent,
 }
 
 export const pagesConfig = {

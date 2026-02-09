@@ -23,6 +23,21 @@ export default function StudentBulletins() {
 
   useEffect(() => {
     const load = async () => {
+      const adminView = localStorage.getItem('admin_student_view');
+      if (adminView) {
+        const viewData = JSON.parse(adminView);
+        setUser({ email: 'admin@preview.emgj' });
+        setStudent({
+          first_name: 'Admin',
+          last_name: 'Preview',
+          domain: viewData.domain,
+          formation_type: viewData.formation_type,
+          user_email: 'admin@preview.emgj'
+        });
+        setLoading(false);
+        return;
+      }
+
       const u = await base44.auth.me();
       setUser(u);
       const students = await base44.entities.Student.filter({ user_email: u.email });
@@ -32,16 +47,18 @@ export default function StudentBulletins() {
     load();
   }, []);
 
+  const isPreview = user?.email === 'admin@preview.emgj';
+
   const { data: bulletins = [] } = useQuery({
     queryKey: ['studentBulletins'],
     queryFn: () => base44.entities.Bulletin.filter({ student_email: user?.email }),
-    enabled: !!user,
+    enabled: !!user && !isPreview,
   });
 
   const { data: progress = [] } = useQuery({
     queryKey: ['courseProgress'],
     queryFn: () => base44.entities.StudentCourseProgress.filter({ student_email: user?.email }),
-    enabled: !!user,
+    enabled: !!user && !isPreview,
   });
 
   const { data: courses = [] } = useQuery({
