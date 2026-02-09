@@ -17,6 +17,8 @@ export default function Connexion() {
   const navigate = useNavigate();
 
   const handleStudentLogin = async () => {
+    // Désactiver le mode prévisualisation admin lors de la connexion étudiante
+    localStorage.removeItem('admin_student_view');
     try {
       const nextUrl = window.location.origin + createPageUrl('StudentDashboard');
       await base44.auth.redirectToLogin(nextUrl);
@@ -33,6 +35,7 @@ export default function Connexion() {
     try {
       // Vérifier le mot de passe principal
       if (adminEmail === 'agnimakaedeme@gmail.com' && adminPassword === 'EDEMS229') {
+        localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
         toast.success('Connexion administrateur réussie !');
         navigate(createPageUrl('AdminDashboard'));
@@ -45,6 +48,7 @@ export default function Connexion() {
       const validBackup = passwords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
       
       if (validBackup) {
+        localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
         toast.success('Connexion administrateur réussie !');
         navigate(createPageUrl('AdminDashboard'));
@@ -57,6 +61,7 @@ export default function Connexion() {
       const admin = admins[0];
       
       if (admin && admin.password === adminPassword && admin.is_active) {
+        localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ 
           email: adminEmail, 
           role: admin.role,
