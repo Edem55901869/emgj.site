@@ -79,14 +79,16 @@ export default function StudentProfile() {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Cover */}
       <div className="relative">
-        <div className="h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden" 
-          style={{
-            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/87434d389_IMG-20260209-WA0009.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 to-purple-900/70" />
+        <div className="h-48 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-300 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)`
+          }} />
           <Button
             onClick={() => navigate(createPageUrl('StudentMore'))}
             variant="ghost"

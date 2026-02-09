@@ -235,15 +235,16 @@ export default function StudentDashboard() {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header with Cover */}
       <div className="relative mb-4">
-        <div 
-          className="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden"
-          style={{
-            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/87434d389_IMG-20260209-WA0009.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-indigo-900/60 to-purple-900/60" />
+        <div className="h-32 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-300 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)`
+          }} />
         </div>
         <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
