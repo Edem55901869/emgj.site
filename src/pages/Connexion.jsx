@@ -118,10 +118,14 @@ export default function Connexion() {
       >
         <div className="text-center mb-8">
           <Link to={createPageUrl('Home')} className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
-              <GraduationCap className="w-6 h-6 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/4d6e0c9a2_IMG_4736.jpeg" 
+                alt="FTGJ Logo" 
+                className="w-14 h-14 object-contain"
+              />
             </div>
-            <span className="text-white font-bold text-xl">EMGJ</span>
+            <span className="text-white font-bold text-2xl">FTGJ</span>
           </Link>
         </div>
 

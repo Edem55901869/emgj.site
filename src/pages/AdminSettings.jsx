@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X, Key } from 'lucide-react';
+import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X, Key, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,9 +22,13 @@ export default function AdminSettings() {
       const adminData = localStorage.getItem('emgj_admin');
       if (adminData) {
         const admin = JSON.parse(adminData);
-        const admins = await base44.entities.AdminUser.filter({ email: admin.email });
-        if (admins.length > 0) {
-          setCurrentAdmin(admins[0]);
+        if (admin.role === 'admin_principal') {
+          setCurrentAdmin({ ...admin, email: admin.email || 'agnimakaedeme@gmail.com' });
+        } else {
+          const admins = await base44.entities.AdminUser.filter({ email: admin.email });
+          if (admins.length > 0) {
+            setCurrentAdmin(admins[0]);
+          }
         }
       }
     };
@@ -76,10 +80,11 @@ export default function AdminSettings() {
             <p className="text-gray-500 mt-1">Gérez vos mots de passe de sécurité</p>
           </div>
 
+          {currentAdmin?.role === 'admin_principal' && (
           <Card className="border-none shadow-lg mb-6">
             <CardHeader className="border-b border-gray-100">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-600" />
+                <Key className="w-5 h-5 text-blue-600" />
                 Mots de passe de secours
               </CardTitle>
             </CardHeader>
@@ -191,10 +196,14 @@ export default function AdminSettings() {
               )}
             </CardContent>
           </Card>
+          )}
 
           <Card className="border-none shadow-lg">
             <CardHeader className="border-b border-gray-100">
-              <CardTitle className="text-lg">Informations du compte</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <User className="w-5 h-5 text-gray-600" />
+                Informations du compte
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-5 space-y-3">
               <div className="flex justify-between p-3 rounded-xl bg-gray-50">

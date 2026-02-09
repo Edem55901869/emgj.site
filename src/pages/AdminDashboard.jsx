@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Users, BookOpen, Newspaper, Library, Radio, MessageCircle, TrendingUp, Clock, CheckCircle, AlertCircle, Loader2, Award, DollarSign } from 'lucide-react';
+import { Users, BookOpen, Newspaper, Library, Radio, MessageCircle, TrendingUp, Clock, CheckCircle, AlertCircle, Loader2, Award, DollarSign, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import NotificationService from '../components/NotificationService';
+import PublicChat from '../components/PublicChat';
 
 export default function AdminDashboard() {
   const [adminEmail, setAdminEmail] = useState(null);
@@ -74,78 +75,134 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
+          <div className="grid lg:grid-cols-2 gap-6 mb-6">
+            <Card className="shadow-lg border-none">
+              <CardHeader className="border-b border-gray-100">
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Activités récentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {activities.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-8">Aucune activité récente</p>
-                ) : (
-                  <div className="space-y-2">
-                    {activities.map(activity => (
-                      <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900">{activity.description}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {activity.created_date && format(new Date(activity.created_date), "d MMM 'à' HH:mm", { locale: fr })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
+                  <Users className="w-5 h-5 text-blue-600" />
                   Statut des étudiants
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-5">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-sm font-medium text-gray-900">Certifiés</span>
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">Certifiés</span>
                     </div>
-                    <span className="text-lg font-bold text-green-700">
+                    <span className="text-2xl font-bold text-green-600">
                       {students.filter(s => s.status === 'certifié').length}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-amber-600" />
-                      <span className="text-sm font-medium text-gray-900">En attente</span>
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">En attente</span>
                     </div>
-                    <span className="text-lg font-bold text-amber-700">
+                    <span className="text-2xl font-bold text-amber-600">
                       {students.filter(s => s.status === 'en_attente').length}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      <span className="text-sm font-medium text-gray-900">Bloqués</span>
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
+                        <AlertCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">Bloqués</span>
                     </div>
-                    <span className="text-lg font-bold text-red-700">
+                    <span className="text-2xl font-bold text-red-600">
                       {students.filter(s => s.status === 'bloqué').length}
                     </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            <Card className="shadow-lg border-none">
+              <CardHeader className="border-b border-gray-100">
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-indigo-600" />
+                  Engagement des étudiants
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-5">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Cours validés</span>
+                      <span className="font-bold text-gray-900">{allProgress.filter(p => p.passed).length} / {courses.length * students.length}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all" 
+                        style={{ width: `${Math.min(100, (allProgress.filter(p => p.passed).length / Math.max(1, courses.length * students.length)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Étudiants actifs</span>
+                      <span className="font-bold text-gray-900">{students.filter(s => s.status === 'certifié').length}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 h-2.5 rounded-full transition-all" 
+                        style={{ width: `${Math.min(100, (students.filter(s => s.status === 'certifié').length / Math.max(1, students.length)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Taux de complétion</span>
+                      <span className="font-bold text-gray-900">{studentsCompleted} / {students.length}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                      <div 
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full transition-all" 
+                        style={{ width: `${Math.min(100, (studentsCompleted / Math.max(1, students.length)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
+          <Card className="shadow-lg border-none">
+            <CardHeader className="border-b border-gray-100">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-gray-600" />
+                Activités récentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-5">
+              {activities.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-8">Aucune activité récente</p>
+              ) : (
+                <div className="space-y-2">
+                  {activities.map(activity => (
+                    <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900">{activity.description}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {activity.created_date && format(new Date(activity.created_date), "d MMM 'à' HH:mm", { locale: fr })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
         
         <NotificationService userEmail={adminEmail} enabled={!!adminEmail} />
+        <PublicChat />
       </div>
     </AdminGuard>
   );

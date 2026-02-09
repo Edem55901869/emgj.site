@@ -152,28 +152,37 @@ export default function AdminStudents() {
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid gap-3">
               {filtered.map(student => (
-                <div key={student.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4 hover:shadow-sm transition-shadow">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-bold flex-shrink-0">
-                    {student.first_name?.[0]}{student.last_name?.[0]}
-                  </div>
+                <div key={student.id} className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 hover:shadow-lg transition-all group">
+                  {student.profile_photo ? (
+                    <img src={student.profile_photo} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0 ring-2 ring-blue-100" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold flex-shrink-0 shadow-lg">
+                      {student.first_name?.[0]}{student.last_name?.[0]}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm">{student.first_name} {student.last_name}</p>
-                    <p className="text-xs text-gray-500">{student.domain} • {student.formation_type} • {student.country}</p>
+                    <p className="font-bold text-gray-900">{student.first_name} {student.last_name}</p>
+                    <p className="text-sm text-gray-600 mt-0.5">{student.user_email}</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{student.domain}</Badge>
+                      <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{student.formation_type}</Badge>
+                      <Badge className="bg-gray-50 text-gray-600 border-gray-100 text-xs">{student.country}</Badge>
+                    </div>
                   </div>
                   <Badge className={`text-xs ${statusColors[student.status]}`}>{student.status}</Badge>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSelectedStudent(student)}>
-                      <Eye className="w-4 h-4 text-gray-500" />
+                  <div className="flex gap-1.5">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600" onClick={() => setSelectedStudent(student)}>
+                      <Eye className="w-4 h-4" />
                     </Button>
                     {student.status === 'en_attente' && (
                       <>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'certifié' } })}>
-                          <Check className="w-4 h-4 text-green-600" />
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-green-50 hover:text-green-600" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'certifié' } })}>
+                          <Check className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'rejeté' } })}>
-                          <X className="w-4 h-4 text-red-500" />
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-red-50 hover:text-red-600" onClick={() => updateMutation.mutate({ id: student.id, data: { status: 'rejeté' } })}>
+                          <X className="w-4 h-4" />
                         </Button>
                       </>
                     )}
@@ -185,21 +194,30 @@ export default function AdminStudents() {
         </div>
 
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl rounded-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/20">
             <DialogHeader>
-              <DialogTitle>Détails de l'étudiant</DialogTitle>
+              <DialogTitle className="text-2xl">Profil de l'étudiant</DialogTitle>
             </DialogHeader>
             {selectedStudent && (() => {
               const stats = getStudentStats(selectedStudent);
               const recentActivities = allActivities.filter(a => a.related_user?.includes(selectedStudent.user_email)).slice(0, 5);
               
               return (
-                <div className="space-y-4 pt-2">
-                  {selectedStudent.profile_photo && (
-                    <div className="flex justify-center">
-                      <img src={selectedStudent.profile_photo} alt="" className="w-24 h-24 rounded-2xl object-cover" />
-                    </div>
-                  )}
+                <div className="space-y-5 pt-2">
+                  <div className="flex justify-center">
+                    {selectedStudent.profile_photo ? (
+                      <img src={selectedStudent.profile_photo} alt="" className="w-28 h-28 rounded-3xl object-cover ring-4 ring-blue-100 shadow-xl" />
+                    ) : (
+                      <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl ring-4 ring-blue-100">
+                        {selectedStudent.first_name?.[0]}{selectedStudent.last_name?.[0]}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedStudent.first_name} {selectedStudent.last_name}</h2>
+                    <p className="text-gray-600 mt-1">{selectedStudent.user_email}</p>
+                  </div>
                   
                   <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
                     <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">

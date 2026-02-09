@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Library, Plus, Trash2, Download, Loader2, FileText, Edit } from 'lucide-react';
+import { Library, Plus, Trash2, Download, Loader2, FileText, Edit, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,8 @@ export default function AdminLibrary() {
   const [pdfFile, setPdfFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const queryClient = useQueryClient();
 
   const { data: docs = [], isLoading } = useQuery({
@@ -90,26 +92,51 @@ export default function AdminLibrary() {
     setDialogOpen(true);
   };
 
+  const filtered = docs
+    .filter(d => !search || d.title?.toLowerCase().includes(search.toLowerCase()) || d.author?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      if (sortBy === 'recent') return new Date(b.created_date) - new Date(a.created_date);
+      if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
+      if (sortBy === 'downloads') return (b.downloads_count || 0) - (a.downloads_count || 0);
+      return 0;
+    });
+
   return (
     <AdminGuard>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Bibliothèque</h1>
-              <p className="text-gray-500 text-sm mt-1">Documents et ressources pédagogiques</p>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Bibliothèque</h1>
+                <p className="text-gray-500 text-sm mt-1">Documents accessibles à tous les étudiants</p>
+              </div>
+              <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
+                <Plus className="w-4 h-4 mr-2" /> Ajouter
+              </Button>
             </div>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
-              <Plus className="w-4 h-4 mr-2" /> Ajouter
-            </Button>
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un document..." className="pl-10 h-11 rounded-xl" />
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-48 h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Plus récents</SelectItem>
+                  <SelectItem value="title">Titre (A-Z)</SelectItem>
+                  <SelectItem value="downloads">Plus téléchargés</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {docs.map(doc => (
+              {filtered.map(doc => (
                 <div key={doc.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
                   <div className="h-48 bg-gradient-to-br from-red-500 via-pink-500 to-purple-500 relative overflow-hidden">
                     {doc.cover_image ? (
