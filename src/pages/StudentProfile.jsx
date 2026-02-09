@@ -81,7 +81,7 @@ export default function StudentProfile() {
       <div className="relative">
         <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500" 
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80)',
+            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/87434d389_IMG-20260209-WA0009.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}

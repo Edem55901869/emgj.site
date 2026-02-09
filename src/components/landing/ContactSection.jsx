@@ -12,6 +12,16 @@ export default function ContactSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Préparer le message WhatsApp formaté
+    const whatsappMessage = `📩 *Nouveau message de contact FTGJ*\n\n` +
+      `👤 *Nom :* ${form.name}\n` +
+      `📧 *Email :* ${form.email}\n\n` +
+      `💬 *Message :*\n${form.message}\n\n` +
+      `_Envoyé depuis le site web FTGJ_`;
+    
+    const whatsappUrl = `https://wa.me/22892614961?text=${encodeURIComponent(whatsappMessage)}`;
+    
     setSending(true);
     try {
       await base44.entities.ContactMessage.create({
@@ -20,7 +30,11 @@ export default function ContactSection() {
         message: form.message,
         status: 'nouveau'
       });
-      toast.success('Message envoyé avec succès !');
+      
+      // Rediriger vers WhatsApp
+      window.open(whatsappUrl, '_blank');
+      
+      toast.success('Message enregistré ! Vous allez être redirigé vers WhatsApp pour l\'envoyer.');
       setForm({ name: '', email: '', message: '' });
     } catch (error) {
       toast.error('Erreur lors de l\'envoi');

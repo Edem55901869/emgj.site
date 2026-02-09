@@ -216,6 +216,19 @@ export default function AdminSettings() {
                   {currentAdmin?.role === 'admin_principal' ? 'Administrateur Principal' : 'Administrateur Secondaire'}
                 </Badge>
               </div>
+              {currentAdmin?.whatsapp && (
+                <div className="flex justify-between items-center p-3 rounded-xl bg-green-50 border border-green-100">
+                  <span className="text-sm text-gray-600">WhatsApp</span>
+                  <a 
+                    href={`https://wa.me/${currentAdmin.whatsapp.replace(/[^0-9]/g, '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-green-700 hover:text-green-800 underline"
+                  >
+                    {currentAdmin.whatsapp}
+                  </a>
+                </div>
+              )}
               {currentAdmin?.permissions && currentAdmin.permissions.length > 0 && (
                 <div className="p-3 rounded-xl bg-gray-50">
                   <span className="text-sm text-gray-600 block mb-2">Fonctionnalités autorisées</span>
