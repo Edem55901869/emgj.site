@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2 } from 'lucide-react';
-import NotificationButton from '../components/student/NotificationButton';
+
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -249,7 +249,7 @@ export default function StudentDashboard() {
         </div>
         <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-full">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
                   {studentProfile.profile_photo ? (
                     <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
@@ -274,7 +274,6 @@ export default function StudentDashboard() {
                   {studentProfile.domain}
                 </Badge>
               </div>
-              <NotificationButton userEmail={user?.email} />
           </div>
         </div>
       </div>
