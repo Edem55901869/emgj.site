@@ -343,9 +343,9 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                     <audio src={msg.media_url} controls className="mb-2 w-full" />
                   )}
                   {msg.message_type === 'document' && msg.media_url && (
-                    <a href={msg.media_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-lg mb-2 ${msg.sender_email === user.email ? 'bg-white/10' : 'bg-gray-100'}`}>
+                    <a href={msg.media_url} download target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-lg mb-2 hover:opacity-80 transition-opacity ${msg.sender_email === user.email ? 'bg-white/10' : 'bg-gray-100'}`}>
                       <File className="w-4 h-4" />
-                      <span className="text-xs">Télécharger le document</span>
+                      <span className="text-xs underline">Télécharger le document</span>
                     </a>
                   )}
                   <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>

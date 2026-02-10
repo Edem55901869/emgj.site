@@ -57,20 +57,14 @@ export default function VideoSection() {
 
           {/* Vidéo */}
           <div className="aspect-video bg-black">
-            {activeVideo.video_url.includes('youtube.com') || activeVideo.video_url.includes('vimeo.com') ? (
-              <iframe
-                src={activeVideo.video_url}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <video
-                src={activeVideo.video_url}
-                controls
-                className="w-full h-full"
-              />
-            )}
+            <video
+              src={activeVideo.video_url}
+              controls
+              controlsList="nodownload"
+              className="w-full h-full"
+            >
+              Votre navigateur ne supporte pas la lecture de vidéos.
+            </video>
           </div>
         </motion.div>
       </div>

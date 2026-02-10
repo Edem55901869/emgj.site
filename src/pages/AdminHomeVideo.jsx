@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Video, Upload, Trash2, Loader2, Eye, EyeOff, Save } from 'lucide-react';
+import { Video, Upload, Trash2, Loader2, Eye, EyeOff, Save, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -94,25 +94,7 @@ export default function AdminHomeVideo() {
             <CardContent className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL de la vidéo (YouTube, Vimeo, etc.)
-                </label>
-                <Input
-                  value={form.video_url}
-                  onChange={(e) => setForm({ ...form, video_url: e.target.value })}
-                  placeholder="https://www.youtube.com/embed/..."
-                  className="h-11 rounded-xl"
-                />
-              </div>
-              
-              <div className="relative">
-                <div className="flex items-center gap-3 my-3">
-                  <div className="flex-1 border-t border-gray-300"></div>
-                  <span className="text-sm text-gray-500 font-medium">OU</span>
-                  <div className="flex-1 border-t border-gray-300"></div>
-                </div>
-                
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Uploader une vidéo depuis votre appareil
+                  Importer une vidéo
                 </label>
                 <div className="relative">
                   <Input
@@ -128,6 +110,11 @@ export default function AdminHomeVideo() {
                     </div>
                   )}
                 </div>
+                {form.video_url && (
+                  <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Vidéo chargée avec succès
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -183,19 +170,11 @@ export default function AdminHomeVideo() {
                     <div className="flex items-start gap-4">
                       {/* Aperçu vidéo */}
                       <div className="w-48 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                        {video.video_url.includes('youtube.com') || video.video_url.includes('vimeo.com') ? (
-                          <iframe
-                            src={video.video_url}
-                            className="w-full h-full"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <video
-                            src={video.video_url}
-                            className="w-full h-full object-cover"
-                            controls
-                          />
-                        )}
+                        <video
+                          src={video.video_url}
+                          className="w-full h-full object-cover"
+                          controls
+                        />
                       </div>
 
                       {/* Infos */}
