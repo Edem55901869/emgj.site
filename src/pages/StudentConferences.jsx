@@ -184,10 +184,15 @@ export default function StudentConferences() {
                           <Button
                             onClick={() => handleJoin(conf)}
                             variant="outline"
-                            className="flex-1 rounded-xl h-10"
+                            className="flex-1 rounded-xl h-10 relative"
                           >
                             <MessageCircle className="w-4 h-4 mr-2" />
                             Voir les discussions
+                            {getUnreadCount(conf.id) > 0 && (
+                              <Badge className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs">
+                                {getUnreadCount(conf.id)}
+                              </Badge>
+                            )}
                           </Button>
                         )}
                       </div>

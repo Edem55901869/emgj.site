@@ -510,23 +510,46 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
                     Aucun message pour le moment
                   </div>
                 ) : (
-                  messages.map((msg) => (
-                    <div key={msg.id} className={`flex gap-2 ${msg.sender_email === userEmail ? 'justify-end' : ''}`}>
-                      <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${
-                        msg.sender_email === userEmail
-                          ? 'bg-blue-600 text-white'
-                          : msg.is_admin
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}>
-                        <p className="text-xs font-semibold mb-1 opacity-80">{msg.sender_name}</p>
-                        <p className="text-sm">{msg.content}</p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {format(new Date(msg.created_date), 'HH:mm')}
-                        </p>
+                  messages.map((msg) => {
+                    const isMine = msg.sender_email === userEmail;
+                    return (
+                      <div key={msg.id} className={`flex gap-2 ${isMine ? 'justify-end' : ''}`}>
+                        {!isMine && (
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                            msg.is_admin ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-gray-300 text-gray-700'
+                          }`}>
+                            {msg.sender_name[0]}
+                          </div>
+                        )}
+                        <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${
+                          isMine
+                            ? 'bg-blue-600 text-white'
+                            : msg.is_admin
+                            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-xs font-semibold opacity-90">{msg.sender_name}</p>
+                            {msg.is_admin && !isMine && (
+                              <Badge className="bg-white/20 text-white border-0 text-[10px] px-1 py-0">
+                                <Shield className="w-2.5 h-2.5 mr-0.5" />
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm">{msg.content}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {format(new Date(msg.created_date), 'HH:mm')}
+                          </p>
+                        </div>
+                        {isMine && (
+                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                            {userName[0]}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 

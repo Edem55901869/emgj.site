@@ -354,7 +354,24 @@ export default function AdminConferences() {
               </div>
 
               <Button
-                onClick={() => createMutation.mutate(form)}
+                onClick={() => {
+                  if (!form.title.trim()) {
+                    toast.error('Veuillez entrer un titre');
+                    return;
+                  }
+                  if (!form.access_code.trim()) {
+                    toast.error('Veuillez générer ou entrer un code d\'accès');
+                    return;
+                  }
+                  if (form.max_participants && (parseInt(form.max_participants) < 1)) {
+                    toast.error('La limite de participants doit être au moins 1');
+                    return;
+                  }
+                  createMutation.mutate({
+                    ...form,
+                    max_participants: form.max_participants ? parseInt(form.max_participants) : null
+                  });
+                }}
                 disabled={!form.title || !form.access_code || createMutation.isPending || uploading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 rounded-xl h-12 text-base font-bold shadow-lg"
               >
