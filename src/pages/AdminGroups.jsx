@@ -79,6 +79,14 @@ export default function AdminGroups() {
     },
   });
 
+  const removeGroupAdminMutation = useMutation({
+    mutationFn: (id) => base44.entities.GroupAdmin.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupAdmins'] });
+      toast.success('Droit d\'admin retiré');
+    },
+  });
+
   const uploadGroupPhoto = async (groupId, file) => {
     setUploading(true);
     try {
@@ -163,8 +171,13 @@ export default function AdminGroups() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button onClick={() => setChatOpen(group)} variant="outline" size="sm" className="flex-1 rounded-xl border-green-200 text-green-600 hover:bg-green-50">
-                          <MessageCircle className="w-4 h-4 mr-1" /> Chat
+                        <Button 
+                          onClick={() => setChatOpen(group)} 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 rounded-xl border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" /> Discuter
                         </Button>
                         <Button onClick={() => { setManageOpen(group); setEditingGroup(group); }} variant="outline" size="sm" className="flex-1 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50">
                           <Edit3 className="w-4 h-4 mr-1" /> Gérer
@@ -349,19 +362,51 @@ export default function AdminGroups() {
                   <div className="space-y-2">
                     {groupMembers.filter(m => m.status === 'accepté').map(m => {
                       const isAdmin = groupAdminList.some(ga => ga.student_email === m.user_email);
+                      const adminRecord = groupAdminList.find(ga => ga.student_email === m.user_email);
                       return (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                        <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{m.student_name}</span>
-                            {isAdmin && <Crown className="w-4 h-4 text-amber-500" />}
+                            <span className="text-sm font-medium text-gray-900">{m.student_name}</span>
+                            {isAdmin && (
+                              <Badge className="bg-amber-500 text-white border-0 flex items-center gap-1">
+                                <Crown className="w-3 h-3" /> Admin
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex gap-1">
-                            {!isAdmin && (
-                              <Button size="sm" variant="ghost" onClick={() => setGroupAdminMutation.mutate({ group_id: manageOpen.id, student_email: m.user_email, student_name: m.student_name })} className="text-xs">
-                                <UserPlus className="w-3 h-3 mr-1" /> Admin
+                            {!isAdmin ? (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => setGroupAdminMutation.mutate({ 
+                                  group_id: manageOpen.id, 
+                                  student_email: m.user_email, 
+                                  student_name: m.student_name 
+                                })} 
+                                className="text-xs border-amber-200 text-amber-600 hover:bg-amber-50"
+                              >
+                                <UserPlus className="w-3 h-3 mr-1" /> Promouvoir
+                              </Button>
+                            ) : (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => adminRecord && removeGroupAdminMutation.mutate(adminRecord.id)} 
+                                className="text-xs border-orange-200 text-orange-600 hover:bg-orange-50"
+                              >
+                                <X className="w-3 h-3 mr-1" /> Retirer admin
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" onClick={() => removeMemberMutation.mutate(m.id)} className="text-red-500 hover:text-red-600">
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => {
+                                if (confirm(`Retirer ${m.student_name} du groupe ?`)) {
+                                  removeMemberMutation.mutate(m.id);
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            >
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>

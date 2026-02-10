@@ -27,9 +27,21 @@ export default function StudentLibrary() {
   });
 
   const handleDownload = async (doc) => {
-    await base44.entities.LibraryDocument.update(doc.id, { downloads_count: (doc.downloads_count || 0) + 1 });
-    queryClient.invalidateQueries({ queryKey: ['libraryDocs'] });
-    window.open(doc.pdf_url, '_blank');
+    try {
+      await base44.entities.LibraryDocument.update(doc.id, { downloads_count: (doc.downloads_count || 0) + 1 });
+      queryClient.invalidateQueries({ queryKey: ['libraryDocs'] });
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = doc.pdf_url;
+      link.download = doc.title || 'document.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Erreur de téléchargement:', error);
+    }
   };
 
   const filteredDocs = docs

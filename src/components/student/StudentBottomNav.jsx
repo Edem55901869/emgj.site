@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Home, BookOpen, Users, Library, MoreHorizontal, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import PublicChat from '../PublicChat';
 
 const navItems = [
-  { name: 'Accueil', icon: Home, page: 'StudentDashboard' },
+  { name: 'Accueil', icon: LayoutDashboard, page: 'StudentDashboard' },
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
   { name: 'Groupes', icon: Users, page: 'StudentGroups' },
-  { name: 'Biblio', icon: Library, page: 'StudentLibrary' },
+  { name: 'Bibliothèque', icon: Library, page: 'StudentLibrary' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
 
@@ -19,74 +20,91 @@ export default function StudentBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [isAdminView, setIsAdminView] = useState(false);
+  const [adminView, setAdminView] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const u = await base44.auth.me();
-        setUser(u);
-      } catch {}
-    };
     loadUser();
-
-    const adminView = localStorage.getItem('admin_student_view');
-    if (adminView) {
-      setIsAdminView(true);
-    }
   }, []);
 
+  const loadUser = async () => {
+    const adminViewData = localStorage.getItem('admin_student_view');
+    if (adminViewData) {
+      setAdminView(true);
+      return;
+    }
+    try {
+      const u = await base44.auth.me();
+      setUser(u);
+    } catch {}
+  };
+
   const { data: publicMessages = [] } = useQuery({
-    queryKey: ['publicMessages'],
-    queryFn: () => base44.entities.PublicMessage.list('-created_date', 100),
-    enabled: !!user,
+    queryKey: ['publicMessagesCount'],
+    queryFn: () => base44.entities.PublicMessage.list('-created_date', 10),
     refetchInterval: 5000,
   });
 
-  const hasOnlineStudents = publicMessages.length > 0;
-
-  const handleBackToAdmin = () => {
+  const handleAdminReturn = () => {
     localStorage.removeItem('admin_student_view');
-    toast.success('Retour au mode administrateur');
     navigate(createPageUrl('AdminDashboard'));
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-t border-blue-700/30 shadow-lg shadow-blue-900/20">
-      {isAdminView && (
-        <div className="bg-amber-500 px-4 py-2 flex items-center justify-between">
-          <p className="text-white text-xs font-semibold">Mode prévisualisation étudiant</p>
-          <Button onClick={handleBackToAdmin} size="sm" className="bg-white text-amber-700 hover:bg-gray-100 h-7 px-3 rounded-lg text-xs">
-            <ArrowLeft className="w-3 h-3 mr-1" /> Retour admin
-          </Button>
+    <>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+        {adminView && (
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white text-sm font-medium">
+              <Eye className="w-4 h-4" />
+              Mode prévisualisation admin
+            </div>
+            <Button onClick={handleAdminReturn} size="sm" variant="ghost" className="text-white hover:bg-white/20 rounded-lg">
+              Retour admin
+            </Button>
+          </div>
+        )}
+        <div className="flex items-center justify-around py-2 max-w-screen-sm mx-auto">
+          {navItems.map((item) => {
+            const isActive = location.pathname.includes(item.page);
+            const isGroups = item.name === 'Groupes';
+            const hasNewMessages = isGroups && publicMessages.length > 0;
+
+            return (
+              <Link
+                key={item.name}
+                to={createPageUrl(item.page)}
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                  isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="relative">
+                  <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
+                  {hasNewMessages && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  )}
+                </div>
+                <span className="text-xs font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
         </div>
-      )}
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-        {navItems.map((item) => {
-          const url = createPageUrl(item.page);
-          const isActive = location.pathname.includes(item.page) || 
-            (item.page === 'StudentDashboard' && location.pathname.includes('StudentDashboard'));
-          const showOnlineIndicator = item.name === 'Groupes' && hasOnlineStudents;
-          
-          return (
-            <Link
-              key={item.name}
-              to={url}
-              className={`relative flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
-                isActive
-                  ? 'text-white bg-white/20 backdrop-blur-sm'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
-              <span className="text-[10px] font-medium">{item.name}</span>
-              {showOnlineIndicator && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-blue-600 animate-pulse" />
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+      </nav>
+
+      {/* Bouton de chat flottant */}
+      <button
+        onClick={() => setShowChat(!showChat)}
+        className="fixed bottom-20 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
+      >
+        <MessagesSquare className="w-6 h-6" />
+        {publicMessages.length > 0 && (
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-[10px] font-bold">{publicMessages.length}</span>
+          </div>
+        )}
+      </button>
+
+      {showChat && <PublicChat isAdmin={false} open={showChat} onClose={() => setShowChat(false)} />}
+    </>
   );
 }
