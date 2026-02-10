@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2, DollarSign, Award } from 'lucide-react';
+import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2, DollarSign, Award, Radio } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { createPageUrl } from '@/utils';
@@ -88,12 +89,23 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
+          <Link to={createPageUrl('StudentConferences')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+              <Radio className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-900">Conférences</p>
+              <p className="text-sm text-gray-500">Conférences en direct</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </Link>
+
           <button 
             onClick={() => navigate(createPageUrl('StudentNotifications'))}
             className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors relative"
           >
-            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Bell className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
+              <Bell className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="flex-1 text-left">
               <p className="font-medium text-gray-900">Notifications</p>
