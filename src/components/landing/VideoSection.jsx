@@ -2,7 +2,6 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Play } from 'lucide-react';
 
 export default function VideoSection() {
   const { data: videos = [] } = useQuery({
@@ -15,8 +14,14 @@ export default function VideoSection() {
   if (!activeVideo) return null;
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-red-50">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-6xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -25,14 +30,12 @@ export default function VideoSection() {
           className="text-center mb-12"
         >
           {activeVideo.title && (
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
-                {activeVideo.title}
-              </span>
+            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
+              {activeVideo.title}
             </h2>
           )}
           {activeVideo.description && (
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            <p className="text-blue-200 text-lg max-w-3xl mx-auto">
               {activeVideo.description}
             </p>
           )}
@@ -43,20 +46,13 @@ export default function VideoSection() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white group"
+          className="relative"
         >
-          {/* Overlay avec effet */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-red-600/20 group-hover:opacity-0 transition-opacity duration-300 z-10 pointer-events-none" />
+          {/* Glow effect */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-3xl blur-2xl opacity-30"></div>
           
-          {/* Icône Play décorative */}
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center">
-              <Play className="w-10 h-10 text-blue-600 ml-1" />
-            </div>
-          </div>
-
-          {/* Vidéo */}
-          <div className="aspect-video bg-black">
+          {/* Video container */}
+          <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-white/10">
             <video
               src={activeVideo.video_url}
               controls
