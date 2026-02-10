@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,7 @@ import ProfileSetupForm from '../components/student/ProfileSetupForm';
 import PublicChat from '../components/PublicChat';
 import CommentThread from '../components/blog/CommentThread';
 import NotificationService from '../components/NotificationService';
+import NotificationBadge from '../components/student/NotificationBadge';
 
 export default function StudentDashboard() {
   const [user, setUser] = useState(null);
@@ -233,6 +236,9 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Notification Badge en haut */}
+      <NotificationBadge userEmail={user?.email} />
+
       {/* Header with Cover */}
       <div className="relative mb-4">
         <div className="h-32 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">

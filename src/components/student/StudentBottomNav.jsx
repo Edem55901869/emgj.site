@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare, Bell } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -13,7 +13,6 @@ const navItems = [
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
   { name: 'Groupes', icon: Users, page: 'StudentGroups' },
   { name: 'Bibliothèque', icon: Library, page: 'StudentLibrary' },
-  { name: 'Notifications', icon: Bell, page: 'StudentNotifications' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
 
@@ -40,18 +39,21 @@ export default function StudentBottomNav() {
     } catch {}
   };
 
+  const [unreadMessages, setUnreadMessages] = React.useState(0);
+  const [lastReadTime, setLastReadTime] = React.useState(localStorage.getItem('lastReadMessageTime') || new Date().toISOString());
+
   const { data: publicMessages = [] } = useQuery({
     queryKey: ['publicMessagesCount'],
-    queryFn: () => base44.entities.PublicMessage.list('-created_date', 10),
+    queryFn: () => base44.entities.PublicMessage.list('-created_date', 50),
     refetchInterval: 5000,
   });
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['studentNotifications', user?.email],
-    queryFn: () => base44.entities.Notification.filter({ student_email: user?.email, is_read: false }),
-    enabled: !!user?.email,
-    refetchInterval: 10000,
-  });
+  React.useEffect(() => {
+    const count = publicMessages.filter(m => new Date(m.created_date) > new Date(lastReadTime)).length;
+    setUnreadMessages(count);
+  }, [publicMessages, lastReadTime]);
+
+
 
   const handleAdminReturn = () => {
     localStorage.removeItem('admin_student_view');
@@ -60,7 +62,7 @@ export default function StudentBottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-t border-blue-700/30 shadow-lg">
         {adminView && (
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white text-sm font-medium">
@@ -75,27 +77,21 @@ export default function StudentBottomNav() {
         <div className="flex items-center justify-around py-2 max-w-screen-sm mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.page);
-            const isGroups = item.name === 'Groupes';
-            const isNotifications = item.name === 'Notifications';
-            const hasNewMessages = isGroups && publicMessages.length > 0;
-            const hasUnreadNotifications = isNotifications && notifications.length > 0;
+            const hasNewMessages = item.name === 'Groupes' && publicMessages.length > 0;
 
             return (
               <Link
                 key={item.name}
                 to={createPageUrl(item.page)}
-                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-xl transition-all ${
-                  isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                  isActive ? 'text-white bg-white/20' : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <div className="relative">
                   <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
                   {hasNewMessages && (
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  )}
-                  {hasUnreadNotifications && (
                     <Badge className="absolute -top-2 -right-2 h-4 px-1 min-w-4 text-[10px] bg-red-500 text-white border-none">
-                      {notifications.length}
+                      {unreadMessages}
                     </Badge>
                   )}
                 </div>
@@ -110,13 +106,20 @@ export default function StudentBottomNav() {
       {location.pathname.includes('StudentDashboard') && (
         <>
           <button
-            onClick={() => setShowChat(!showChat)}
+            onClick={() => {
+              setShowChat(!showChat);
+              if (!showChat) {
+                localStorage.setItem('lastReadMessageTime', new Date().toISOString());
+                setLastReadTime(new Date().toISOString());
+                setUnreadMessages(0);
+              }
+            }}
             className="fixed bottom-20 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
           >
             <MessagesSquare className="w-6 h-6" />
-            {publicMessages.length > 0 && (
+            {unreadMessages > 0 && (
               <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">{publicMessages.length}</span>
+                <span className="text-white text-[10px] font-bold">{unreadMessages}</span>
               </div>
             )}
           </button>
