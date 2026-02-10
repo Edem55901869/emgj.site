@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageCircle, Send, X, Image as ImageIcon, Mic, Trash2, Pin, Star, Loader2, Palette } from 'lucide-react';
+import { MessageCircle, Send, X, Image as ImageIcon, Mic, Trash2, Pin, Star, Loader2, Palette, Video, Music, File, Smile } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -92,6 +92,37 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
     refetchInterval: 3000,
   });
 
+  const { data: reactions = [] } = useQuery({
+    queryKey: ['messageReactions'],
+    queryFn: () => base44.entities.MessageReaction.filter({ message_type: 'public' }),
+    enabled: open,
+    refetchInterval: 3000,
+  });
+
+  const addReaction = async (messageId, emoji) => {
+    const existing = reactions.find(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
+    if (existing) {
+      await base44.entities.MessageReaction.delete(existing.id);
+    } else {
+      await base44.entities.MessageReaction.create({
+        message_id: messageId,
+        message_type: 'public',
+        user_email: user.email,
+        user_name: user.full_name,
+        reaction: emoji
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: ['messageReactions'] });
+  };
+
+  const getReactionCount = (messageId, emoji) => {
+    return reactions.filter(r => r.message_id === messageId && r.reaction === emoji).length;
+  };
+
+  const hasReacted = (messageId, emoji) => {
+    return reactions.some(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
+  };
+
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.PublicMessage.create(data),
     onSuccess: () => {
@@ -137,15 +168,21 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
   const sendMedia = async (type) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = type === 'image' ? 'image/*' : 'audio/*';
+    input.accept = type === 'image' ? 'image/*' : type === 'video' ? 'video/*' : type === 'audio' ? 'audio/*' : '*/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const contentMap = {
+        image: '📷 Image',
+        video: '🎥 Vidéo',
+        audio: '🎵 Audio',
+        document: '📄 Document'
+      };
       sendMutation.mutate({
         sender_email: user.email,
         sender_name: user.full_name,
-        content: type === 'image' ? '📷 Image' : '🎵 Audio',
+        content: contentMap[type] || 'Fichier',
         message_type: type,
         media_url: file_url
       });
@@ -299,10 +336,55 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                   {msg.message_type === 'image' && msg.media_url && (
                     <img src={msg.media_url} alt="" className="rounded-xl max-w-full mb-2" />
                   )}
+                  {msg.message_type === 'video' && msg.media_url && (
+                    <video src={msg.media_url} controls className="rounded-xl max-w-full mb-2" />
+                  )}
                   {msg.message_type === 'audio' && msg.media_url && (
-                    <audio src={msg.media_url} controls className="mb-2" />
+                    <audio src={msg.media_url} controls className="mb-2 w-full" />
+                  )}
+                  {msg.message_type === 'document' && msg.media_url && (
+                    <a href={msg.media_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-lg mb-2 ${msg.sender_email === user.email ? 'bg-white/10' : 'bg-gray-100'}`}>
+                      <File className="w-4 h-4" />
+                      <span className="text-xs">Télécharger le document</span>
+                    </a>
                   )}
                   <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
+                  
+                  {/* Réactions */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {['❤️', '👍', '😂', '😮', '😢', '🙏'].map(emoji => {
+                      const count = getReactionCount(msg.id, emoji);
+                      const reacted = hasReacted(msg.id, emoji);
+                      if (count === 0 && !reacted) return null;
+                      return (
+                        <button
+                          key={emoji}
+                          onClick={() => addReaction(msg.id, emoji)}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all ${
+                            reacted 
+                              ? msg.sender_email === user.email ? 'bg-white/30' : 'bg-blue-100' 
+                              : msg.sender_email === user.email ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'
+                          }`}
+                        >
+                          <span>{emoji}</span>
+                          <span className={`font-medium ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{count}</span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        const emoji = prompt('Choisissez une réaction : ❤️ 👍 😂 😮 😢 🙏');
+                        if (emoji && ['❤️', '👍', '😂', '😮', '😢', '🙏'].includes(emoji)) {
+                          addReaction(msg.id, emoji);
+                        }
+                      }}
+                      className={`p-0.5 rounded-full transition-all ${msg.sender_email === user.email ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
+                      title="Ajouter une réaction"
+                    >
+                      <Smile className={`w-3 h-3 ${msg.sender_email === user.email ? 'text-white/50' : 'text-gray-400'}`} />
+                    </button>
+                  </div>
+
                   <div className="flex items-center gap-2 mt-1">
                     <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                       {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
@@ -335,12 +417,21 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
 
           {/* Input */}
           <div className="relative p-3 border-t border-white/10">
-            <div className="flex items-center gap-2">
-              <button onClick={() => sendMedia('image')} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <div className="flex items-center gap-1">
+              <button onClick={() => sendMedia('image')} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title="Image">
                 <ImageIcon className="w-4 h-4 text-white/70" />
               </button>
+              <button onClick={() => sendMedia('video')} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title="Vidéo">
+                <Video className="w-4 h-4 text-white/70" />
+              </button>
+              <button onClick={() => sendMedia('audio')} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title="Musique">
+                <Music className="w-4 h-4 text-white/70" />
+              </button>
+              <button onClick={() => sendMedia('document')} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title="Document">
+                <File className="w-4 h-4 text-white/70" />
+              </button>
               {!recording ? (
-                <button onClick={startRecording} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                <button onClick={startRecording} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title="Vocal">
                   <Mic className="w-4 h-4 text-white/70" />
                 </button>
               ) : (
@@ -352,7 +443,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !recording && handleSend()}
-                placeholder={recording ? "Enregistrement en cours..." : "Message..."}
+                placeholder={recording ? "Enregistrement..." : "Message..."}
                 disabled={recording}
                 className="flex-1 h-9 rounded-full bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />

@@ -14,12 +14,28 @@ import AdminGuard from '../components/admin/AdminGuard';
 export default function AdminHomeVideo() {
   const [form, setForm] = useState({ video_url: '', title: '', description: '', is_active: true });
   const [editing, setEditing] = useState(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['homeVideos'],
     queryFn: () => base44.entities.HomeVideo.list('-created_date'),
   });
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setUploadingVideo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm({ ...form, video_url: file_url });
+      toast.success('Vidéo uploadée avec succès');
+    } catch (error) {
+      toast.error('Erreur lors de l\'upload');
+    }
+    setUploadingVideo(false);
+  };
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.HomeVideo.create(data),
@@ -87,6 +103,32 @@ export default function AdminHomeVideo() {
                   className="h-11 rounded-xl"
                 />
               </div>
+              
+              <div className="relative">
+                <div className="flex items-center gap-3 my-3">
+                  <div className="flex-1 border-t border-gray-300"></div>
+                  <span className="text-sm text-gray-500 font-medium">OU</span>
+                  <div className="flex-1 border-t border-gray-300"></div>
+                </div>
+                
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Uploader une vidéo depuis votre appareil
+                </label>
+                <div className="relative">
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    disabled={uploadingVideo}
+                    className="h-11 rounded-xl cursor-pointer"
+                  />
+                  {uploadingVideo && (
+                    <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-xl">
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    </div>
+                  )}
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Titre (optionnel)
@@ -141,11 +183,19 @@ export default function AdminHomeVideo() {
                     <div className="flex items-start gap-4">
                       {/* Aperçu vidéo */}
                       <div className="w-48 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                        <iframe
-                          src={video.video_url}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
+                        {video.video_url.includes('youtube.com') || video.video_url.includes('vimeo.com') ? (
+                          <iframe
+                            src={video.video_url}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            src={video.video_url}
+                            className="w-full h-full object-cover"
+                            controls
+                          />
+                        )}
                       </div>
 
                       {/* Infos */}

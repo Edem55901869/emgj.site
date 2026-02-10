@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Image as ImageIcon, Mic, Loader2, X, Palette, Trash2 } from 'lucide-react';
+import { Send, Image as ImageIcon, Mic, Loader2, X, Palette, Trash2, Video, Music, File, Smile } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -102,6 +102,37 @@ export default function GroupChat({ group, open, onClose }) {
     refetchInterval: 2000,
   });
 
+  const { data: reactions = [] } = useQuery({
+    queryKey: ['groupReactions', group?.id],
+    queryFn: () => base44.entities.MessageReaction.filter({ message_type: 'group' }),
+    enabled: !!group && open,
+    refetchInterval: 2000,
+  });
+
+  const addReaction = async (messageId, emoji) => {
+    const existing = reactions.find(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
+    if (existing) {
+      await base44.entities.MessageReaction.delete(existing.id);
+    } else {
+      await base44.entities.MessageReaction.create({
+        message_id: messageId,
+        message_type: 'group',
+        user_email: user.email,
+        user_name: user.full_name,
+        reaction: emoji
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: ['groupReactions', group?.id] });
+  };
+
+  const getReactionCount = (messageId, emoji) => {
+    return reactions.filter(r => r.message_id === messageId && r.reaction === emoji).length;
+  };
+
+  const hasReacted = (messageId, emoji) => {
+    return reactions.some(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
+  };
+
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.GroupMessage.create(data),
     onSuccess: () => {
@@ -132,16 +163,22 @@ export default function GroupChat({ group, open, onClose }) {
   const sendMedia = async (type) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = type === 'image' ? 'image/*' : type === 'video' ? 'video/*' : 'audio/*';
+    input.accept = type === 'image' ? 'image/*' : type === 'video' ? 'video/*' : type === 'audio' ? 'audio/*' : '*/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const contentMap = {
+        image: '📷 Image',
+        video: '🎥 Vidéo',
+        audio: '🎵 Audio',
+        document: '📄 Document'
+      };
       sendMutation.mutate({
         group_id: group.id,
         sender_email: user.email,
         sender_name: user.full_name,
-        content: type === 'image' ? '📷 Image' : type === 'video' ? '🎥 Vidéo' : '🎵 Audio',
+        content: contentMap[type] || 'Fichier',
         message_type: type,
         media_url: file_url
       });
@@ -253,9 +290,51 @@ export default function GroupChat({ group, open, onClose }) {
                   <video src={msg.media_url} controls className="rounded-xl max-w-full mb-2" />
                 )}
                 {msg.message_type === 'audio' && msg.media_url && (
-                  <audio src={msg.media_url} controls className="mb-2" />
+                  <audio src={msg.media_url} controls className="mb-2 w-full" />
+                )}
+                {msg.message_type === 'document' && msg.media_url && (
+                  <a href={msg.media_url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 p-2 rounded-lg mb-2 ${msg.sender_email === user.email ? 'bg-white/10' : 'bg-gray-100'}`}>
+                    <File className="w-4 h-4" />
+                    <span className="text-xs">Télécharger le document</span>
+                  </a>
                 )}
                 <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
+                
+                {/* Réactions */}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {['❤️', '👍', '😂', '😮', '😢', '🙏'].map(emoji => {
+                    const count = getReactionCount(msg.id, emoji);
+                    const reacted = hasReacted(msg.id, emoji);
+                    if (count === 0 && !reacted) return null;
+                    return (
+                      <button
+                        key={emoji}
+                        onClick={() => addReaction(msg.id, emoji)}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all ${
+                          reacted 
+                            ? msg.sender_email === user.email ? 'bg-white/30' : 'bg-blue-100' 
+                            : msg.sender_email === user.email ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'
+                        }`}
+                      >
+                        <span>{emoji}</span>
+                        <span className={`font-medium ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{count}</span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => {
+                      const emoji = prompt('Choisissez une réaction : ❤️ 👍 😂 😮 😢 🙏');
+                      if (emoji && ['❤️', '👍', '😂', '😮', '😢', '🙏'].includes(emoji)) {
+                        addReaction(msg.id, emoji);
+                      }
+                    }}
+                    className={`p-0.5 rounded-full transition-all ${msg.sender_email === user.email ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
+                    title="Ajouter une réaction"
+                  >
+                    <Smile className={`w-3 h-3 ${msg.sender_email === user.email ? 'text-white/50' : 'text-gray-400'}`} />
+                  </button>
+                </div>
+
                 <div className="flex items-center gap-2 mt-1">
                   <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                     {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
@@ -276,12 +355,21 @@ export default function GroupChat({ group, open, onClose }) {
         </div>
 
         <div className="p-2 sm:p-3 border-t border-gray-100 bg-white rounded-b-2xl">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <button onClick={() => sendMedia('image')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+          <div className="flex items-center gap-1">
+            <button onClick={() => sendMedia('image')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Image">
               <ImageIcon className="w-4 h-4 text-gray-500" />
             </button>
+            <button onClick={() => sendMedia('video')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Vidéo">
+              <Video className="w-4 h-4 text-gray-500" />
+            </button>
+            <button onClick={() => sendMedia('audio')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Musique">
+              <Music className="w-4 h-4 text-gray-500" />
+            </button>
+            <button onClick={() => sendMedia('document')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Document">
+              <File className="w-4 h-4 text-gray-500" />
+            </button>
             {!recording ? (
-              <button onClick={startRecording} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+              <button onClick={startRecording} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Vocal">
                 <Mic className="w-4 h-4 text-gray-500" />
               </button>
             ) : (

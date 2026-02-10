@@ -56,13 +56,21 @@ export default function VideoSection() {
           </div>
 
           {/* Vidéo */}
-          <div className="aspect-video">
-            <iframe
-              src={activeVideo.video_url}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          <div className="aspect-video bg-black">
+            {activeVideo.video_url.includes('youtube.com') || activeVideo.video_url.includes('vimeo.com') ? (
+              <iframe
+                src={activeVideo.video_url}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                src={activeVideo.video_url}
+                controls
+                className="w-full h-full"
+              />
+            )}
           </div>
         </motion.div>
       </div>
