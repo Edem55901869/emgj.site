@@ -109,8 +109,8 @@ export default function AdminHosting() {
       originalPrice: '85,870',
       price: '79,000', 
       features: ['500 étudiants max', '50 GB stockage', 'Support prioritaire', '3 domaines personnalisés', 'Analytics avancé'], 
-      color: 'from-red-600 to-red-700',
-      gradient: 'from-red-500 via-red-600 to-red-700',
+      color: 'from-purple-600 to-indigo-700',
+      gradient: 'from-purple-500 via-indigo-600 to-purple-700',
       popular: true, 
       icon: '⭐'
     },
@@ -119,8 +119,8 @@ export default function AdminHosting() {
       originalPrice: '161,957',
       price: '149,000', 
       features: ['Étudiants illimités', '200 GB stockage', 'Support 24/7', 'Domaines illimités', 'API complète', 'Sauvegarde automatique'], 
-      color: 'from-blue-700 to-red-700',
-      gradient: 'from-blue-600 via-purple-600 to-red-600',
+      color: 'from-indigo-700 to-blue-700',
+      gradient: 'from-indigo-600 via-blue-600 to-indigo-700',
       icon: '👑'
     },
   ];
@@ -164,12 +164,12 @@ export default function AdminHosting() {
               <Sparkles className="w-64 h-64 text-blue-600" />
             </div>
             <div className="relative">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-red-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg">
                 <Sparkles className="w-4 h-4" />
                 Offre Spéciale VIP - Réduction de 8%
               </div>
               <h1 className="text-5xl md:text-6xl font-black mb-4">
-                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent">
                   Plans d'Hébergement Premium
                 </span>
               </h1>
@@ -195,7 +195,7 @@ export default function AdminHosting() {
                     </div>
                   )}
                   
-                  <Card className={`border-0 shadow-2xl overflow-hidden bg-white transform hover:scale-105 transition-all duration-300 ${plan.popular ? 'ring-4 ring-red-500' : ''}`}>
+                  <Card className={`border-0 shadow-2xl overflow-hidden bg-white transform hover:scale-105 transition-all duration-300 ${plan.popular ? 'ring-4 ring-purple-500' : ''}`}>
                     {/* Header */}
                     <div className={`h-40 bg-gradient-to-br ${plan.gradient} relative overflow-hidden`}>
                       <div className="absolute inset-0 opacity-20">
@@ -273,7 +273,14 @@ export default function AdminHosting() {
                 <h2 className="text-3xl font-black text-white mb-2 font-mono">
                   &gt; FONCTIONNALITÉS VIP INCLUSES
                 </h2>
-                <p className="text-blue-300 font-mono text-sm">{'{'} Technologie de pointe pour votre plateforme {'}'}</p>
+                <p className="text-blue-300 font-mono text-sm mb-4">{'{'} Technologie de pointe pour votre plateforme {'}'}</p>
+                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/30 rounded-xl p-4 max-w-3xl mx-auto">
+                  <p className="text-white/90 text-base leading-relaxed">
+                    Bénéficiez d'une infrastructure cloud professionnelle avec des serveurs ultra-performants répartis dans le monde entier. 
+                    Votre plateforme sera accessible 24h/24 avec une vitesse de chargement optimale, peu importe le nombre d'utilisateurs connectés. 
+                    Tous nos plans incluent une maintenance proactive et des mises à jour automatiques pour garantir une expérience utilisateur exceptionnelle.
+                  </p>
+                </div>
               </div>
               
               <div className="grid md:grid-cols-3 gap-6">
@@ -353,12 +360,12 @@ export default function AdminHosting() {
       <Dialog open={showProofDialog} onOpenChange={setShowProofDialog}>
         <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Soumettre votre preuve de paiement
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
-            <div className="bg-gradient-to-r from-blue-50 to-red-50 p-5 rounded-2xl border-2 border-blue-200">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
               <p className="text-sm text-gray-700 mb-2">
                 <strong>Plan:</strong> {selectedPlan?.plan_name}
               </p>
@@ -382,7 +389,7 @@ export default function AdminHosting() {
             <Button 
               onClick={() => submitProofMutation.mutate()}
               disabled={!proofFile || uploading}
-              className="w-full bg-gradient-to-r from-blue-600 to-red-600 hover:opacity-90 h-14 text-lg font-bold rounded-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 h-14 text-lg font-bold rounded-xl"
             >
               {uploading ? (
                 <>
