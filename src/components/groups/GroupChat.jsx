@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Image as ImageIcon, Mic, Loader2, X, Palette, Trash2, Video, Music, File, Smile } from 'lucide-react';
+import { Send, Image as ImageIcon, Mic, Loader2, X, Palette, Trash2, Video, Music, File, Smile, Paperclip } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -354,38 +355,54 @@ export default function GroupChat({ group, open, onClose }) {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-2 sm:p-3 border-t border-gray-100 bg-white rounded-b-2xl">
-          <div className="flex items-center gap-1">
-            <button onClick={() => sendMedia('image')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Image">
-              <ImageIcon className="w-4 h-4 text-gray-500" />
-            </button>
-            <button onClick={() => sendMedia('video')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Vidéo">
-              <Video className="w-4 h-4 text-gray-500" />
-            </button>
-            <button onClick={() => sendMedia('audio')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Musique">
-              <Music className="w-4 h-4 text-gray-500" />
-            </button>
-            <button onClick={() => sendMedia('document')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Document">
-              <File className="w-4 h-4 text-gray-500" />
-            </button>
+        <div className="p-3 border-t border-gray-100 bg-white rounded-b-2xl">
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 hover:bg-gray-100 rounded-xl transition-all hover:scale-105 flex-shrink-0">
+                  <Paperclip className="w-5 h-5 text-gray-600" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem onClick={() => sendMedia('image')} className="gap-2 cursor-pointer">
+                  <ImageIcon className="w-4 h-4 text-blue-600" />
+                  <span>Image</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => sendMedia('video')} className="gap-2 cursor-pointer">
+                  <Video className="w-4 h-4 text-purple-600" />
+                  <span>Vidéo</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => sendMedia('audio')} className="gap-2 cursor-pointer">
+                  <Music className="w-4 h-4 text-green-600" />
+                  <span>Musique</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => sendMedia('document')} className="gap-2 cursor-pointer">
+                  <File className="w-4 h-4 text-orange-600" />
+                  <span>Document</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             {!recording ? (
-              <button onClick={startRecording} className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0" title="Vocal">
-                <Mic className="w-4 h-4 text-gray-500" />
+              <button onClick={startRecording} className="p-2 hover:bg-gray-100 rounded-xl transition-all hover:scale-105 flex-shrink-0" title="Message vocal">
+                <Mic className="w-5 h-5 text-gray-600" />
               </button>
             ) : (
-              <button onClick={stopRecording} className="p-2 bg-red-500 rounded-lg animate-pulse flex-shrink-0">
-                <Mic className="w-4 h-4 text-white" />
+              <button onClick={stopRecording} className="p-2 bg-red-500 rounded-xl animate-pulse flex-shrink-0">
+                <Mic className="w-5 h-5 text-white" />
               </button>
             )}
+            
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !recording && handleSend()}
-              placeholder={recording ? "Enregistrement..." : "Message..."}
+              placeholder={recording ? "🔴 Enregistrement..." : "Écrivez votre message..."}
               disabled={recording}
-              className="flex-1 h-9 rounded-full bg-gray-50 border-gray-200 text-sm"
+              className="flex-1 h-10 rounded-full bg-gray-50 border-gray-200"
             />
-            <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending || recording} size="icon" className={`${currentTheme.bubbleSelf} hover:opacity-90 rounded-full h-9 w-9 flex-shrink-0`}>
+            
+            <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending || recording} size="icon" className={`${currentTheme.bubbleSelf} hover:opacity-90 rounded-full h-10 w-10 flex-shrink-0 shadow-lg`}>
               {sendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
