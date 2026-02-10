@@ -249,9 +249,7 @@ export default function StudentDashboard() {
         </div>
         <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
                   {studentProfile.profile_photo ? (
                     <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
@@ -277,7 +275,6 @@ export default function StudentDashboard() {
                 </Badge>
               </div>
               <NotificationButton userEmail={user?.email} />
-            </div>
           </div>
         </div>
       </div>
