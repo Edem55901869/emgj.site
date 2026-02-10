@@ -78,6 +78,7 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
+import MaintenanceMode from './pages/MaintenanceMode';
 
 
 export const PAGES = {
@@ -112,6 +113,7 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
+    "MaintenanceMode": MaintenanceMode,
 }
 
 export const pagesConfig = {

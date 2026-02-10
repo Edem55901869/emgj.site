@@ -6,7 +6,8 @@ export const DOMAINS = [
   'ÉCOLE PROPHETIQUES',
   'ENTREPRENEURIAT',
   'AUMÔNERIE',
-  'MINISTÈRE APOSTOLIQUE'
+  'MINISTÈRE APOSTOLIQUE',
+  'FORMATION THÉOLOGIQUE ET PASTORALE'
 ];
 
 export const FORMATION_BY_DOMAIN = {
@@ -16,7 +17,13 @@ export const FORMATION_BY_DOMAIN = {
   'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
   'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
   'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat']
+  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'FORMATION THÉOLOGIQUE ET PASTORALE': [
+    'École des Evangéliste en Mission (EM)',
+    'École des Disciples Engagés (EDE)',
+    'École du Ministère Pastorale (EMP)',
+    'École Supérieure du Ministère Pastorale (ESMP)'
+  ]
 };
 
 export const getAllFormations = () => {
