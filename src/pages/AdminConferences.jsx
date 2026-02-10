@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Radio, Plus, Trash2, Play, Square, Loader2, Calendar, Sparkles, Copy, Check } from 'lucide-react';
+import { Radio, Plus, Trash2, Play, Square, Loader2, Calendar, Sparkles, Copy, Check, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import AdminGuard from '../components/admin/AdminGuard';
 
 export default function AdminConferences() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée' });
+  const [form, setForm] = useState({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
   const [audioFile, setAudioFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(null);
@@ -54,7 +54,7 @@ export default function AdminConferences() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminConfs'] });
       setCreateOpen(false);
-      setForm({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée' });
+      setForm({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
       setAudioFile(null);
       toast.success('Conférence créée');
     },
@@ -162,6 +162,12 @@ export default function AdminConferences() {
                             {copied === conf.access_code ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                             Code: {conf.access_code}
                           </button>
+                          {conf.max_participants && (
+                            <span className="text-xs flex items-center gap-1.5 bg-green-50 text-green-700 px-2.5 py-1 rounded-lg font-semibold">
+                              <Users className="w-3.5 h-3.5" />
+                              {conf.current_participants || 0} / {conf.max_participants}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -249,6 +255,22 @@ export default function AdminConferences() {
                     <SelectItem value="en_cours">🟢 En cours (démarrer maintenant)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Limite de participants (optionnel)
+                </label>
+                <Input 
+                  type="number" 
+                  value={form.max_participants} 
+                  onChange={(e) => setForm({ ...form, max_participants: e.target.value })} 
+                  placeholder="Ex: 100" 
+                  className="rounded-xl h-12" 
+                  min="1"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">Laissez vide pour aucune limite</p>
               </div>
 
               <div>

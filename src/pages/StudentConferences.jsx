@@ -1,125 +1,208 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Radio, Lock, Calendar, Loader2, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Radio, Loader2, Calendar, Users, Lock, Check, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 
 export default function StudentConferences() {
-  const [joinDialog, setJoinDialog] = useState(null);
-  const [code, setCode] = useState('');
-  const [joinedConference, setJoinedConference] = useState(null);
+  const [joinCode, setJoinCode] = useState('');
+  const [selectedConf, setSelectedConf] = useState(null);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    const load = async () => {
+      const u = await base44.auth.me();
+      setUser(u);
+    };
+    load();
+  }, []);
 
   const { data: conferences = [], isLoading } = useQuery({
-    queryKey: ['conferences'],
+    queryKey: ['studentConferences'],
     queryFn: () => base44.entities.Conference.list('-created_date', 50),
   });
 
-  const handleJoin = (conf) => {
-    if (code === conf.access_code) {
-      setJoinedConference(conf);
-      setJoinDialog(null);
-      setCode('');
+  const joinMutation = useMutation({
+    mutationFn: async (conf) => {
+      if (conf.max_participants && conf.current_participants >= conf.max_participants) {
+        throw new Error('Conférence complète');
+      }
+      await base44.entities.Conference.update(conf.id, {
+        current_participants: (conf.current_participants || 0) + 1
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['studentConferences'] });
       toast.success('Vous avez rejoint la conférence !');
+      setJoinOpen(false);
+      setJoinCode('');
+      setSelectedConf(null);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Erreur lors de la connexion');
+    }
+  });
+
+  const handleJoin = (conf) => {
+    setSelectedConf(conf);
+    setJoinOpen(true);
+  };
+
+  const verifyAndJoin = () => {
+    if (joinCode.toUpperCase() === selectedConf.access_code.toUpperCase()) {
+      joinMutation.mutate(selectedConf);
     } else {
       toast.error('Code d\'accès incorrect');
     }
   };
 
-  if (joinedConference) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-24 h-24 rounded-full bg-blue-600/20 flex items-center justify-center mb-6 animate-pulse">
-          <Radio className="w-12 h-12 text-blue-400" />
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">{joinedConference.title}</h2>
-        <p className="text-gray-400 mb-2">{joinedConference.description}</p>
-        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 mb-8">En direct</Badge>
-        {joinedConference.audio_url && (
-          <audio src={joinedConference.audio_url} controls autoPlay className="w-full max-w-md mb-8" />
-        )}
-        <Button onClick={() => setJoinedConference(null)} variant="outline" className="text-white border-white/20 hover:bg-white/10 rounded-xl">
-          Quitter la conférence
-        </Button>
-      </div>
-    );
-  }
+  const statusConfig = {
+    planifiée: { label: '🔵 Planifiée', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    en_cours: { label: '🟢 En direct', color: 'bg-green-50 text-green-700 border-green-200 animate-pulse' },
+    terminée: { label: '⚫ Terminée', color: 'bg-gray-100 text-gray-600 border-gray-200' }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link to={createPageUrl('StudentMore')}>
-            <Button variant="ghost" size="icon" className="rounded-xl"><ArrowLeft className="w-5 h-5" /></Button>
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900">Conférences</h1>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 pt-12 pb-6 sticky top-0 z-40 shadow-lg">
+        <h1 className="text-2xl font-bold text-white mb-3">Conférences</h1>
+        <p className="text-blue-100 text-sm">Rejoignez les conférences en direct ou à venir</p>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>
-        ) : conferences.filter(c => c.status === 'en_cours' || c.status === 'planifiée').length === 0 ? (
-          <div className="text-center py-16">
-            <Radio className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucune conférence en cours</p>
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : conferences.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+            <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+              <Radio className="w-10 h-10 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucune conférence</h3>
+            <p className="text-gray-500">Les conférences apparaîtront ici</p>
           </div>
         ) : (
-          conferences.filter(c => c.status === 'en_cours' || c.status === 'planifiée').map(conf => (
-            <div key={conf.id} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${conf.status === 'en_cours' ? 'bg-green-50' : 'bg-blue-50'}`}>
-                  <Radio className={`w-5 h-5 ${conf.status === 'en_cours' ? 'text-green-600' : 'text-blue-600'}`} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{conf.title}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{conf.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge className={`text-xs ${conf.status === 'en_cours' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                      {conf.status === 'en_cours' ? '🔴 En direct' : '📅 Planifiée'}
-                    </Badge>
-                    {conf.scheduled_date && (
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {format(new Date(conf.scheduled_date), "d MMM yyyy HH:mm", { locale: fr })}
-                      </span>
-                    )}
+          <div className="space-y-4">
+            {conferences.map((conf, i) => (
+              <motion.div
+                key={conf.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all overflow-hidden"
+              >
+                <div className={`h-1 bg-gradient-to-r ${
+                  conf.status === 'en_cours' ? 'from-green-500 to-emerald-500' :
+                  conf.status === 'terminée' ? 'from-gray-400 to-gray-500' :
+                  'from-blue-500 to-indigo-500'
+                }`} />
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                      conf.status === 'en_cours' ? 'bg-green-50' :
+                      conf.status === 'terminée' ? 'bg-gray-50' : 'bg-blue-50'
+                    }`}>
+                      <Radio className={`w-5 h-5 ${
+                        conf.status === 'en_cours' ? 'text-green-600' :
+                        conf.status === 'terminée' ? 'text-gray-400' : 'text-blue-600'
+                      }`} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">{conf.title}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{conf.description}</p>
+                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                        <Badge className={`text-xs font-semibold ${statusConfig[conf.status].color}`}>
+                          {statusConfig[conf.status].label}
+                        </Badge>
+                        {conf.scheduled_date && (
+                          <span className="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-lg">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {format(new Date(conf.scheduled_date), "d MMM 'à' HH:mm", { locale: fr })}
+                          </span>
+                        )}
+                        {conf.max_participants && (
+                          <span className="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-lg">
+                            <Users className="w-3.5 h-3.5" />
+                            {conf.current_participants || 0} / {conf.max_participants}
+                          </span>
+                        )}
+                      </div>
+                      {conf.status !== 'terminée' && (
+                        <Button
+                          onClick={() => handleJoin(conf)}
+                          disabled={conf.max_participants && conf.current_participants >= conf.max_participants}
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 rounded-xl h-10"
+                        >
+                          {conf.max_participants && conf.current_participants >= conf.max_participants ? (
+                            <>
+                              <Lock className="w-4 h-4 mr-2" />
+                              Conférence complète
+                            </>
+                          ) : (
+                            <>
+                              <Radio className="w-4 h-4 mr-2" />
+                              Rejoindre
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {conf.status === 'en_cours' && (
-                  <Button onClick={() => setJoinDialog(conf)} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl">
-                    <Lock className="w-3 h-3 mr-1" /> Rejoindre
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
 
-      <Dialog open={!!joinDialog} onOpenChange={() => setJoinDialog(null)}>
-        <DialogContent className="max-w-sm rounded-2xl">
+      <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
+        <DialogContent className="max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle>Code d'accès requis</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Rejoindre la conférence</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <p className="text-sm text-gray-500">Entrez le code d'accès pour rejoindre « {joinDialog?.title} »</p>
-            <Input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Code d'accès"
-              className="h-12 rounded-xl text-center text-lg tracking-widest"
-            />
-            <Button onClick={() => handleJoin(joinDialog)} className="w-full h-11 bg-blue-600 hover:bg-blue-700 rounded-xl">
-              Rejoindre
+          <div className="space-y-5 pt-4">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100">
+              <h3 className="font-bold text-gray-900 mb-1">{selectedConf?.title}</h3>
+              <p className="text-sm text-gray-600">{selectedConf?.description}</p>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Code d'accès
+              </label>
+              <Input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                placeholder="Entrez le code"
+                className="rounded-xl h-12 font-mono font-bold text-center text-lg"
+                maxLength={6}
+              />
+              <p className="text-xs text-gray-500 mt-2">Demandez le code à votre enseignant</p>
+            </div>
+            <Button
+              onClick={verifyAndJoin}
+              disabled={!joinCode || joinMutation.isPending}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 rounded-xl h-12 text-base font-bold"
+            >
+              {joinMutation.isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-5 h-5 mr-2" />
+                  Rejoindre
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>

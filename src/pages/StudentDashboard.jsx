@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2 } from 'lucide-react';
+import NotificationButton from '../components/student/NotificationButton';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import ProfileSetupForm from '../components/student/ProfileSetupForm';
 import PublicChat from '../components/PublicChat';
 import CommentThread from '../components/blog/CommentThread';
 import NotificationService from '../components/NotificationService';
-import NotificationBadge from '../components/student/NotificationBadge';
 
 export default function StudentDashboard() {
   const [user, setUser] = useState(null);
@@ -236,9 +234,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Notification Badge en haut */}
-      <NotificationBadge userEmail={user?.email} />
-
       {/* Header with Cover */}
       <div className="relative mb-4">
         <div className="h-32 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
@@ -254,7 +249,8 @@ export default function StudentDashboard() {
         </div>
         <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
                   {studentProfile.profile_photo ? (
@@ -280,6 +276,7 @@ export default function StudentDashboard() {
                   {studentProfile.domain}
                 </Badge>
               </div>
+              <NotificationButton userEmail={user?.email} />
             </div>
           </div>
         </div>

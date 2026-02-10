@@ -89,11 +89,6 @@ export default function StudentBottomNav() {
               >
                 <div className="relative">
                   <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
-                  {hasNewMessages && (
-                    <Badge className="absolute -top-2 -right-2 h-4 px-1 min-w-4 text-[10px] bg-red-500 text-white border-none">
-                      {unreadMessages}
-                    </Badge>
-                  )}
                 </div>
                 <span className="text-xs font-medium">{item.name}</span>
               </Link>
@@ -117,11 +112,6 @@ export default function StudentBottomNav() {
             className="fixed bottom-20 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
           >
             <MessagesSquare className="w-6 h-6" />
-            {unreadMessages > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">{unreadMessages}</span>
-              </div>
-            )}
           </button>
 
           {showChat && <PublicChat isAdmin={false} open={showChat} onClose={() => setShowChat(false)} />}
