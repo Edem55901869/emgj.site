@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Check, Upload, Loader2, Clock, CheckCircle2, XCircle, ExternalLink, Shield, Zap, Globe, Star } from 'lucide-react';
+import { Crown, Check, Upload, Loader2, Clock, CheckCircle2, XCircle, ExternalLink, Shield, Zap, Globe, Star, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,17 +39,10 @@ export default function AdminHosting() {
     enabled: !!admin?.email,
   });
 
-  const activePlan = hostingPlans.find(p => p.is_active);
-  const latestProof = myProofs[0];
-
-  const getDaysRemaining = () => {
-    if (!activePlan) return null;
-    const today = moment();
-    const endDate = moment(activePlan.end_date);
-    return endDate.diff(today, 'days');
-  };
-
-  const daysRemaining = getDaysRemaining();
+  const activeProofs = myProofs.filter(p => p.status === 'vérifié');
+  const activePlan = activeProofs.length > 0 ? activeProofs[0] : null;
+  const daysRemaining = activePlan ? Math.ceil((new Date(activePlan.verified_date).getTime() + (30 * 24 * 60 * 60 * 1000) - Date.now()) / (24 * 60 * 60 * 1000)) : null;
+  const showWarning = daysRemaining && daysRemaining <= 90;
 
   const handlePlanClick = (plan) => {
     if (plan.payment_link) {
@@ -132,9 +126,44 @@ export default function AdminHosting() {
         
         <div className="pt-20 px-4 pb-12 max-w-7xl mx-auto">
           
-          {/* Alerte hébergement actif */}
-          {latestProof?.status === 'vérifié' && activePlan && (
-            <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-600 p-8 shadow-2xl">
+          {/* Alerte d'hébergement - moins de 90 jours */}
+          {showWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-2xl shadow-xl border-2 border-amber-300"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2">⚠️ Hébergement bientôt expiré</h3>
+                  <p className="text-amber-50 mb-3">
+                    Votre hébergement expire dans <span className="font-black text-2xl">{daysRemaining}</span> jours.
+                    Pensez à renouveler pour maintenir votre plateforme active.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-white/20 rounded-full h-3 overflow-hidden">
+                      <div 
+                        className="bg-white h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(0, (daysRemaining / 90) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-bold whitespace-nowrap">{daysRemaining} jours restants</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          {/* Statut d'hébergement actif (si plus de 90 jours) */}
+          {activePlan && daysRemaining > 90 && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-600 p-8 shadow-2xl"
+            >
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
               <div className="relative z-10">
@@ -144,15 +173,15 @@ export default function AdminHosting() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-3xl font-bold text-white mb-2">🎉 Hébergement Actif</h3>
-                    <p className="text-white/90 text-lg mb-4">Votre plan <strong>{latestProof.plan_name}</strong> est opérationnel</p>
+                    <p className="text-white/90 text-lg mb-4">Votre plan <strong>{activePlan.plan_name}</strong> est opérationnel</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                         <p className="text-white/70 text-sm mb-1">Date d'activation</p>
-                        <p className="text-white font-bold text-lg">{moment(latestProof.verified_date).format('DD MMM YYYY')}</p>
+                        <p className="text-white font-bold text-lg">{moment(activePlan.verified_date).format('DD MMM YYYY')}</p>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-white/70 text-sm mb-1">Expire le</p>
-                        <p className="text-white font-bold text-lg">{moment(activePlan.end_date).format('DD MMM YYYY')}</p>
+                        <p className="text-white/70 text-sm mb-1">Expire dans</p>
+                        <p className="text-white font-bold text-lg">{Math.ceil(daysRemaining / 30)} mois</p>
                       </div>
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                         <p className="text-white/70 text-sm mb-1">Jours restants</p>
@@ -162,20 +191,7 @@ export default function AdminHosting() {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Alerte expiration proche */}
-          {daysRemaining !== null && daysRemaining <= 7 && daysRemaining > 0 && (
-            <div className="mb-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-3xl p-6 shadow-xl">
-              <div className="flex items-center gap-4 text-white">
-                <Clock className="w-8 h-8 flex-shrink-0 animate-pulse" />
-                <div>
-                  <h3 className="text-xl font-bold">⚠️ Attention : Expiration proche</h3>
-                  <p className="text-white/90">Votre hébergement expire dans {daysRemaining} jours. Renouvelez dès maintenant !</p>
-                </div>
-              </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Hero Section */}
