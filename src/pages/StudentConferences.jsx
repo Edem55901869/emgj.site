@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Radio, Loader2, Calendar, Users, Lock, Check, Search } from 'lucide-react';
+import { Radio, Loader2, Calendar, Users, Lock, Check, Search, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -160,25 +160,37 @@ export default function StudentConferences() {
                           </span>
                         )}
                       </div>
-                      {conf.status !== 'terminée' && (
-                        <Button
-                          onClick={() => handleJoin(conf)}
-                          disabled={conf.max_participants && conf.current_participants >= conf.max_participants}
-                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 rounded-xl h-10"
-                        >
-                          {conf.max_participants && conf.current_participants >= conf.max_participants ? (
-                            <>
-                              <Lock className="w-4 h-4 mr-2" />
-                              Conférence complète
-                            </>
-                          ) : (
-                            <>
-                              <Radio className="w-4 h-4 mr-2" />
-                              Rejoindre
-                            </>
-                          )}
-                        </Button>
-                      )}
+                      <div className="flex gap-2">
+                        {conf.status !== 'terminée' && (
+                          <Button
+                            onClick={() => handleJoin(conf)}
+                            disabled={conf.max_participants && conf.current_participants >= conf.max_participants}
+                            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 rounded-xl h-10"
+                          >
+                            {conf.max_participants && conf.current_participants >= conf.max_participants ? (
+                              <>
+                                <Lock className="w-4 h-4 mr-2" />
+                                Complète
+                              </>
+                            ) : (
+                              <>
+                                <Radio className="w-4 h-4 mr-2" />
+                                Rejoindre
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        {conf.status === 'terminée' && (
+                          <Button
+                            onClick={() => handleJoin(conf)}
+                            variant="outline"
+                            className="flex-1 rounded-xl h-10"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            Voir les discussions
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Radio, Plus, Trash2, Play, Square, Loader2, Calendar, Sparkles, Copy, Check, Users } from 'lucide-react';
+import { Radio, Plus, Trash2, Play, Square, Loader2, Calendar, Sparkles, Copy, Check, Users, MessageCircle, Video, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ import ConferenceRoom from '../components/conference/ConferenceRoom';
 
 export default function AdminConferences() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
+  const [form, setForm] = useState({ title: '', description: '', conference_type: 'audio', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
   const [audioFile, setAudioFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(null);
@@ -63,7 +63,7 @@ export default function AdminConferences() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminConfs'] });
       setCreateOpen(false);
-      setForm({ title: '', description: '', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
+      setForm({ title: '', description: '', conference_type: 'audio', access_code: '', scheduled_date: '', status: 'planifiée', max_participants: '' });
       setAudioFile(null);
       toast.success('Conférence créée');
     },
@@ -234,6 +234,18 @@ export default function AdminConferences() {
                             </Button>
                           </>
                         )}
+                        {conf.status === 'terminée' && (
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            className="h-9"
+                            onClick={() => openConference(conf)}
+                            title="Voir les discussions"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            Chat
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -268,6 +280,27 @@ export default function AdminConferences() {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">Description</label>
                 <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Décrivez le sujet de la conférence..." className="rounded-xl min-h-[100px]" />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Type de conférence</label>
+                <Select value={form.conference_type} onValueChange={(v) => setForm({ ...form, conference_type: v })}>
+                  <SelectTrigger className="rounded-xl h-12"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="audio">
+                      <div className="flex items-center gap-2">
+                        <Mic className="w-4 h-4" />
+                        Audio uniquement
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="video">
+                      <div className="flex items-center gap-2">
+                        <Video className="w-4 h-4" />
+                        Audio + Vidéo
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
