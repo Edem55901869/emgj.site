@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import HeroSection from '../components/landing/HeroSection';
+import VideoSection from '../components/landing/VideoSection';
 import DomainsSection from '../components/landing/DomainsSection';
 import CarouselSection from '../components/landing/CarouselSection';
 import TeachersSection from '../components/landing/TeachersSection';
@@ -16,6 +17,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <HeroSection />
+      <VideoSection />
       <DomainsSection />
       <CarouselSection />
       <TeachersSection />

@@ -66,6 +66,7 @@ import AdminViewAsStudent from './pages/AdminViewAsStudent';
 import Connexion from './pages/Connexion';
 import Contact from './pages/Contact';
 import Home from './pages/Home';
+import MaintenanceMode from './pages/MaintenanceMode';
 import StudentBulletins from './pages/StudentBulletins';
 import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
@@ -78,7 +79,7 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import MaintenanceMode from './pages/MaintenanceMode';
+import AdminHomeVideo from './pages/AdminHomeVideo';
 
 
 export const PAGES = {
@@ -101,6 +102,7 @@ export const PAGES = {
     "Connexion": Connexion,
     "Contact": Contact,
     "Home": Home,
+    "MaintenanceMode": MaintenanceMode,
     "StudentBulletins": StudentBulletins,
     "StudentConferences": StudentConferences,
     "StudentCourses": StudentCourses,
@@ -113,7 +115,7 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "MaintenanceMode": MaintenanceMode,
+    "AdminHomeVideo": AdminHomeVideo,
 }
 
 export const pagesConfig = {

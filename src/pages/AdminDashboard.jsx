@@ -11,6 +11,7 @@ import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import NotificationService from '../components/NotificationService';
 import PublicChat from '../components/PublicChat';
+import HostingBanner from '../components/HostingBanner';
 
 export default function AdminDashboard() {
   const [adminEmail, setAdminEmail] = useState(null);
