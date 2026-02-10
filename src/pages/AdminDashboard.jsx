@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Users, BookOpen, Newspaper, Library, Radio, MessageCircle, TrendingUp, Clock, CheckCircle, AlertCircle, Loader2, Award, DollarSign, BarChart3 } from 'lucide-react';
+import { Users, BookOpen, Newspaper, Library, Radio, MessageCircle, TrendingUp, Clock, CheckCircle, AlertCircle, Loader2, Award, DollarSign, BarChart3, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +10,6 @@ import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import NotificationService from '../components/NotificationService';
-import PublicChat from '../components/PublicChat';
 import HostingBanner from '../components/HostingBanner';
 
 export default function AdminDashboard() {
@@ -32,6 +31,16 @@ export default function AdminDashboard() {
   const { data: conferences = [] } = useQuery({ queryKey: ['conferences'], queryFn: () => base44.entities.Conference.list() });
   const { data: questions = [] } = useQuery({ queryKey: ['questions'], queryFn: () => base44.entities.CourseQuestion.list() });
   const { data: activities = [] } = useQuery({ queryKey: ['activities'], queryFn: () => base44.entities.RecentActivity.list('-created_date', 10) });
+  
+  const { data: hostingProofs = [] } = useQuery({ 
+    queryKey: ['hostingProofs', adminEmail], 
+    queryFn: () => base44.entities.HostingPaymentProof.filter({ admin_email: adminEmail, status: 'vérifié' }, '-verified_date', 1),
+    enabled: !!adminEmail,
+  });
+  
+  const activePlan = hostingProofs.length > 0 ? hostingProofs[0] : null;
+  const daysRemaining = activePlan ? Math.ceil((new Date(activePlan.verified_date).getTime() + (30 * 24 * 60 * 60 * 1000) - Date.now()) / (24 * 60 * 60 * 1000)) : null;
+  const showHostingAlert = daysRemaining && daysRemaining <= 90;
 
   const studentsCompleted = students.filter(student => {
     const studentCourses = courses.filter(c => c.domain === student.domain && c.formation_type === student.formation_type);
@@ -54,6 +63,42 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
+          
+          {/* Alerte hébergement - moins de 90 jours */}
+          {showHostingAlert && (
+            <Card className="mb-6 border-none shadow-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <AlertTriangle className="w-10 h-10" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2">⚠️ Hébergement bientôt expiré</h3>
+                    <p className="text-amber-50 mb-3">
+                      Votre hébergement expire dans <span className="font-black text-3xl mx-1">{daysRemaining}</span> jours.
+                      Renouvelez maintenant pour éviter toute interruption.
+                    </p>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-1 bg-white/20 rounded-full h-4 overflow-hidden">
+                        <div 
+                          className="bg-white h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.max(0, (daysRemaining / 90) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-bold whitespace-nowrap">{Math.round((daysRemaining / 90) * 100)}%</span>
+                    </div>
+                    <a 
+                      href="/AdminHosting" 
+                      className="inline-block bg-white text-amber-600 px-6 py-2.5 rounded-xl font-bold hover:bg-amber-50 transition-colors shadow-lg"
+                    >
+                      Renouveler maintenant →
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
             <p className="text-gray-500">Vue d'ensemble de votre plateforme EMGJ</p>
@@ -204,7 +249,6 @@ export default function AdminDashboard() {
         </div>
         
         <NotificationService userEmail={adminEmail} enabled={!!adminEmail} />
-        <PublicChat />
       </div>
     </AdminGuard>
   );

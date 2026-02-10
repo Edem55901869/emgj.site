@@ -265,13 +265,15 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">💬 Discussion publique</h3>
               <div className="flex items-center gap-2">
-                <button onClick={() => setShowThemes(!showThemes)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
-                  <Palette className="w-4 h-4 text-white/70" />
-                </button>
                 {isAdmin && (
-                  <Button onClick={() => deleteAllMutation.mutate()} variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-lg h-7">
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                  <>
+                    <button onClick={() => setShowThemes(!showThemes)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                      <Palette className="w-4 h-4 text-white/70" />
+                    </button>
+                    <Button onClick={() => deleteAllMutation.mutate()} variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-lg h-7">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </>
                 )}
                 <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
                   <X className="w-4 h-4 text-white/70" />

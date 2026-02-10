@@ -181,15 +181,19 @@ export default function AdminTopNav() {
         </div>
       )}
 
-      {/* Bouton de discussion flottant */}
-      <button
-        onClick={() => setShowChat(!showChat)}
-        className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
-      >
-        <MessagesSquare className="w-6 h-6" />
-      </button>
+      {/* Bouton de discussion flottant - seulement sur AdminDashboard */}
+      {location.pathname.includes('AdminDashboard') && (
+        <>
+          <button
+            onClick={() => setShowChat(!showChat)}
+            className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
+          >
+            <MessagesSquare className="w-6 h-6" />
+          </button>
 
-      {showChat && <PublicChat isAdmin={true} open={showChat} onClose={() => setShowChat(false)} />}
+          {showChat && <PublicChat isAdmin={true} open={showChat} onClose={() => setShowChat(false)} />}
+        </>
+      )}
     </>
   );
 }

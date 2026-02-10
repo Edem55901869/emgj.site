@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -13,6 +13,7 @@ const navItems = [
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
   { name: 'Groupes', icon: Users, page: 'StudentGroups' },
   { name: 'Bibliothèque', icon: Library, page: 'StudentLibrary' },
+  { name: 'Notifications', icon: Bell, page: 'StudentNotifications' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
 
@@ -45,6 +46,13 @@ export default function StudentBottomNav() {
     refetchInterval: 5000,
   });
 
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['studentNotifications', user?.email],
+    queryFn: () => base44.entities.Notification.filter({ student_email: user?.email, is_read: false }),
+    enabled: !!user?.email,
+    refetchInterval: 10000,
+  });
+
   const handleAdminReturn = () => {
     localStorage.removeItem('admin_student_view');
     navigate(createPageUrl('AdminDashboard'));
@@ -68,13 +76,15 @@ export default function StudentBottomNav() {
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.page);
             const isGroups = item.name === 'Groupes';
+            const isNotifications = item.name === 'Notifications';
             const hasNewMessages = isGroups && publicMessages.length > 0;
+            const hasUnreadNotifications = isNotifications && notifications.length > 0;
 
             return (
               <Link
                 key={item.name}
                 to={createPageUrl(item.page)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
+                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-xl transition-all ${
                   isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -82,6 +92,11 @@ export default function StudentBottomNav() {
                   <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
                   {hasNewMessages && (
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  )}
+                  {hasUnreadNotifications && (
+                    <Badge className="absolute -top-2 -right-2 h-4 px-1 min-w-4 text-[10px] bg-red-500 text-white border-none">
+                      {notifications.length}
+                    </Badge>
                   )}
                 </div>
                 <span className="text-xs font-medium">{item.name}</span>
@@ -91,20 +106,24 @@ export default function StudentBottomNav() {
         </div>
       </nav>
 
-      {/* Bouton de chat flottant */}
-      <button
-        onClick={() => setShowChat(!showChat)}
-        className="fixed bottom-20 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
-      >
-        <MessagesSquare className="w-6 h-6" />
-        {publicMessages.length > 0 && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold">{publicMessages.length}</span>
-          </div>
-        )}
-      </button>
+      {/* Bouton de chat flottant - seulement sur StudentDashboard */}
+      {location.pathname.includes('StudentDashboard') && (
+        <>
+          <button
+            onClick={() => setShowChat(!showChat)}
+            className="fixed bottom-20 right-6 z-[60] w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform"
+          >
+            <MessagesSquare className="w-6 h-6" />
+            {publicMessages.length > 0 && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold">{publicMessages.length}</span>
+              </div>
+            )}
+          </button>
 
-      {showChat && <PublicChat isAdmin={false} open={showChat} onClose={() => setShowChat(false)} />}
+          {showChat && <PublicChat isAdmin={false} open={showChat} onClose={() => setShowChat(false)} />}
+        </>
+      )}
     </>
   );
 }
