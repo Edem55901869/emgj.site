@@ -36,13 +36,13 @@ export default function VideoSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2.5 rounded-full text-sm font-bold mb-6 shadow-xl">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-bold mb-6 shadow-xl">
             <Play className="w-4 h-4" />
             Vidéo de présentation
           </div>
           
           {activeVideo.title && (
-            <h2 className="text-4xl md:text-6xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-6xl font-black mb-6 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 bg-clip-text text-transparent">
               {activeVideo.title}
             </h2>
           )}
@@ -61,10 +61,10 @@ export default function VideoSection() {
           className="relative group"
         >
           {/* Glow effect on hover */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 rounded-3xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
           
           {/* Video container */}
-          <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-blue-500/20 ring-offset-4">
+          <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-slate-500/20 ring-offset-4">
             <video
               src={activeVideo.video_url}
               controls
