@@ -102,14 +102,29 @@ export default function StudentProfile() {
             <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-5 border border-white/50">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
-                    <span className="text-3xl font-bold text-white">
-                      {student.first_name?.[0]}{student.last_name?.[0]}
-                    </span>
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg">
+                    {student.profile_photo ? (
+                      <img src={student.profile_photo} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center">
+                        <span className="text-3xl font-bold text-white">
+                          {student.first_name?.[0]}{student.last_name?.[0]}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   {student.status === 'certifié' && (
                     <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-green-500 border-3 border-white flex items-center justify-center shadow-lg">
                       <CheckCircle2 className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <label className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700 transition-colors">
+                    <Camera className="w-4 h-4 text-white" />
+                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                  </label>
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
                     </div>
                   )}
                 </div>

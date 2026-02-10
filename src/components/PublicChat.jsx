@@ -70,6 +70,21 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
     loadUser();
   }, []);
 
+  // Charger le thème global configuré par l'admin
+  const { data: themeConfig } = useQuery({
+    queryKey: ['chatThemeConfig'],
+    queryFn: async () => {
+      const configs = await base44.entities.ChatThemeConfig.filter({ is_active: true });
+      return configs[0] || { theme_index: 0 };
+    },
+  });
+
+  useEffect(() => {
+    if (themeConfig) {
+      setThemeIndex(themeConfig.theme_index || 0);
+    }
+  }, [themeConfig]);
+
   const { data: messages = [] } = useQuery({
     queryKey: ['publicMessages'],
     queryFn: () => base44.entities.PublicMessage.list('-created_date', 200),
@@ -227,10 +242,26 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
             </div>
             
             {/* Theme Selector */}
-            {showThemes && (
+            {showThemes && isAdmin && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                 {THEMES.map((theme, i) => (
-                  <button key={i} onClick={() => { setThemeIndex(i); setShowThemes(false); }} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+                  <button 
+                    key={i} 
+                    onClick={async () => { 
+                      setThemeIndex(i); 
+                      setShowThemes(false);
+                      // Sauvegarder le thème pour tous les utilisateurs
+                      const configs = await base44.entities.ChatThemeConfig.filter({ is_active: true });
+                      if (configs.length > 0) {
+                        await base44.entities.ChatThemeConfig.update(configs[0].id, { theme_index: i });
+                      } else {
+                        await base44.entities.ChatThemeConfig.create({ theme_index: i, is_active: true });
+                      }
+                      queryClient.invalidateQueries({ queryKey: ['chatThemeConfig'] });
+                      toast.success('Thème appliqué pour tous');
+                    }} 
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                  >
                     {theme.name}
                   </button>
                 ))}
@@ -276,17 +307,23 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                     <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                       {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
                     </p>
-                    {isAdmin && (
+                    {(isAdmin || msg.sender_email === user.email) && (
                       <div className="flex gap-1">
-                        <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
-                          <Pin className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
-                          <Star className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                              <Pin className="w-3 h-3" />
+                            </button>
+                            <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                              <Star className="w-3 h-3" />
+                            </button>
+                          </>
+                        )}
+                        {(isAdmin || msg.sender_email === user.email) && (
+                          <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

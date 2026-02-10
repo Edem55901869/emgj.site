@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Image as ImageIcon, Mic, Loader2, X, Palette } from 'lucide-react';
+import { Send, Image as ImageIcon, Mic, Loader2, X, Palette, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -59,6 +59,7 @@ export default function GroupChat({ group, open, onClose }) {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [themeIndex, setThemeIndex] = useState(0);
   const [showThemes, setShowThemes] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -67,10 +68,32 @@ export default function GroupChat({ group, open, onClose }) {
       try {
         const u = await base44.auth.me();
         setUser(u);
+        
+        // Vérifier si l'utilisateur est admin du groupe
+        const admins = await base44.entities.GroupAdmin.filter({ 
+          group_id: group?.id, 
+          student_email: u.email 
+        });
+        setIsAdmin(admins.length > 0);
       } catch {}
     };
-    loadUser();
-  }, []);
+    if (group?.id) loadUser();
+  }, [group?.id]);
+
+  // Charger le thème global configuré par l'admin
+  const { data: themeConfig } = useQuery({
+    queryKey: ['chatThemeConfig'],
+    queryFn: async () => {
+      const configs = await base44.entities.ChatThemeConfig.filter({ is_active: true });
+      return configs[0] || { theme_index: 0 };
+    },
+  });
+
+  useEffect(() => {
+    if (themeConfig) {
+      setThemeIndex(themeConfig.theme_index || 0);
+    }
+  }, [themeConfig]);
 
   const { data: messages = [] } = useQuery({
     queryKey: ['groupMessages', group?.id],
@@ -84,6 +107,14 @@ export default function GroupChat({ group, open, onClose }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groupMessages', group?.id] });
       setMessage('');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.GroupMessage.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupMessages', group?.id] });
+      toast.success('Message supprimé');
     },
   });
 
@@ -178,10 +209,26 @@ export default function GroupChat({ group, open, onClose }) {
               <Palette className="w-4 h-4 text-white" />
             </button>
           </div>
-          {showThemes && (
+          {showThemes && isAdmin && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
               {THEMES.map((theme, i) => (
-                <button key={i} onClick={() => { setThemeIndex(i); setShowThemes(false); }} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}>
+                <button 
+                  key={i} 
+                  onClick={async () => { 
+                    setThemeIndex(i); 
+                    setShowThemes(false);
+                    // Sauvegarder le thème pour tous les utilisateurs
+                    const configs = await base44.entities.ChatThemeConfig.filter({ is_active: true });
+                    if (configs.length > 0) {
+                      await base44.entities.ChatThemeConfig.update(configs[0].id, { theme_index: i });
+                    } else {
+                      await base44.entities.ChatThemeConfig.create({ theme_index: i, is_active: true });
+                    }
+                    queryClient.invalidateQueries({ queryKey: ['chatThemeConfig'] });
+                    toast.success('Thème appliqué pour tous');
+                  }} 
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${i === themeIndex ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                >
                   {theme.name}
                 </button>
               ))}
@@ -209,9 +256,19 @@ export default function GroupChat({ group, open, onClose }) {
                   <audio src={msg.media_url} controls className="mb-2" />
                 )}
                 <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
-                <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
-                  {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                    {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
+                  </p>
+                  {(isAdmin || msg.sender_email === user.email) && (
+                    <button 
+                      onClick={() => deleteMutation.mutate(msg.id)} 
+                      className={`text-[10px] hover:opacity-70 ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
