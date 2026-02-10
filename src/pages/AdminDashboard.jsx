@@ -50,6 +50,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminGuard>
+      <HostingBanner />
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
