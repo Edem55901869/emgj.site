@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Radio, Plus, Trash2, Play, Square, Loader2, Calendar, Sparkles, Copy, Check, Users } from 'lucide-react';
@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import ConferenceRoom from '../components/conference/ConferenceRoom';
 
 export default function AdminConferences() {
   const [createOpen, setCreateOpen] = useState(false);
@@ -21,7 +22,15 @@ export default function AdminConferences() {
   const [audioFile, setAudioFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [inConference, setInConference] = useState(false);
+  const [selectedConf, setSelectedConf] = useState(null);
+  const [admin, setAdmin] = useState(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const adminData = JSON.parse(localStorage.getItem('emgj_admin') || '{}');
+    setAdmin(adminData);
+  }, []);
 
   const generateCode = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -76,11 +85,32 @@ export default function AdminConferences() {
     },
   });
 
+  const openConference = (conf) => {
+    setSelectedConf(conf);
+    setInConference(true);
+  };
+
   const statusColors = {
     planifiée: 'bg-blue-50 text-blue-700 border-blue-200',
     en_cours: 'bg-green-50 text-green-700 border-green-200',
     terminée: 'bg-gray-100 text-gray-600 border-gray-200',
   };
+
+  if (inConference && selectedConf) {
+    return (
+      <ConferenceRoom
+        conference={selectedConf}
+        userEmail={admin?.email}
+        userName={admin ? `${admin.first_name} ${admin.last_name}` : 'Admin'}
+        isAdmin={true}
+        onClose={() => {
+          setInConference(false);
+          setSelectedConf(null);
+          queryClient.invalidateQueries({ queryKey: ['adminConfs'] });
+        }}
+      />
+    );
+  }
 
   return (
     <AdminGuard>
@@ -183,15 +213,26 @@ export default function AdminConferences() {
                           </Button>
                         )}
                         {conf.status === 'en_cours' && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-9 w-9 hover:bg-red-50 hover:text-red-600" 
-                            onClick={() => updateStatusMutation.mutate({ id: conf.id, status: 'terminée' })}
-                            title="Terminer"
-                          >
-                            <Square className="w-4 h-4" />
-                          </Button>
+                          <>
+                            <Button 
+                              size="sm"
+                              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 h-9"
+                              onClick={() => openConference(conf)}
+                              title="Ouvrir"
+                            >
+                              <Radio className="w-4 h-4 mr-1" />
+                              Ouvrir
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 hover:bg-red-50 hover:text-red-600" 
+                              onClick={() => updateStatusMutation.mutate({ id: conf.id, status: 'terminée' })}
+                              title="Terminer"
+                            >
+                              <Square className="w-4 h-4" />
+                            </Button>
+                          </>
                         )}
                         <Button 
                           variant="ghost" 

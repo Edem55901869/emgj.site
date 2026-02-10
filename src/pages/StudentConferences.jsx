@@ -11,18 +11,23 @@ import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import StudentBottomNav from '../components/student/StudentBottomNav';
+import ConferenceRoom from '../components/conference/ConferenceRoom';
 
 export default function StudentConferences() {
   const [joinCode, setJoinCode] = useState('');
   const [selectedConf, setSelectedConf] = useState(null);
   const [joinOpen, setJoinOpen] = useState(false);
+  const [inConference, setInConference] = useState(false);
   const [user, setUser] = useState(null);
+  const [student, setStudent] = useState(null);
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
     const load = async () => {
       const u = await base44.auth.me();
       setUser(u);
+      const students = await base44.entities.Student.filter({ user_email: u.email });
+      if (students.length > 0) setStudent(students[0]);
     };
     load();
   }, []);
@@ -40,13 +45,14 @@ export default function StudentConferences() {
       await base44.entities.Conference.update(conf.id, {
         current_participants: (conf.current_participants || 0) + 1
       });
+      return conf;
     },
-    onSuccess: () => {
+    onSuccess: (conf) => {
       queryClient.invalidateQueries({ queryKey: ['studentConferences'] });
       toast.success('Vous avez rejoint la conférence !');
       setJoinOpen(false);
       setJoinCode('');
-      setSelectedConf(null);
+      setInConference(true);
     },
     onError: (error) => {
       toast.error(error.message || 'Erreur lors de la connexion');
@@ -71,6 +77,22 @@ export default function StudentConferences() {
     en_cours: { label: '🟢 En direct', color: 'bg-green-50 text-green-700 border-green-200 animate-pulse' },
     terminée: { label: '⚫ Terminée', color: 'bg-gray-100 text-gray-600 border-gray-200' }
   };
+
+  if (inConference && selectedConf) {
+    return (
+      <ConferenceRoom
+        conference={selectedConf}
+        userEmail={user?.email}
+        userName={student ? `${student.first_name} ${student.last_name}` : user?.full_name || 'Étudiant'}
+        isAdmin={false}
+        onClose={() => {
+          setInConference(false);
+          setSelectedConf(null);
+          queryClient.invalidateQueries({ queryKey: ['studentConferences'] });
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
