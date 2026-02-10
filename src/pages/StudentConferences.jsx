@@ -37,6 +37,17 @@ export default function StudentConferences() {
     queryFn: () => base44.entities.Conference.list('-created_date', 50),
   });
 
+  const { data: allMessages = [] } = useQuery({
+    queryKey: ['allConferenceMessages'],
+    queryFn: () => base44.entities.ConferenceMessage.list('-created_date', 500),
+    refetchInterval: 3000,
+  });
+
+  const getUnreadCount = (confId) => {
+    const confMessages = allMessages.filter(m => m.conference_id === confId);
+    return confMessages.length;
+  };
+
   const joinMutation = useMutation({
     mutationFn: async (conf) => {
       if (conf.max_participants && conf.current_participants >= conf.max_participants) {
@@ -147,6 +158,11 @@ export default function StudentConferences() {
                         <Badge className={`text-xs font-semibold ${statusConfig[conf.status].color}`}>
                           {statusConfig[conf.status].label}
                         </Badge>
+                        {getUnreadCount(conf.id) > 0 && (
+                          <Badge className="bg-red-500 text-white text-xs">
+                            {getUnreadCount(conf.id)} message{getUnreadCount(conf.id) > 1 ? 's' : ''}
+                          </Badge>
+                        )}
                         {conf.scheduled_date && (
                           <span className="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-lg">
                             <Calendar className="w-3.5 h-3.5" />
