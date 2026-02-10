@@ -55,6 +55,7 @@ import AdminConferences from './pages/AdminConferences';
 import AdminCourses from './pages/AdminCourses';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminGroups from './pages/AdminGroups';
+import AdminHomeVideo from './pages/AdminHomeVideo';
 import AdminHosting from './pages/AdminHosting';
 import AdminLibrary from './pages/AdminLibrary';
 import AdminManagement from './pages/AdminManagement';
@@ -79,7 +80,6 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import AdminHomeVideo from './pages/AdminHomeVideo';
 
 
 export const PAGES = {
@@ -91,6 +91,7 @@ export const PAGES = {
     "AdminCourses": AdminCourses,
     "AdminDashboard": AdminDashboard,
     "AdminGroups": AdminGroups,
+    "AdminHomeVideo": AdminHomeVideo,
     "AdminHosting": AdminHosting,
     "AdminLibrary": AdminLibrary,
     "AdminManagement": AdminManagement,
@@ -115,7 +116,6 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "AdminHomeVideo": AdminHomeVideo,
 }
 
 export const pagesConfig = {

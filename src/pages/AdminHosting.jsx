@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Check, Upload, Loader2, AlertTriangle, Calendar, ExternalLink, Shield, Zap, TrendingUp } from 'lucide-react';
+import { Crown, Check, Zap, Shield, Headphones, Upload, Loader2, CheckCircle2, Clock, XCircle, Sparkles, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,11 +84,9 @@ export default function AdminHosting() {
       setProofFile(null);
       setSelectedPlan(null);
       setUploading(false);
-      toast.success('✅ Preuve soumise avec succès ! Votre demande sera traitée sous 48h.', {
-        duration: 5000,
-      });
+      toast.success('✅ Preuve soumise avec succès !');
     },
-    onError: (error) => {
+    onError: () => {
       toast.error('Erreur lors de la soumission');
       setUploading(false);
     }
@@ -97,61 +95,91 @@ export default function AdminHosting() {
   const plans = [
     { 
       name: 'Basic', 
-      originalPrice: '31,522',
       price: '29,000', 
-      features: ['100 étudiants max', '10 GB stockage', 'Support email', '1 domaine personnalisé'], 
-      color: 'from-blue-600 to-blue-700',
-      gradient: 'from-blue-500 via-blue-600 to-blue-700',
-      icon: '🚀'
+      period: 'mois',
+      description: 'Parfait pour démarrer votre plateforme',
+      features: [
+        '100 étudiants maximum',
+        '10 GB de stockage cloud',
+        'Support par email',
+        '1 domaine personnalisé',
+        'Certificat SSL gratuit'
+      ],
+      icon: Zap,
+      gradient: 'from-blue-500 to-cyan-500',
+      popular: false
     },
     { 
       name: 'Pro', 
-      originalPrice: '85,870',
       price: '79,000', 
-      features: ['500 étudiants max', '50 GB stockage', 'Support prioritaire', '3 domaines personnalisés', 'Analytics avancé'], 
-      color: 'from-purple-600 to-indigo-700',
-      gradient: 'from-purple-500 via-indigo-600 to-purple-700',
-      popular: true, 
-      icon: '⭐'
+      period: 'mois',
+      description: 'Pour une croissance accélérée',
+      features: [
+        '500 étudiants maximum',
+        '50 GB de stockage cloud',
+        'Support prioritaire 24/7',
+        '3 domaines personnalisés',
+        'Analytics avancé',
+        'Sauvegarde quotidienne'
+      ],
+      icon: Crown,
+      gradient: 'from-purple-500 to-pink-500',
+      popular: true,
+      badge: 'Le plus populaire'
     },
     { 
       name: 'Enterprise', 
-      originalPrice: '161,957',
       price: '149,000', 
-      features: ['Étudiants illimités', '200 GB stockage', 'Support 24/7', 'Domaines illimités', 'API complète', 'Sauvegarde automatique'], 
-      color: 'from-indigo-700 to-blue-700',
-      gradient: 'from-indigo-600 via-blue-600 to-indigo-700',
-      icon: '👑'
+      period: 'mois',
+      description: 'Solution complète sans limites',
+      features: [
+        'Étudiants illimités',
+        '200 GB de stockage cloud',
+        'Support VIP dédié 24/7',
+        'Domaines illimités',
+        'API complète & webhooks',
+        'Sauvegarde en temps réel',
+        'Migration gratuite'
+      ],
+      icon: Star,
+      gradient: 'from-amber-500 to-orange-500',
+      popular: false
     },
   ];
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-red-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <AdminTopNav />
-        <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
+        
+        <div className="pt-24 px-4 pb-16 max-w-7xl mx-auto">
           
-          {/* Carte de statut en haut si validation */}
-          {latestProof?.status === 'vérifié' && (
-            <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl shadow-2xl overflow-hidden transform hover:scale-[1.01] transition-all">
-              <div className="p-6 text-white">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Check className="w-8 h-8" />
+          {/* Alerte de statut actif */}
+          {latestProof?.status === 'vérifié' && activePlan && (
+            <div className="mb-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="p-6 text-white relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                <div className="relative flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-1">🎉 Hébergement Validé !</h3>
-                    <p className="text-white/90">Votre plan <strong>{latestProof.plan_name}</strong> est maintenant actif</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/20">
-                  <div>
-                    <p className="text-white/70 text-sm">Date de validation</p>
-                    <p className="font-bold">{moment(latestProof.verified_date).format('DD MMMM YYYY')}</p>
-                  </div>
-                  <div>
-                    <p className="text-white/70 text-sm">Expire le</p>
-                    <p className="font-bold">{activePlan && moment(activePlan.end_date).format('DD MMMM YYYY')}</p>
+                    <h3 className="text-2xl font-bold mb-1">🎉 Hébergement actif</h3>
+                    <p className="text-white/90 mb-4">Plan <strong>{latestProof.plan_name}</strong> validé avec succès</p>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <p className="text-white/80 text-xs mb-1">Date de validation</p>
+                        <p className="font-bold">{moment(latestProof.verified_date).format('DD MMM YYYY')}</p>
+                      </div>
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <p className="text-white/80 text-xs mb-1">Expire le</p>
+                        <p className="font-bold">{moment(activePlan.end_date).format('DD MMM YYYY')}</p>
+                      </div>
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <p className="text-white/80 text-xs mb-1">Jours restants</p>
+                        <p className="font-bold">{daysRemaining} jours</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -159,100 +187,79 @@ export default function AdminHosting() {
           )}
 
           {/* Hero Section */}
-          <div className="text-center mb-12 relative">
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <Sparkles className="w-64 h-64 text-blue-600" />
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-semibold mb-6 shadow-lg">
+              <Sparkles className="w-4 h-4" />
+              Offre de lancement - Économisez 8%
             </div>
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg">
-                <Sparkles className="w-4 h-4" />
-                Offre Spéciale VIP - Réduction de 8%
-              </div>
-              <h1 className="text-5xl md:text-6xl font-black mb-4">
-                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent">
-                  Plans d'Hébergement Premium
-                </span>
-              </h1>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Solution d'hébergement professionnelle pour votre plateforme éducative
-              </p>
-            </div>
+            <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 bg-clip-text text-transparent">
+              Hébergement Premium
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Propulsez votre plateforme éducative avec notre infrastructure cloud professionnelle
+            </p>
           </div>
 
-          {/* Plans d'hébergement */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {plans.map((plan, i) => {
+          {/* Plans */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {plans.map((plan, idx) => {
               const planConfig = hostingPlans.find(p => p.plan_name === plan.name);
-              const discount = Math.round(((parseInt(plan.originalPrice.replace(/,/g, '')) - parseInt(plan.price.replace(/,/g, ''))) / parseInt(plan.originalPrice.replace(/,/g, ''))) * 100);
+              const Icon = plan.icon;
               
               return (
-                <div key={i} className={`relative group ${plan.popular ? 'md:-mt-4' : ''}`}>
+                <div key={idx} className={`relative ${plan.popular ? 'md:-mt-4' : ''}`}>
                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                      <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-2 text-sm font-bold shadow-2xl border-2 border-white animate-pulse">
-                        ⭐ PLUS POPULAIRE
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1.5 text-xs font-bold shadow-xl">
+                        ⭐ {plan.badge}
                       </Badge>
                     </div>
                   )}
                   
-                  <Card className={`border-0 shadow-2xl overflow-hidden bg-white transform hover:scale-105 transition-all duration-300 ${plan.popular ? 'ring-4 ring-purple-500' : ''}`}>
-                    {/* Header */}
-                    <div className={`h-40 bg-gradient-to-br ${plan.gradient} relative overflow-hidden`}>
-                      <div className="absolute inset-0 opacity-20">
-                        <div className="absolute inset-0" style={{
-                          backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.4) 0%, transparent 60%)'
-                        }} />
-                      </div>
-                      <div className="relative h-full flex flex-col items-center justify-center text-white">
-                        <div className="text-6xl mb-2 animate-bounce">{plan.icon}</div>
-                        <h3 className="text-3xl font-black tracking-tight">{plan.name}</h3>
-                      </div>
-                      
-                      {/* Badge réduction */}
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-yellow-400 text-gray-900 font-bold text-xs px-3 py-1">
-                          -{discount}%
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <CardContent className="p-6">
-                      {/* Prix */}
-                      <div className="text-center mb-6 pb-6 border-b-2 border-gray-100">
-                        <div className="text-sm text-gray-400 line-through mb-1">
-                          {plan.originalPrice} XOF
-                        </div>
-                        <div className={`text-5xl font-black bg-gradient-to-r ${plan.gradient} bg-clip-text text-transparent mb-1`}>
-                          {plan.price}
-                        </div>
-                        <div className="text-gray-500 font-semibold">XOF / mois</div>
+                  <Card className={`relative overflow-hidden border-2 ${plan.popular ? 'border-purple-300 shadow-2xl scale-105' : 'border-gray-200 shadow-lg hover:shadow-xl'} transition-all duration-300 hover:scale-105 bg-white`}>
+                    {/* Background gradient decoration */}
+                    <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${plan.gradient} opacity-10 rounded-full blur-3xl`}></div>
+                    
+                    <CardContent className="p-8 relative">
+                      {/* Icon */}
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-6 shadow-lg`}>
+                        <Icon className="w-8 h-8 text-white" />
                       </div>
 
-                      {/* Fonctionnalités */}
-                      <div className="space-y-3 mb-6">
-                        {plan.features.map((feature, j) => (
-                          <div key={j} className="flex items-start gap-3">
-                            <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center flex-shrink-0`}>
-                              <Check className="w-4 h-4 text-white" />
+                      {/* Plan name */}
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                      <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
+
+                      {/* Price */}
+                      <div className="mb-6">
+                        <div className="flex items-baseline gap-2">
+                          <span className={`text-5xl font-black bg-gradient-to-r ${plan.gradient} bg-clip-text text-transparent`}>
+                            {plan.price}
+                          </span>
+                          <span className="text-gray-500 font-medium">XOF</span>
+                        </div>
+                        <p className="text-gray-500 text-sm">par {plan.period}</p>
+                      </div>
+
+                      {/* Features */}
+                      <div className="space-y-3 mb-8">
+                        {plan.features.map((feature, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                              <Check className="w-3 h-3 text-white" />
                             </div>
-                            <span className="text-sm text-gray-700 leading-tight font-medium">{feature}</span>
+                            <span className="text-gray-700 text-sm">{feature}</span>
                           </div>
                         ))}
                       </div>
 
-                      {/* Bouton */}
+                      {/* CTA */}
                       <Button 
                         onClick={() => planConfig && handlePlanClick(planConfig)}
                         disabled={!planConfig?.payment_link}
-                        className={`w-full h-14 text-lg font-black bg-gradient-to-r ${plan.gradient} hover:opacity-90 rounded-2xl shadow-xl transition-all transform hover:scale-105`}
+                        className={`w-full h-12 font-bold text-white bg-gradient-to-r ${plan.gradient} hover:opacity-90 rounded-xl shadow-lg transition-all`}
                       >
-                        {planConfig?.payment_link ? (
-                          <span className="flex items-center justify-center gap-2">
-                            Souscrire <ExternalLink className="w-5 h-5" />
-                          </span>
-                        ) : (
-                          'Non disponible'
-                        )}
+                        {planConfig?.payment_link ? 'Choisir ce plan' : 'Bientôt disponible'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -261,93 +268,76 @@ export default function AdminHosting() {
             })}
           </div>
 
-          {/* Section VIP Features */}
-          <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-3xl p-8 mb-12 shadow-2xl overflow-hidden relative">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)`
-              }} />
+          {/* Trust Section */}
+          <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-16 border border-gray-100">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Pourquoi nous faire confiance ?</h2>
+              <p className="text-gray-600">Infrastructure professionnelle pour votre réussite</p>
             </div>
-            <div className="relative">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-black text-white mb-2 font-mono">
-                  &gt; FONCTIONNALITÉS VIP INCLUSES
-                </h2>
-                <p className="text-blue-300 font-mono text-sm mb-4">{'{'} Technologie de pointe pour votre plateforme {'}'}</p>
-                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/30 rounded-xl p-4 max-w-3xl mx-auto">
-                  <p className="text-white/90 text-base leading-relaxed">
-                    Bénéficiez d'une infrastructure cloud professionnelle avec des serveurs ultra-performants répartis dans le monde entier. 
-                    Votre plateforme sera accessible 24h/24 avec une vitesse de chargement optimale, peu importe le nombre d'utilisateurs connectés. 
-                    Tous nos plans incluent une maintenance proactive et des mises à jour automatiques pour garantir une expérience utilisateur exceptionnelle.
-                  </p>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
-                  <Shield className="w-12 h-12 text-blue-400 mb-4" />
-                  <h3 className="text-white font-bold text-lg mb-2 font-mono">&gt; Sécurité Maximale</h3>
-                  <p className="text-blue-200 text-sm font-mono">
-                    {'{'} SSL + Firewall + Protection DDoS + Sauvegardes quotidiennes {'}'}
-                  </p>
-                </div>
-                
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
-                  <Zap className="w-12 h-12 text-yellow-400 mb-4" />
-                  <h3 className="text-white font-bold text-lg mb-2 font-mono">&gt; Performance Ultra-Rapide</h3>
-                  <p className="text-blue-200 text-sm font-mono">
-                    {'{'} CDN Global + Cache Optimisé + Temps de chargement &lt; 1s {'}'}
-                  </p>
-                </div>
-                
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
-                  <TrendingUp className="w-12 h-12 text-green-400 mb-4" />
-                  <h3 className="text-white font-bold text-lg mb-2 font-mono">&gt; Évolutivité Illimitée</h3>
-                  <p className="text-blue-200 text-sm font-mono">
-                    {'{'} Scaling automatique + 99.9% uptime + Support 24/7 {'}'}
-                  </p>
-                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Sécurité maximale</h3>
+                <p className="text-gray-600 text-sm">Certificat SSL, firewall avancé et sauvegardes quotidiennes pour protéger vos données</p>
               </div>
 
-              <div className="mt-8 text-center">
-                <p className="text-yellow-400 font-mono text-sm">
-                  &gt;&gt; ÉCONOMISEZ <span className="text-2xl font-black">8%</span> SUR TOUS LES PLANS &lt;&lt;
-                </p>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Performance optimale</h3>
+                <p className="text-gray-600 text-sm">Serveurs ultra-rapides avec CDN global pour un temps de chargement minimal</p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Headphones className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Support dédié</h3>
+                <p className="text-gray-600 text-sm">Équipe d'experts disponible 24/7 pour vous accompagner dans votre projet</p>
               </div>
             </div>
           </div>
 
-          {/* Mes preuves */}
+          {/* Historique des demandes */}
           {myProofs.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Calendar className="w-6 h-6 text-blue-600" />
-                Historique de mes demandes
-              </h2>
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Historique des paiements</h2>
               <div className="space-y-3">
                 {myProofs.map((proof) => (
-                  <div key={proof.id} className={`p-5 rounded-2xl border-2 ${
+                  <div key={proof.id} className={`flex items-center justify-between p-4 rounded-xl border-2 ${
                     proof.status === 'vérifié' ? 'bg-green-50 border-green-200' :
                     proof.status === 'rejeté' ? 'bg-red-50 border-red-200' :
                     'bg-blue-50 border-blue-200'
                   }`}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-gray-900">{proof.plan_name} - {proof.amount}</p>
-                        <p className="text-sm text-gray-600">Soumis le {moment(proof.created_date).format('DD/MM/YYYY à HH:mm')}</p>
-                        {proof.verified_date && (
-                          <p className="text-sm text-gray-600">Traité le {moment(proof.verified_date).format('DD/MM/YYYY à HH:mm')}</p>
-                        )}
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        proof.status === 'vérifié' ? 'bg-green-500' :
+                        proof.status === 'rejeté' ? 'bg-red-500' :
+                        'bg-blue-500'
+                      }`}>
+                        {proof.status === 'vérifié' ? <CheckCircle2 className="w-5 h-5 text-white" /> :
+                         proof.status === 'rejeté' ? <XCircle className="w-5 h-5 text-white" /> :
+                         <Clock className="w-5 h-5 text-white" />}
                       </div>
-                      <Badge className={
-                        proof.status === 'vérifié' ? 'bg-green-500 text-white' :
-                        proof.status === 'rejeté' ? 'bg-red-500 text-white' :
-                        'bg-blue-500 text-white'
-                      }>
-                        {proof.status === 'en_attente' ? '⏳ En vérification' : 
-                         proof.status === 'vérifié' ? '✅ Validé' : '❌ Rejeté'}
-                      </Badge>
+                      <div>
+                        <p className="font-bold text-gray-900">{proof.plan_name} - {proof.amount} XOF</p>
+                        <p className="text-sm text-gray-600">
+                          Soumis le {moment(proof.created_date).format('DD MMMM YYYY à HH:mm')}
+                        </p>
+                      </div>
                     </div>
+                    <Badge className={
+                      proof.status === 'vérifié' ? 'bg-green-600 text-white' :
+                      proof.status === 'rejeté' ? 'bg-red-600 text-white' :
+                      'bg-blue-600 text-white'
+                    }>
+                      {proof.status === 'en_attente' ? 'En vérification' : 
+                       proof.status === 'vérifié' ? 'Validé' : 'Rejeté'}
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -356,40 +346,39 @@ export default function AdminHosting() {
         </div>
       </div>
 
-      {/* Dialog */}
+      {/* Dialog proof */}
       <Dialog open={showProofDialog} onOpenChange={setShowProofDialog}>
-        <DialogContent className="max-w-md rounded-3xl">
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Soumettre votre preuve de paiement
-            </DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Preuve de paiement</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
-              <p className="text-sm text-gray-700 mb-2">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-100">
+              <p className="text-sm text-gray-700 mb-1">
                 <strong>Plan:</strong> {selectedPlan?.plan_name}
               </p>
               <p className="text-sm text-gray-700">
-                <strong>Montant:</strong> {selectedPlan?.price}
+                <strong>Montant:</strong> {selectedPlan?.price} XOF
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                📎 Joindre la preuve de paiement
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Joindre votre justificatif
               </label>
               <Input 
                 type="file" 
                 accept="image/*,.pdf"
                 onChange={(e) => setProofFile(e.target.files[0])}
-                className="cursor-pointer h-12 rounded-xl"
+                className="cursor-pointer h-11 rounded-xl"
               />
+              <p className="text-xs text-gray-500 mt-2">Formats acceptés: JPG, PNG, PDF</p>
             </div>
 
             <Button 
               onClick={() => submitProofMutation.mutate()}
               disabled={!proofFile || uploading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 h-14 text-lg font-bold rounded-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 h-12 font-bold rounded-xl"
             >
               {uploading ? (
                 <>
