@@ -20,6 +20,8 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
   const [localStream, setLocalStream] = useState(null);
   const [participantId, setParticipantId] = useState(null);
   const localVideoRef = useRef(null);
+  const jitsiContainerRef = useRef(null);
+  const jitsiApiRef = useRef(null);
   const queryClient = useQueryClient();
   const isConferenceActive = conference.status === 'en_cours';
 
@@ -54,44 +56,65 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
     return () => leaveConference();
   }, []);
 
-  // Setup media
+  // Setup Jitsi Meet
   useEffect(() => {
-    if (isConferenceActive && (micEnabled || videoEnabled) && !localStream) {
-      setupMedia();
-    } else if ((!micEnabled && !videoEnabled) && localStream) {
-      stopMedia();
-    }
-  }, [micEnabled, videoEnabled, isConferenceActive]);
-
-  useEffect(() => {
-    if (localStream && localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
-  const setupMedia = async () => {
-    try {
-      const constraints = {
-        audio: micEnabled,
-        video: conference.conference_type === 'video' && videoEnabled ? {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'user'
-        } : false
+    if (isConferenceActive && jitsiContainerRef.current && !jitsiApiRef.current) {
+      const domain = 'meet.jit.si';
+      const options = {
+        roomName: conference.access_code,
+        width: '100%',
+        height: '100%',
+        parentNode: jitsiContainerRef.current,
+        userInfo: {
+          displayName: userName,
+          email: userEmail
+        },
+        configOverwrite: {
+          startWithAudioMuted: !micEnabled,
+          startWithVideoMuted: conference.conference_type === 'audio',
+          prejoinPageEnabled: false,
+          disableDeepLinking: true,
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'chat', 'raisehand',
+            'videoquality', 'tileview', 'settings'
+          ],
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+        }
       };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      setLocalStream(stream);
-    } catch (error) {
-      toast.error('Impossible d\'accéder au microphone/caméra');
-      setMicEnabled(false);
-      setVideoEnabled(false);
+
+      const script = document.createElement('script');
+      script.src = 'https://meet.jit.si/external_api.js';
+      script.async = true;
+      script.onload = () => {
+        jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+        
+        jitsiApiRef.current.addEventListener('participantRoleChanged', (event) => {
+          if (event.role === 'moderator' && isAdmin) {
+            jitsiApiRef.current.executeCommand('toggleLobby', true);
+          }
+        });
+      };
+      document.body.appendChild(script);
+
+      return () => {
+        if (jitsiApiRef.current) {
+          jitsiApiRef.current.dispose();
+          jitsiApiRef.current = null;
+        }
+        const scriptTag = document.querySelector('script[src="https://meet.jit.si/external_api.js"]');
+        if (scriptTag) scriptTag.remove();
+      };
     }
-  };
+  }, [isConferenceActive]);
 
   const stopMedia = () => {
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.dispose();
+      jitsiApiRef.current = null;
     }
   };
 
@@ -123,8 +146,8 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
     }
     const newState = !micEnabled;
     setMicEnabled(newState);
-    if (localStream) {
-      localStream.getAudioTracks().forEach(track => track.enabled = newState);
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.executeCommand('toggleAudio');
     }
     if (participantId) {
       await base44.entities.ConferenceParticipant.update(participantId, { mic_enabled: newState });
@@ -135,8 +158,8 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
     if (!isConferenceActive || conference.conference_type !== 'video') return;
     const newState = !videoEnabled;
     setVideoEnabled(newState);
-    if (localStream) {
-      localStream.getVideoTracks().forEach(track => track.enabled = newState);
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.executeCommand('toggleVideo');
     }
   };
 
@@ -219,234 +242,27 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
         <div className="flex-1 flex overflow-hidden">
           {/* Main Content */}
           <div className="flex-1 flex flex-col">
-            {/* Participants Grid */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
-              {conference.conference_type === 'video' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Local Video */}
-                  {isConferenceActive && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="relative bg-gray-900 rounded-2xl overflow-hidden aspect-video border-2 border-green-400 shadow-lg"
-                    >
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
-                      {!videoEnabled && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2">
-                              <span className="text-3xl font-bold text-white">{userName[0]}</span>
-                            </div>
-                            <p className="text-white font-semibold">{userName} (Vous)</p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                        <Badge className="bg-black/50 text-white backdrop-blur-sm">Vous</Badge>
-                        {micEnabled ? (
-                          <Volume2 className="w-4 h-4 text-green-400" />
-                        ) : (
-                          <VolumeX className="w-4 h-4 text-red-400" />
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                  {/* Other Participants Videos */}
-                  {connectedParticipants.filter(p => p.user_email !== userEmail).map((p) => (
-                    <motion.div
-                      key={p.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className={`relative bg-gray-900 rounded-2xl overflow-hidden aspect-video border-2 ${
-                        p.mic_enabled ? 'border-green-400 shadow-lg' : 'border-gray-600'
-                      }`}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 ${
-                            p.is_admin ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-gray-600'
-                          }`}>
-                            <span className="text-3xl font-bold text-white">{p.user_name[0]}</span>
-                          </div>
-                          <p className="text-white font-semibold">{p.user_name}</p>
-                          {p.is_admin && (
-                            <Badge className="bg-blue-500 text-white text-xs mt-1">
-                              <Shield className="w-3 h-3 mr-1" />
-                              Admin
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                        {p.mic_enabled ? (
-                          <Volume2 className="w-4 h-4 text-green-400" />
-                        ) : (
-                          <VolumeX className="w-4 h-4 text-gray-400" />
-                        )}
-                        {p.hand_raised && (
-                          <Hand className="w-4 h-4 text-amber-400 animate-bounce" />
-                        )}
-                      </div>
-                      {isAdmin && !p.is_admin && (
-                        <div className="absolute top-3 right-3">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => blockMic(p.id)}
-                            className="text-xs h-7 bg-black/50 text-white hover:bg-black/70"
-                          >
-                            {p.mic_blocked ? 'Débloquer' : 'Bloquer'}
-                          </Button>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
+            {/* Jitsi Meet Container */}
+            <div className="flex-1 bg-gray-900 relative">
+              {isConferenceActive ? (
+                <div ref={jitsiContainerRef} className="w-full h-full" />
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {connectedParticipants.map((p) => (
-                    <motion.div
-                      key={p.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className={`relative bg-white rounded-2xl border-2 p-4 ${
-                        p.mic_enabled ? 'border-green-400 shadow-lg shadow-green-100' : 'border-gray-200'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center text-center gap-2">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl ${
-                          p.is_admin ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' :
-                          'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700'
-                        }`}>
-                          {p.user_name[0]}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-900 text-sm">{p.user_name}</p>
-                          {p.is_admin && (
-                            <Badge className="bg-blue-100 text-blue-700 text-xs mt-1">
-                              <Shield className="w-3 h-3 mr-1" />
-                              Admin
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {p.mic_enabled ? (
-                            <Volume2 className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <VolumeX className="w-4 h-4 text-gray-400" />
-                          )}
-                          {p.hand_raised && (
-                            <Hand className="w-4 h-4 text-amber-600 animate-bounce" />
-                          )}
-                          {p.mic_blocked && (
-                            <Badge className="bg-red-100 text-red-700 text-xs">Bloqué</Badge>
-                          )}
-                        </div>
-                        {isAdmin && !p.is_admin && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => blockMic(p.id)}
-                            className="text-xs h-7"
-                          >
-                            {p.mic_blocked ? 'Débloquer' : 'Bloquer'}
-                          </Button>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-800 to-gray-900">
+                  <div className="text-center">
+                    <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center mx-auto mb-4">
+                      <Radio className="w-12 h-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-300 mb-2">Conférence terminée</h3>
+                    <p className="text-gray-500">Vous pouvez consulter le chat</p>
+                  </div>
                 </div>
               )}
 
-              {/* Floating Reactions */}
-              <AnimatePresence>
-                {recentReactions.map((r, i) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 1, y: 0, x: Math.random() * 200 - 100 }}
-                    animate={{ opacity: 0, y: -200 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 3 }}
-                    className="fixed bottom-32 left-1/2 text-4xl pointer-events-none"
-                    style={{ marginLeft: i * 30 }}
-                  >
-                    {r.reaction}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
             </div>
 
-            {/* Controls */}
+            {/* Controls - Chat only when inactive */}
             <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4">
-              {isConferenceActive ? (
-                <>
-                  <div className="flex items-center justify-center gap-3 flex-wrap">
-                    <Button
-                      onClick={toggleMic}
-                      size="lg"
-                      disabled={myParticipant?.mic_blocked}
-                      className={`rounded-2xl h-14 px-6 ${
-                        micEnabled ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                      }`}
-                    >
-                      {micEnabled ? <Mic className="w-5 h-5 mr-2" /> : <MicOff className="w-5 h-5 mr-2" />}
-                      {micEnabled ? 'Micro' : 'Micro'}
-                    </Button>
-
-                    {conference.conference_type === 'video' && (
-                      <Button
-                        onClick={toggleVideo}
-                        size="lg"
-                        className={`rounded-2xl h-14 px-6 ${
-                          videoEnabled ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'
-                        }`}
-                      >
-                        {videoEnabled ? <Video className="w-5 h-5 mr-2" /> : <VideoOff className="w-5 h-5 mr-2" />}
-                        Caméra
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={toggleHand}
-                      size="lg"
-                      variant={handRaised ? 'default' : 'outline'}
-                      className={`rounded-2xl h-14 px-6 ${handRaised ? 'bg-amber-600 hover:bg-amber-700 text-white' : ''}`}
-                    >
-                      <Hand className="w-5 h-5 mr-2" />
-                      Main
-                    </Button>
-
-                    <Button
-                      onClick={() => setChatOpen(!chatOpen)}
-                      size="lg"
-                      variant="outline"
-                      className="rounded-2xl h-14 px-6"
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      Chat
-                      {messages.length > 0 && (
-                        <Badge className="ml-2 bg-blue-600 text-white">{messages.length}</Badge>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={onClose}
-                      size="lg"
-                      variant="destructive"
-                      className="rounded-2xl h-14 px-6"
-                    >
-                      <PhoneOff className="w-5 h-5 mr-2" />
-                      Quitter
-                    </Button>
-                  </div>
-                </>
-              ) : (
+              {!isConferenceActive && (
                 <div className="flex items-center justify-center gap-3">
                   <Button
                     onClick={() => setChatOpen(!chatOpen)}
@@ -471,26 +287,11 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
                   </Button>
                 </div>
               )}
-
-              {/* Reactions Bar */}
-              {isConferenceActive && (
-                <div className="flex items-center justify-center gap-2 mt-3">
-                  {['👍', '❤️', '👏', '🎉', '🔥'].map(emoji => (
-                    <button
-                      key={emoji}
-                      onClick={() => sendReaction(emoji)}
-                      className="text-2xl hover:scale-125 transition-transform"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Chat Sidebar */}
-          {chatOpen && (
+          {/* Chat Sidebar - Always visible when conference is inactive */}
+          {(chatOpen || !isConferenceActive) && (
             <motion.div
               initial={{ x: 400 }}
               animate={{ x: 0 }}
@@ -499,9 +300,11 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
             >
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                 <h3 className="font-bold text-gray-900">Discussion</h3>
-                <Button onClick={() => setChatOpen(false)} variant="ghost" size="icon" className="h-8 w-8">
-                  <X className="w-4 h-4" />
-                </Button>
+                {isConferenceActive && (
+                  <Button onClick={() => setChatOpen(false)} variant="ghost" size="icon" className="h-8 w-8">
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
