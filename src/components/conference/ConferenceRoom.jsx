@@ -19,6 +19,7 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
   const [messageInput, setMessageInput] = useState('');
   const [localStream, setLocalStream] = useState(null);
   const [participantId, setParticipantId] = useState(null);
+  const [jitsiLoaded, setJitsiLoaded] = useState(false);
   const localVideoRef = useRef(null);
   const jitsiContainerRef = useRef(null);
   const jitsiApiRef = useRef(null);
@@ -56,60 +57,77 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
     return () => leaveConference();
   }, []);
 
+  // Load Jitsi Script
+  useEffect(() => {
+    if (!window.JitsiMeetExternalAPI) {
+      const script = document.createElement('script');
+      script.src = 'https://meet.jit.si/external_api.js';
+      script.async = true;
+      script.onload = () => setJitsiLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      setJitsiLoaded(true);
+    }
+  }, []);
+
   // Setup Jitsi Meet
   useEffect(() => {
-    if (isConferenceActive && jitsiContainerRef.current && !jitsiApiRef.current) {
+    if (isConferenceActive && jitsiLoaded && jitsiContainerRef.current && !jitsiApiRef.current) {
       const domain = 'meet.jit.si';
+      const roomName = `EMGJ_${conference.access_code}`;
+      
       const options = {
-        roomName: conference.access_code,
+        roomName: roomName,
         width: '100%',
         height: '100%',
         parentNode: jitsiContainerRef.current,
         userInfo: {
           displayName: userName,
-          email: userEmail
         },
         configOverwrite: {
-          startWithAudioMuted: !micEnabled,
+          startWithAudioMuted: false,
           startWithVideoMuted: conference.conference_type === 'audio',
           prejoinPageEnabled: false,
           disableDeepLinking: true,
+          enableWelcomePage: false,
+          enableClosePage: false,
         },
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'chat', 'raisehand',
-            'videoquality', 'tileview', 'settings'
-          ],
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
+          SHOW_BRAND_WATERMARK: false,
+          SHOW_POWERED_BY: false,
+          DEFAULT_REMOTE_DISPLAY_NAME: 'Participant',
+          MOBILE_APP_PROMO: false,
         }
       };
 
-      const script = document.createElement('script');
-      script.src = 'https://meet.jit.si/external_api.js';
-      script.async = true;
-      script.onload = () => {
+      try {
         jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
         
-        jitsiApiRef.current.addEventListener('participantRoleChanged', (event) => {
-          if (event.role === 'moderator' && isAdmin) {
-            jitsiApiRef.current.executeCommand('toggleLobby', true);
+        jitsiApiRef.current.addEventListener('videoConferenceJoined', () => {
+          console.log('Conférence rejointe');
+          if (isAdmin) {
+            jitsiApiRef.current.executeCommand('subject', conference.title);
           }
         });
-      };
-      document.body.appendChild(script);
 
-      return () => {
-        if (jitsiApiRef.current) {
-          jitsiApiRef.current.dispose();
-          jitsiApiRef.current = null;
-        }
-        const scriptTag = document.querySelector('script[src="https://meet.jit.si/external_api.js"]');
-        if (scriptTag) scriptTag.remove();
-      };
+        jitsiApiRef.current.addEventListener('readyToClose', () => {
+          onClose();
+        });
+      } catch (error) {
+        console.error('Erreur Jitsi:', error);
+        toast.error('Erreur lors du chargement de la conférence');
+      }
     }
-  }, [isConferenceActive]);
+
+    return () => {
+      if (jitsiApiRef.current) {
+        jitsiApiRef.current.dispose();
+        jitsiApiRef.current = null;
+      }
+    };
+  }, [isConferenceActive, jitsiLoaded, conference.id]);
 
   const stopMedia = () => {
     if (jitsiApiRef.current) {
@@ -245,7 +263,16 @@ export default function ConferenceRoom({ conference, userEmail, userName, isAdmi
             {/* Jitsi Meet Container */}
             <div className="flex-1 bg-gray-900 relative">
               {isConferenceActive ? (
-                <div ref={jitsiContainerRef} className="w-full h-full" />
+                jitsiLoaded ? (
+                  <div ref={jitsiContainerRef} className="w-full h-full" />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+                      <p className="text-white">Chargement de la conférence...</p>
+                    </div>
+                  </div>
+                )
               ) : (
                 <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-800 to-gray-900">
                   <div className="text-center">
