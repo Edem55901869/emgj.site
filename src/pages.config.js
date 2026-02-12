@@ -80,6 +80,9 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
+import StudentFormationChange from './pages/StudentFormationChange';
+import StudentCompletedCourses from './pages/StudentCompletedCourses';
+import AdminFormationChanges from './pages/AdminFormationChanges';
 
 
 export const PAGES = {
@@ -116,6 +119,9 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
+    "StudentFormationChange": StudentFormationChange,
+    "StudentCompletedCourses": StudentCompletedCourses,
+    "AdminFormationChanges": AdminFormationChanges,
 }
 
 export const pagesConfig = {
