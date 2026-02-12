@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import PublicChat from '../PublicChat';
@@ -18,6 +18,7 @@ const navItems = [
 const moreItems = [
   { name: 'Groupes', icon: MessageCircle, page: 'AdminGroups' },
   { name: 'Bulletins', icon: FileText, page: 'AdminBulletins' },
+  { name: 'Changements de formation', icon: RefreshCw, page: 'AdminFormationChanges' },
   { name: 'Questions', icon: HelpCircle, page: 'AdminQuestions' },
   { name: 'Scolarité', icon: DollarSign, page: 'AdminTuition' },
   { name: 'Analytique', icon: BarChart3, page: 'AdminAnalytics' },
@@ -38,6 +39,7 @@ const PERMISSION_MAP = {
   'AdminConferences': 'conferences',
   'AdminGroups': 'groups',
   'AdminBulletins': 'bulletins',
+  'AdminFormationChanges': 'students',
   'AdminQuestions': 'questions',
   'AdminTuition': 'tuition',
   'AdminAnalytics': 'analytics',
