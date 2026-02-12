@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Search, Check, X, Ban, Trash2, Eye, Send, Loader2, Award, BookOpen, Clock, Activity } from 'lucide-react';
+import { Users, Search, Check, X, Ban, Trash2, Eye, Send, Loader2, Award, BookOpen, Clock, Activity, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
+import { FileText } from 'lucide-react';
 
 export default function AdminStudents() {
   const [search, setSearch] = useState('');

@@ -19,6 +19,12 @@ export const FORMATION_BY_DOMAIN = {
   'MINISTÈRE APOSTOLIQUE': ['Licence', 'Master', 'Doctorat']
 };
 
+// Domaines spécifiques pour la bibliothèque (inclut École de dimanche)
+export const LIBRARY_DOMAINS = [
+  ...DOMAINS,
+  'École de dimanche'
+];
+
 // Hiérarchie des formations pour déterminer les prérequis
 export const FORMATION_HIERARCHY = {
   'École des évangélistes': null,
