@@ -4,24 +4,29 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const slides = [
   {
-    image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80',
-    title: 'Un cadre d\'apprentissage inspirant',
-    subtitle: 'Formez-vous dans un environnement dédié à l\'excellence spirituelle'
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/801d201e6_IMG-20260212-WA0014.jpg',
+    title: 'École Missionnaire Génération Joël (EMGJ)',
+    subtitle: 'Former, équiper et envoyer pour l\'œuvre de Dieu'
   },
   {
-    image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1200&q=80',
-    title: 'Des enseignants qualifiés',
-    subtitle: 'Apprenez auprès de pasteurs et docteurs expérimentés'
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/c078b0bdc_IMG-20260212-WA0013.jpg',
+    title: 'Formations Théologiques & Pastorales',
+    subtitle: 'École des Évangélistes, Disciples Engagés, Ministère Pastoral'
   },
   {
-    image: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1200&q=80',
-    title: 'Une communauté mondiale',
-    subtitle: 'Rejoignez des étudiants du monde entier dans la foi'
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/76d606d8e_IMG-20260212-WA0012.jpg',
+    title: 'Diplômes Académiques Reconnus',
+    subtitle: 'Licence, Master et Doctorat en Théologie, Leadership et Missiologie'
   },
   {
-    image: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?w=1200&q=80',
-    title: 'Formation pratique et spirituelle',
-    subtitle: 'Alliez connaissance théorique et expérience pratique du ministère'
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/ca0f91d98_IMG-20260212-WA0011.jpg',
+    title: 'École Prophétique',
+    subtitle: 'Brevet, Baccalauréat, Licence, Master, Doctorat'
+  },
+  {
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/0f1897b65_IMG-20260212-WA0010.jpg',
+    title: 'Contactez-Nous',
+    subtitle: 'Faculté Théologique Génération Joël - Lomé, Togo'
   }
 ];
 
