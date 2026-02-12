@@ -6,24 +6,49 @@ export const DOMAINS = [
   'ÉCOLE PROPHETIQUES',
   'ENTREPRENEURIAT',
   'AUMÔNERIE',
-  'MINISTÈRE APOSTOLIQUE',
-  'FORMATION THÉOLOGIQUE ET PASTORALE'
+  'MINISTÈRE APOSTOLIQUE'
 ];
 
 export const FORMATION_BY_DOMAIN = {
-  'THÉOLOGIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
+  'THÉOLOGIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
   'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
   'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
   'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
   'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
-  'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'FORMATION THÉOLOGIQUE ET PASTORALE': [
-    'École des Evangéliste en Mission (EM)',
-    'École des Disciples Engagés (EDE)',
-    'École du Ministère Pastorale (EMP)',
-    'École Supérieure du Ministère Pastorale (ESMP)'
-  ]
+  'AUMÔNERIE': ['Licence', 'Master', 'Doctorat'],
+  'MINISTÈRE APOSTOLIQUE': ['Licence', 'Master', 'Doctorat']
+};
+
+// Hiérarchie des formations pour déterminer les prérequis
+export const FORMATION_HIERARCHY = {
+  'École des évangélistes': null,
+  'Discipolat': null,
+  'Brevet': null,
+  'Baccalauréat': 'Brevet',
+  'Licence': 'Baccalauréat',
+  'Master': 'Licence',
+  'Doctorat': 'Master'
+};
+
+// Fonction pour déterminer si un type de formation nécessite un prérequis
+export const requiresPreviousDiploma = (formationType, domain) => {
+  // Pour AUMÔNERIE et MINISTÈRE APOSTOLIQUE, Licence est le niveau de base
+  if ((domain === 'AUMÔNERIE' || domain === 'MINISTÈRE APOSTOLIQUE') && formationType === 'Licence') {
+    return false;
+  }
+  
+  // Pour THÉOLOGIE, École des évangélistes, Discipolat et Brevet sont les niveaux de base
+  if (domain === 'THÉOLOGIE' && ['École des évangélistes', 'Discipolat', 'Brevet'].includes(formationType)) {
+    return false;
+  }
+  
+  // Pour les autres domaines, vérifier la hiérarchie
+  return FORMATION_HIERARCHY[formationType] !== null;
+};
+
+// Fonction pour obtenir le nom du diplôme prérequis
+export const getPreviousDiplomaName = (formationType) => {
+  return FORMATION_HIERARCHY[formationType];
 };
 
 export const getAllFormations = () => {

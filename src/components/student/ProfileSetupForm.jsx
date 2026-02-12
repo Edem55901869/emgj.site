@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react';
-import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
+import { ArrowRight, ArrowLeft, Check, Loader2, Upload, FileText } from 'lucide-react';
+import { DOMAINS, FORMATION_BY_DOMAIN, requiresPreviousDiploma, getPreviousDiplomaName } from '@/components/domainFormationMapping';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 export default function ProfileSetupForm({ onSubmit, loading }) {
   const [step, setStep] = useState(1);
@@ -15,11 +17,35 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
     city: '',
     whatsapp: '',
     domain: '',
-    formation_type: ''
+    formation_type: '',
+    previous_diploma_proof: ''
   });
+  const [uploading, setUploading] = useState(false);
 
   const step1Valid = form.first_name && form.last_name && form.country && form.city && form.whatsapp;
-  const step2Valid = form.domain && form.formation_type;
+  const needsDiploma = form.domain && form.formation_type && requiresPreviousDiploma(form.formation_type, form.domain);
+  const step2Valid = form.domain && form.formation_type && (!needsDiploma || form.previous_diploma_proof);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Veuillez uploader une image (JPG, PNG)');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm({ ...form, previous_diploma_proof: file_url });
+      toast.success('Diplôme uploadé avec succès');
+    } catch (error) {
+      toast.error('Erreur lors de l\'upload');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = () => {
     if (step2Valid) onSubmit(form);
@@ -132,7 +158,7 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Type de formation *</label>
-              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })} disabled={!form.domain}>
+              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v, previous_diploma_proof: '' })} disabled={!form.domain}>
                 <SelectTrigger className="h-12 rounded-xl">
                   <SelectValue placeholder={form.domain ? "Choisissez un type" : "Sélectionnez d'abord un domaine"} />
                 </SelectTrigger>
@@ -143,6 +169,80 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
                 </SelectContent>
               </Select>
             </div>
+
+            {needsDiploma && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2"
+              >
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Preuve du diplôme précédent ({getPreviousDiplomaName(form.formation_type)}) *
+                </label>
+                <p className="text-xs text-amber-600 mb-2">
+                  ⚠️ Vous devez fournir une preuve de votre diplôme {getPreviousDiplomaName(form.formation_type)} pour accéder à {form.formation_type}
+                </p>
+                
+                {form.previous_diploma_proof ? (
+                  <div className="relative">
+                    <div className="border-2 border-green-200 rounded-xl p-4 bg-green-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                          <Check className="w-6 h-6 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-green-900">Diplôme uploadé</p>
+                          <p className="text-xs text-green-600">En attente de vérification par l'admin</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setForm({ ...form, previous_diploma_proof: '' })}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Changer
+                        </Button>
+                      </div>
+                      <img 
+                        src={form.previous_diploma_proof} 
+                        alt="Diplôme"
+                        className="mt-3 w-full h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="diploma-upload"
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="diploma-upload"
+                      className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-2" />
+                          <p className="text-sm text-gray-600">Upload en cours...</p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-10 h-10 text-gray-400 mb-2" />
+                          <p className="text-sm font-medium text-gray-700">Cliquez pour uploader</p>
+                          <p className="text-xs text-gray-500 mt-1">Photo du diplôme (JPG, PNG)</p>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </motion.div>
+            )}
             <div className="flex gap-3">
               <Button
                 onClick={() => setStep(1)}

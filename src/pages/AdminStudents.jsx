@@ -264,11 +264,32 @@ export default function AdminStudents() {
                     )}
                   </Card>
 
+                  {selectedStudent.previous_diploma_proof && (
+                   <Card className="p-4 bg-amber-50 border-amber-200">
+                     <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                       <FileText className="w-5 h-5 text-amber-600" />
+                       Preuve du diplôme précédent
+                     </h3>
+                     <p className="text-xs text-gray-600 mb-3">
+                       L'étudiant a fourni une preuve de son diplôme précédent. Vérifiez avant de certifier.
+                     </p>
+                     <img 
+                       src={selectedStudent.previous_diploma_proof} 
+                       alt="Diplôme"
+                       className="w-full rounded-lg border-2 border-amber-300 cursor-pointer hover:opacity-90 transition-opacity"
+                       onClick={() => window.open(selectedStudent.previous_diploma_proof, '_blank')}
+                     />
+                     <p className="text-xs text-gray-500 mt-2 text-center">
+                       Cliquez sur l'image pour l'agrandir
+                     </p>
+                   </Card>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="col-span-2">
-                      <p className="text-gray-500 mb-1">Email</p>
-                      <Input defaultValue={selectedStudent.user_email} disabled className="rounded-xl h-10 text-xs" />
-                    </div>
+                   <div className="col-span-2">
+                     <p className="text-gray-500 mb-1">Email</p>
+                     <Input defaultValue={selectedStudent.user_email} disabled className="rounded-xl h-10 text-xs" />
+                   </div>
                     <div>
                       <p className="text-gray-500 mb-1">Domaine</p>
                       <Select 
