@@ -54,6 +54,7 @@ import AdminBulletins from './pages/AdminBulletins';
 import AdminConferences from './pages/AdminConferences';
 import AdminCourses from './pages/AdminCourses';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminFormationChanges from './pages/AdminFormationChanges';
 import AdminGroups from './pages/AdminGroups';
 import AdminHomeVideo from './pages/AdminHomeVideo';
 import AdminHosting from './pages/AdminHosting';
@@ -69,9 +70,11 @@ import Contact from './pages/Contact';
 import Home from './pages/Home';
 import MaintenanceMode from './pages/MaintenanceMode';
 import StudentBulletins from './pages/StudentBulletins';
+import StudentCompletedCourses from './pages/StudentCompletedCourses';
 import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentFormationChange from './pages/StudentFormationChange';
 import StudentGroups from './pages/StudentGroups';
 import StudentHelp from './pages/StudentHelp';
 import StudentLibrary from './pages/StudentLibrary';
@@ -80,9 +83,8 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import StudentFormationChange from './pages/StudentFormationChange';
-import StudentCompletedCourses from './pages/StudentCompletedCourses';
-import AdminFormationChanges from './pages/AdminFormationChanges';
+import AdminGallery from './pages/AdminGallery';
+import StudentGallery from './pages/StudentGallery';
 
 
 export const PAGES = {
@@ -93,6 +95,7 @@ export const PAGES = {
     "AdminConferences": AdminConferences,
     "AdminCourses": AdminCourses,
     "AdminDashboard": AdminDashboard,
+    "AdminFormationChanges": AdminFormationChanges,
     "AdminGroups": AdminGroups,
     "AdminHomeVideo": AdminHomeVideo,
     "AdminHosting": AdminHosting,
@@ -108,9 +111,11 @@ export const PAGES = {
     "Home": Home,
     "MaintenanceMode": MaintenanceMode,
     "StudentBulletins": StudentBulletins,
+    "StudentCompletedCourses": StudentCompletedCourses,
     "StudentConferences": StudentConferences,
     "StudentCourses": StudentCourses,
     "StudentDashboard": StudentDashboard,
+    "StudentFormationChange": StudentFormationChange,
     "StudentGroups": StudentGroups,
     "StudentHelp": StudentHelp,
     "StudentLibrary": StudentLibrary,
@@ -119,9 +124,8 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "StudentFormationChange": StudentFormationChange,
-    "StudentCompletedCourses": StudentCompletedCourses,
-    "AdminFormationChanges": AdminFormationChanges,
+    "AdminGallery": AdminGallery,
+    "StudentGallery": StudentGallery,
 }
 
 export const pagesConfig = {
