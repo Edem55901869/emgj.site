@@ -55,6 +55,7 @@ import AdminConferences from './pages/AdminConferences';
 import AdminCourses from './pages/AdminCourses';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminFormationChanges from './pages/AdminFormationChanges';
+import AdminGallery from './pages/AdminGallery';
 import AdminGroups from './pages/AdminGroups';
 import AdminHomeVideo from './pages/AdminHomeVideo';
 import AdminHosting from './pages/AdminHosting';
@@ -75,6 +76,7 @@ import StudentConferences from './pages/StudentConferences';
 import StudentCourses from './pages/StudentCourses';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentFormationChange from './pages/StudentFormationChange';
+import StudentGallery from './pages/StudentGallery';
 import StudentGroups from './pages/StudentGroups';
 import StudentHelp from './pages/StudentHelp';
 import StudentLibrary from './pages/StudentLibrary';
@@ -83,8 +85,6 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
-import AdminGallery from './pages/AdminGallery';
-import StudentGallery from './pages/StudentGallery';
 
 
 export const PAGES = {
@@ -96,6 +96,7 @@ export const PAGES = {
     "AdminCourses": AdminCourses,
     "AdminDashboard": AdminDashboard,
     "AdminFormationChanges": AdminFormationChanges,
+    "AdminGallery": AdminGallery,
     "AdminGroups": AdminGroups,
     "AdminHomeVideo": AdminHomeVideo,
     "AdminHosting": AdminHosting,
@@ -116,6 +117,7 @@ export const PAGES = {
     "StudentCourses": StudentCourses,
     "StudentDashboard": StudentDashboard,
     "StudentFormationChange": StudentFormationChange,
+    "StudentGallery": StudentGallery,
     "StudentGroups": StudentGroups,
     "StudentHelp": StudentHelp,
     "StudentLibrary": StudentLibrary,
@@ -124,8 +126,6 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
-    "AdminGallery": AdminGallery,
-    "StudentGallery": StudentGallery,
 }
 
 export const pagesConfig = {

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -21,6 +22,7 @@ export default function AdminGallery() {
   const [openView, setOpenView] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [formData, setFormData] = useState({
     event_name: '',
@@ -168,12 +170,22 @@ export default function AdminGallery() {
         
         <div className="pt-20 px-6 pb-12">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Galerie</h1>
                 <p className="text-gray-600 mt-1">Gérez les publications de la galerie</p>
               </div>
-              <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+              <div className="flex gap-3 items-center">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Rechercher un événement..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                 <DialogTrigger asChild>
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />
@@ -324,7 +336,10 @@ export default function AdminGallery() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => {
+                {posts.filter(post => 
+                  post.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  post.event_type.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map((post) => {
                   const media = getPostMedia(post.id);
                   return (
                     <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => {

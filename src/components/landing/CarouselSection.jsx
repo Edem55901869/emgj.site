@@ -53,7 +53,7 @@ export default function CarouselSection() {
           <p className="text-gray-600 text-lg">Nos étudiants viennent de 17 pays différents</p>
         </div>
 
-        <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 aspect-[16/7]">
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 aspect-[9/16] md:aspect-[3/4] max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -66,7 +66,7 @@ export default function CarouselSection() {
               <img
                 src={slides[current].image}
                 alt={slides[current].title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain bg-gradient-to-br from-blue-50 to-purple-50"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">

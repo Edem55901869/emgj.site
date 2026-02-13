@@ -3,8 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Image as ImageIcon, Video, Loader2, X } from 'lucide-react';
+import { Calendar, Image as ImageIcon, Video, Loader2, X, Search } from 'lucide-react';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -14,6 +15,7 @@ export default function StudentGallery() {
   const [openView, setOpenView] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [openMedia, setOpenMedia] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['galleryPosts'],
@@ -48,8 +50,16 @@ export default function StudentGallery() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 pt-8 pb-6">
-        <h1 className="text-2xl font-bold text-white">Galerie</h1>
-        <p className="text-white/80 text-sm mt-1">Découvrez les événements de l'école</p>
+        <h1 className="text-2xl font-bold text-white mb-4">Galerie</h1>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="Rechercher un événement..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-11 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+          />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -63,7 +73,10 @@ export default function StudentGallery() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => {
+            {posts.filter(post => 
+              post.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              post.event_type.toLowerCase().includes(searchQuery.toLowerCase())
+            ).map((post) => {
               const media = getPostMedia(post.id);
               return (
                 <Card 

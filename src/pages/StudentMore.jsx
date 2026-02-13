@@ -89,17 +89,6 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          <Link to={createPageUrl('StudentConferences')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Radio className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-gray-900">Conférences</p>
-              <p className="text-sm text-gray-500">Conférences en direct</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
-          </Link>
-
           <button 
             onClick={() => navigate(createPageUrl('StudentNotifications'))}
             className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors relative"
@@ -117,19 +106,16 @@ export default function StudentMore() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          <button 
-            onClick={() => navigate(createPageUrl('StudentTuition'))}
-            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
+          <Link to={createPageUrl('StudentConferences')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+              <Radio className="w-6 h-6 text-purple-600" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium text-gray-900">Scolarité</p>
-              <p className="text-sm text-gray-500">Paiements et factures</p>
+              <p className="font-medium text-gray-900">Conférences</p>
+              <p className="text-sm text-gray-500">Conférences en direct</p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
-          </button>
+          </Link>
 
           <button 
             onClick={() => navigate(createPageUrl('StudentBulletins'))}
@@ -146,15 +132,15 @@ export default function StudentMore() {
           </button>
 
           <button 
-            onClick={() => navigate(createPageUrl('StudentSettings'))}
+            onClick={() => navigate(createPageUrl('StudentTuition'))}
             className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
           >
-            <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-              <Settings className="w-6 h-6 text-gray-600" />
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-green-600" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium text-gray-900">Paramètres</p>
-              <p className="text-sm text-gray-500">Préférences du compte</p>
+              <p className="font-medium text-gray-900">Scolarité</p>
+              <p className="text-sm text-gray-500">Paiements et factures</p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
@@ -177,12 +163,26 @@ export default function StudentMore() {
             onClick={() => navigate(createPageUrl('StudentCompletedCourses'))}
             className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
           >
-            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-teal-600" />
             </div>
             <div className="flex-1 text-left">
               <p className="font-medium text-gray-900">Formations terminées</p>
               <p className="text-sm text-gray-500">Réécouter vos cours</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+
+          <button 
+            onClick={() => navigate(createPageUrl('StudentSettings'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+              <Settings className="w-6 h-6 text-gray-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-900">Paramètres</p>
+              <p className="text-sm text-gray-500">Préférences du compte</p>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
