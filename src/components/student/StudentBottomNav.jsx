@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Library, MoreHorizontal, Eye, MessagesSquare, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -11,8 +11,8 @@ import PublicChat from '../PublicChat';
 const navItems = [
   { name: 'Accueil', icon: LayoutDashboard, page: 'StudentDashboard' },
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
+  { name: 'Galerie', icon: Image, page: 'StudentGallery' },
   { name: 'Groupes', icon: Users, page: 'StudentGroups' },
-  { name: 'Bibliothèque', icon: Library, page: 'StudentLibrary' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
 
