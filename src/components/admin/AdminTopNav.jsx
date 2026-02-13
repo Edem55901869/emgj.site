@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import PublicChat from '../PublicChat';
@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Cours', icon: BookOpen, page: 'AdminCourses' },
   { name: 'Étudiants', icon: Users, page: 'AdminStudents' },
   { name: 'Blog', icon: Newspaper, page: 'AdminBlog' },
+  { name: 'Galerie', icon: Image, page: 'AdminGallery' },
   { name: 'Bibliothèque', icon: Library, page: 'AdminLibrary' },
   { name: 'Conférences', icon: Radio, page: 'AdminConferences' },
 ];
@@ -35,6 +36,7 @@ const PERMISSION_MAP = {
   'AdminCourses': 'courses',
   'AdminStudents': 'students',
   'AdminBlog': 'blog',
+  'AdminGallery': 'blog',
   'AdminLibrary': 'library',
   'AdminConferences': 'conferences',
   'AdminGroups': 'groups',
