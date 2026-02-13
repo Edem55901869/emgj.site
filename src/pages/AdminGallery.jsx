@@ -324,6 +324,7 @@ export default function AdminGallery() {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             {posts.length === 0 ? (
