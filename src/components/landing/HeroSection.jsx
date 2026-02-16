@@ -93,7 +93,7 @@ export default function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-xl backdrop-blur-sm"
+              className="border-blue-300 text-blue-100 hover:bg-blue-500/20 hover:border-blue-400 px-8 py-6 text-lg rounded-xl backdrop-blur-sm font-medium"
             >
               Découvrir nos formations
             </Button>

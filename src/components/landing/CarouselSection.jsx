@@ -14,12 +14,12 @@ const slides = [
     subtitle: 'École des Évangélistes, Disciples Engagés, Ministère Pastoral'
   },
   {
-    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/76d606d8e_IMG-20260212-WA0012.jpg',
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/ca0f91d98_IMG-20260212-WA0011.jpg',
     title: 'Diplômes Académiques Reconnus',
     subtitle: 'Licence, Master et Doctorat en Théologie, Leadership et Missiologie'
   },
   {
-    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/ca0f91d98_IMG-20260212-WA0011.jpg',
+    image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/76d606d8e_IMG-20260212-WA0012.jpg',
     title: 'École Prophétique',
     subtitle: 'Brevet, Baccalauréat, Licence, Master, Doctorat'
   },
