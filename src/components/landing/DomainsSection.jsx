@@ -7,7 +7,7 @@ const domains = [
     name: 'Théologie', 
     icon: BookOpen, 
     desc: 'Étude approfondie des Écritures et de la doctrine chrétienne',
-    levels: ['Discipola', 'Brevet', 'Baccalauréat'],
+    levels: ['Discipolat', 'Brevet', 'Baccalauréat'],
     color: 'from-blue-500 to-cyan-500',
     bgGradient: 'bg-gradient-to-br from-blue-50 to-cyan-50'
   },
@@ -61,7 +61,7 @@ const domains = [
   },
 ];
 
-const formations = ['Discipola', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+const formations = ['Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
 
 export default function DomainsSection() {
   return (
@@ -78,7 +78,7 @@ export default function DomainsSection() {
             7 Domaines de Formation
           </h2>
           <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
-            Des programmes académiques complets du Discipola au Doctorat
+            Des programmes académiques complets du Discipolat au Doctorat
           </p>
         </motion.div>
 
