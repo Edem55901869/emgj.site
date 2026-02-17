@@ -7,7 +7,7 @@ const domains = [
     name: 'Théologie', 
     icon: BookOpen, 
     desc: 'Étude approfondie des Écritures et de la doctrine chrétienne',
-    levels: ['Discipolat', 'Brevet', 'Baccalauréat'],
+    levels: ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
     color: 'from-blue-500 to-cyan-500',
     bgGradient: 'bg-gradient-to-br from-blue-50 to-cyan-50'
   },
@@ -22,7 +22,7 @@ const domains = [
   { 
     name: 'Missiologie', 
     icon: Globe, 
-    desc: 'Équiper pour l\'évangélisation et les missions transculturell',
+    desc: 'Équiper pour l\'évangélisation et les missions transculturelles',
     levels: ['Licence', 'Master', 'Doctorat'],
     color: 'from-green-500 to-teal-500',
     bgGradient: 'bg-gradient-to-br from-green-50 to-teal-50'
@@ -31,7 +31,7 @@ const domains = [
     name: 'École Prophétique', 
     icon: Sparkles, 
     desc: 'Développer et encadrer le don prophétique et la sensibilité spirituelle',
-    levels: ['Brevet', 'Baccalauréat', 'Licence'],
+    levels: ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
     color: 'from-amber-500 to-orange-500',
     bgGradient: 'bg-gradient-to-br from-amber-50 to-orange-50'
   },
@@ -47,7 +47,7 @@ const domains = [
     name: 'Aumônerie', 
     icon: Heart, 
     desc: 'Accompagner spirituellement dans les hôpitaux, prisons et institutions',
-    levels: ['Brevet', 'Baccalauréat', 'Licence'],
+    levels: ['Licence', 'Master', 'Doctorat'],
     color: 'from-red-500 to-rose-500',
     bgGradient: 'bg-gradient-to-br from-red-50 to-rose-50'
   },
@@ -55,7 +55,7 @@ const domains = [
     name: 'Ministère Apostolique', 
     icon: Users, 
     desc: 'Développer et implanter des œuvres apostoliques et églises',
-    levels: ['Brevet', 'Baccalauréat', 'Licence'],
+    levels: ['Licence', 'Master', 'Doctorat'],
     color: 'from-slate-600 to-gray-700',
     bgGradient: 'bg-gradient-to-br from-slate-50 to-gray-100'
   },
