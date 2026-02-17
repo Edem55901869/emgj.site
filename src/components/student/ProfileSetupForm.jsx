@@ -13,6 +13,8 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
+    date_of_birth: '',
+    place_of_birth: '',
     country: '',
     city: '',
     whatsapp: '',
@@ -22,7 +24,7 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
   });
   const [uploading, setUploading] = useState(false);
 
-  const step1Valid = form.first_name && form.last_name && form.country && form.city && form.whatsapp;
+  const step1Valid = form.first_name && form.last_name && form.date_of_birth && form.place_of_birth && form.country && form.city && form.whatsapp;
   const needsDiploma = form.domain && form.formation_type && requiresPreviousDiploma(form.formation_type, form.domain);
   const step2Valid = form.domain && form.formation_type && (!needsDiploma || form.previous_diploma_proof);
 
@@ -88,6 +90,26 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
                   value={form.last_name}
                   onChange={(e) => setForm({ ...form, last_name: e.target.value })}
                   placeholder="Votre nom"
+                  className="h-12 rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Date de naissance *</label>
+                <Input
+                  type="date"
+                  value={form.date_of_birth}
+                  onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Lieu de naissance *</label>
+                <Input
+                  value={form.place_of_birth}
+                  onChange={(e) => setForm({ ...form, place_of_birth: e.target.value })}
+                  placeholder="Ex: Cotonou"
                   className="h-12 rounded-xl"
                 />
               </div>
