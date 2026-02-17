@@ -10,16 +10,15 @@ import StudentBottomNav from '../components/student/StudentBottomNav';
 import CourseQCM from '../components/course/CourseQCM';
 import { convertGoogleDriveUrl } from '../components/utils/googleDriveHelper';
 
-const getAudioUrl = (course) => {
-  const url = course.audio_file || course.audio_url;
-  if (!url) return null;
+const getAudioUrl = (audioUrl) => {
+  if (!audioUrl) return null;
   
   // Si c'est un lien Google Drive, utiliser la fonction backend de streaming
-  if (url.includes('drive.google.com')) {
-    return `/api/functions/streamGoogleDriveAudio?url=${encodeURIComponent(url)}`;
+  if (audioUrl.includes('drive.google.com')) {
+    return `/api/functions/streamGoogleDriveAudio?url=${encodeURIComponent(audioUrl)}`;
   }
   
-  return url;
+  return audioUrl;
 };
 
 export default function StudentCourses() {
@@ -183,15 +182,22 @@ export default function StudentCourses() {
                     </div>
                   </div>
                   {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
-                  {unlocked && (course.audio_file || course.audio_url) && (
+                  {unlocked && course.audio_files?.length > 0 && (
                     <div className="space-y-3">
-                      <audio 
-                        src={getAudioUrl(course)} 
-                        controls 
-                        preload="metadata"
-                        className="w-full rounded-xl"
-                        style={{ height: '50px' }}
-                      />
+                      {course.audio_files
+                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                        .map((audio, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-xs text-gray-600 mb-2 font-medium">Audio {idx + 1}</p>
+                            <audio 
+                              src={getAudioUrl(audio.url)} 
+                              controls 
+                              preload="metadata"
+                              className="w-full rounded-xl"
+                              style={{ height: '40px' }}
+                            />
+                          </div>
+                        ))}
                       {evaluation && !status && (
                         <button onClick={() => { setSelectedCourse(course); setShowQCM(true); }} className="w-full py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:from-green-700 hover:to-emerald-700 transition-all">
                           <Award className="w-4 h-4 inline mr-2" />

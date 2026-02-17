@@ -16,15 +16,16 @@ import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMappin
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '' });
+  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_files: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
   const [filterFormation, setFilterFormation] = useState('');
   const [sortBy, setSortBy] = useState('recent');
-  const [audioFile, setAudioFile] = useState(null);
+  const [audioFiles, setAudioFiles] = useState([]);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [audioSource, setAudioSource] = useState('url');
+  const [audioUrls, setAudioUrls] = useState(['']);
   const [qcmQuestions, setQcmQuestions] = useState([{ question: '', correct_answer: '' }]);
   const queryClient = useQueryClient();
 
@@ -33,15 +34,28 @@ export default function AdminCourses() {
     queryFn: () => base44.entities.Course.list('-created_date', 100),
   });
 
+  // Charger le nom de l'enseignant sauvegardé
+  React.useEffect(() => {
+    const savedTeacher = localStorage.getItem('last_teacher_name');
+    if (savedTeacher && !editingCourse) {
+      setForm(prev => ({ ...prev, teacher_name: savedTeacher }));
+    }
+  }, [editingCourse]);
+
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      let audio_file = data.audio_file || '';
+      setUploading(true);
       let cover_image = data.cover_image || '';
+      let audioFilesData = [];
 
-      if (audioFile && audioSource === 'file') {
-        setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: audioFile });
-        audio_file = file_url;
+      // Upload des fichiers audio
+      if (audioSource === 'file' && audioFiles.length > 0) {
+        for (let i = 0; i < audioFiles.length; i++) {
+          const { file_url } = await base44.integrations.Core.UploadFile({ file: audioFiles[i] });
+          audioFilesData.push({ url: file_url, order: i + 1 });
+        }
+      } else if (audioSource === 'url') {
+        audioFilesData = audioUrls.filter(url => url.trim()).map((url, i) => ({ url: url.trim(), order: i + 1 }));
       }
 
       if (coverFile) {
@@ -49,14 +63,25 @@ export default function AdminCourses() {
         cover_image = file_url;
       }
 
+      // Calculer l'ordre automatiquement si non spécifié
+      let order = data.order;
+      if (!order && !editingCourse) {
+        const sameDomainCourses = courses.filter(c => c.domain === data.domain && c.formation_type === data.formation_type);
+        const maxOrder = sameDomainCourses.length > 0 ? Math.max(...sameDomainCourses.map(c => c.order || 0)) : 0;
+        order = maxOrder + 1;
+      }
+
       setUploading(false);
 
       const courseData = {
         ...data,
-        audio_file: audioSource === 'file' ? audio_file : '',
-        audio_url: audioSource === 'url' ? data.audio_url : '',
-        cover_image
+        audio_files: audioFilesData,
+        cover_image,
+        order
       };
+
+      // Sauvegarder le nom de l'enseignant
+      localStorage.setItem('last_teacher_name', data.teacher_name);
 
       let course;
       if (editingCourse) {
@@ -101,9 +126,11 @@ export default function AdminCourses() {
   });
 
   const resetForm = () => {
-    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_url: '', audio_file: '', order: '', prerequisite_course_id: '' });
+    const savedTeacher = localStorage.getItem('last_teacher_name');
+    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', audio_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
-    setAudioFile(null);
+    setAudioFiles([]);
+    setAudioUrls(['']);
     setCoverFile(null);
     setAudioSource('url');
     setQcmQuestions([{ question: '', correct_answer: '' }]);
@@ -112,7 +139,10 @@ export default function AdminCourses() {
   const handleEdit = (course) => {
     setEditingCourse(course);
     setForm(course);
-    setAudioSource(course.audio_file ? 'file' : 'url');
+    setAudioSource(course.audio_files?.length > 0 ? 'file' : 'url');
+    if (course.audio_files?.length > 0) {
+      setAudioUrls(course.audio_files.map(a => a.url));
+    }
     setDialogOpen(true);
   };
 
@@ -291,19 +321,71 @@ export default function AdminCourses() {
                 <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Source audio *</label>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Fichiers audio * (jusqu'à 10)
+                </label>
                 <div className="flex gap-2 mb-3">
                   <Button type="button" onClick={() => setAudioSource('url')} variant={audioSource === 'url' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
-                    <LinkIcon className="w-4 h-4 mr-1" /> Lien externe
+                    <LinkIcon className="w-4 h-4 mr-1" /> Liens externes
                   </Button>
                   <Button type="button" onClick={() => setAudioSource('file')} variant={audioSource === 'file' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
-                    <Upload className="w-4 h-4 mr-1" /> Fichier
+                    <Upload className="w-4 h-4 mr-1" /> Fichiers
                   </Button>
                 </div>
                 {audioSource === 'url' ? (
-                  <Input value={form.audio_url} onChange={(e) => setForm({ ...form, audio_url: e.target.value })} placeholder="https://drive.google.com/..." className="rounded-xl h-11" />
+                  <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
+                    {audioUrls.map((url, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input 
+                          value={url} 
+                          onChange={(e) => {
+                            const newUrls = [...audioUrls];
+                            newUrls[i] = e.target.value;
+                            setAudioUrls(newUrls);
+                          }}
+                          placeholder={`Lien audio ${i + 1}`}
+                          className="rounded-xl h-10"
+                        />
+                        {audioUrls.length > 1 && (
+                          <Button 
+                            type="button" 
+                            onClick={() => setAudioUrls(audioUrls.filter((_, idx) => idx !== i))} 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-10 w-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {audioUrls.length < 10 && (
+                      <Button 
+                        type="button" 
+                        onClick={() => setAudioUrls([...audioUrls, ''])} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full rounded-xl"
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Ajouter un audio
+                      </Button>
+                    )}
+                  </div>
                 ) : (
-                  <Input type="file" accept="audio/*" onChange={(e) => setAudioFile(e.target.files[0])} className="rounded-xl" />
+                  <div className="space-y-2">
+                    <Input 
+                      type="file" 
+                      accept="audio/*,.opus" 
+                      multiple 
+                      onChange={(e) => setAudioFiles(Array.from(e.target.files).slice(0, 10))} 
+                      className="rounded-xl" 
+                    />
+                    {audioFiles.length > 0 && (
+                      <div className="text-sm text-gray-600 bg-blue-50 rounded-lg p-2">
+                        {audioFiles.length} fichier(s) sélectionné(s)
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <div>
@@ -312,8 +394,9 @@ export default function AdminCourses() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Ordre</label>
-                  <Input type="number" value={form.order || ''} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || null })} placeholder="1, 2, 3..." className="rounded-xl h-11" />
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Ordre (auto)</label>
+                  <Input type="number" value={form.order || ''} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || null })} placeholder="Auto" className="rounded-xl h-11" />
+                  <p className="text-xs text-gray-500 mt-1">Laissez vide pour auto</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Cours prérequis</label>
@@ -362,7 +445,7 @@ export default function AdminCourses() {
               </div>
               <Button
                 onClick={() => saveMutation.mutate(form)}
-                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || saveMutation.isPending || uploading}
+                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || (audioSource === 'url' && !audioUrls.some(u => u.trim())) || (audioSource === 'file' && audioFiles.length === 0) || saveMutation.isPending || uploading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
                 {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingCourse ? 'Mettre à jour' : 'Publier le cours')}
