@@ -27,7 +27,7 @@ const FORMATION_BY_DOMAIN = {
 
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
-  const [configForm, setConfigForm] = useState({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '' });
+  const [configForm, setConfigForm] = useState({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '', payment_type: '' });
   const [statusFilter, setStatusFilter] = useState('all');
   const queryClient = useQueryClient();
 
@@ -41,7 +41,7 @@ export default function AdminTuition() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] });
       setConfigDialog(false);
-      setConfigForm({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '' });
+      setConfigForm({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '', payment_type: '' });
       toast.success('Configuration créée');
     },
   });
@@ -184,6 +184,9 @@ export default function AdminTuition() {
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         <Badge className="bg-blue-500 text-white text-xs">{config.domain}</Badge>
                         <Badge className="bg-indigo-500 text-white text-xs">{config.formation_type}</Badge>
+                        {config.payment_type && (
+                          <Badge className="bg-purple-500 text-white text-xs">{config.payment_type}</Badge>
+                        )}
                       </div>
                     </div>
                     <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50">
@@ -213,7 +216,18 @@ export default function AdminTuition() {
                     <div className="flex-1">
                       <p className="font-bold text-gray-900">{proof.student_name}</p>
                       <p className="text-sm text-gray-600">{proof.student_email}</p>
-                      <p className="text-sm font-medium text-amber-700 mt-1">{proof.amount.toLocaleString()} XOF • {proof.period}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm font-medium text-amber-700">{proof.amount.toLocaleString()} XOF • {proof.period}</p>
+                        {proof.payment_type && (
+                          <Badge className={
+                            proof.payment_type === 'Frais de diplôme' ? 'bg-green-100 text-green-700' :
+                            proof.payment_type === 'Frais de mémoire' ? 'bg-purple-100 text-purple-700' :
+                            'bg-indigo-100 text-indigo-700'
+                          }>
+                            {proof.payment_type}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <a href={proof.proof_url} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" className="rounded-xl">
@@ -263,6 +277,15 @@ export default function AdminTuition() {
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{p.student_name}</p>
                     <p className="text-sm text-gray-500">{p.student_email}</p>
+                    {p.payment_type && (
+                      <Badge className={
+                        p.payment_type === 'Frais de diplôme' ? 'bg-green-100 text-green-700 mt-1' :
+                        p.payment_type === 'Frais de mémoire' ? 'bg-purple-100 text-purple-700 mt-1' :
+                        'bg-indigo-100 text-indigo-700 mt-1'
+                      }>
+                        {p.payment_type}
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-right mr-4">
                     <p className="font-bold text-gray-900">{p.amount.toLocaleString()} XOF</p>
@@ -306,9 +329,17 @@ export default function AdminTuition() {
                 placeholder="Lien de paiement (optionnel)"
                 className="rounded-xl h-11"
               />
+              <Select value={configForm.payment_type} onValueChange={(v) => setConfigForm({ ...configForm, payment_type: v })}>
+                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de frais" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
+                  <SelectItem value="Frais de mémoire">Frais de mémoire</SelectItem>
+                  <SelectItem value="Frais de graduation">Frais de graduation</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
                 onClick={() => createConfigMutation.mutate(configForm)}
-                disabled={!configForm.domain || !configForm.formation_type || !configForm.amount || createConfigMutation.isPending}
+                disabled={!configForm.domain || !configForm.formation_type || !configForm.amount || !configForm.payment_type || createConfigMutation.isPending}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
                 {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer'}

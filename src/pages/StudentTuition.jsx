@@ -213,6 +213,9 @@ export default function StudentTuition() {
                     <div>
                       <p className="font-bold text-gray-900">{proof.amount} {myConfig?.currency || 'XOF'}</p>
                       <p className="text-xs text-gray-500">{proof.period}</p>
+                      {proof.payment_type && (
+                        <Badge className="mt-1 bg-blue-50 text-blue-700 text-xs">{proof.payment_type}</Badge>
+                      )}
                     </div>
                     <Badge className={getStatusColor(proof.status)}>
                       {proof.status}
