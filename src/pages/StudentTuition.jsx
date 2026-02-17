@@ -5,6 +5,7 @@ import { ArrowLeft, DollarSign, Calendar, CheckCircle, Clock, AlertCircle, Loade
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -22,6 +23,7 @@ export default function StudentTuition() {
   const [proofDialog, setProofDialog] = useState(false);
   const [transactionId, setTransactionId] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
+  const [paymentType, setPaymentType] = useState('');
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function StudentTuition() {
   const hasPaid = tuitions.some(t => t.status === 'payé') || paymentProofs.some(p => p.status === 'validé');
 
   const submitProof = async () => {
-    if (!receiptFile || !transactionId.trim()) {
+    if (!receiptFile || !transactionId.trim() || !paymentType) {
       toast.error('Veuillez remplir tous les champs');
       return;
     }
@@ -89,6 +91,7 @@ export default function StudentTuition() {
         amount: myConfig.amount,
         proof_url: file_url,
         period: format(new Date(), 'MMMM yyyy', { locale: fr }),
+        payment_type: paymentType,
         status: 'en_attente'
       });
 
@@ -96,6 +99,7 @@ export default function StudentTuition() {
       setProofDialog(false);
       setTransactionId('');
       setReceiptFile(null);
+      setPaymentType('');
       toast.success('Preuve de paiement envoyée !');
     } catch (error) {
       toast.error('Erreur lors de l\'envoi');
@@ -259,6 +263,19 @@ export default function StudentTuition() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
+              <label className="text-sm text-gray-700 mb-2 block">Type de frais *</label>
+              <Select value={paymentType} onValueChange={setPaymentType}>
+                <SelectTrigger className="rounded-xl h-11">
+                  <SelectValue placeholder="Sélectionnez le type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
+                  <SelectItem value="Frais de mémoire">Frais de mémoire</SelectItem>
+                  <SelectItem value="Frais de graduation">Frais de graduation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <label className="text-sm text-gray-700 mb-2 block">Numéro de transaction</label>
               <Input
                 value={transactionId}
@@ -294,7 +311,7 @@ export default function StudentTuition() {
             </div>
             <Button
               onClick={submitProof}
-              disabled={uploading || !receiptFile || !transactionId.trim()}
+              disabled={uploading || !receiptFile || !transactionId.trim() || !paymentType}
               className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-11"
             >
               {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
