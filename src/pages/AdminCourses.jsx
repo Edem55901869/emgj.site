@@ -139,9 +139,11 @@ export default function AdminCourses() {
   const handleEdit = (course) => {
     setEditingCourse(course);
     setForm(course);
-    setAudioSource(course.audio_files?.length > 0 ? 'file' : 'url');
     if (course.audio_files?.length > 0) {
+      setAudioSource('url');
       setAudioUrls(course.audio_files.map(a => a.url));
+    } else {
+      setAudioUrls(['']);
     }
     setDialogOpen(true);
   };
@@ -266,7 +268,28 @@ export default function AdminCourses() {
                     <div className="flex flex-wrap gap-2 mb-3">
                       <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{course.domain}</Badge>
                       <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{course.formation_type}</Badge>
+                      {course.audio_files?.length > 0 && (
+                        <Badge className="bg-green-50 text-green-700 border-green-100 text-xs">
+                          {course.audio_files.length} audio(s)
+                        </Badge>
+                      )}
                     </div>
+                    {course.audio_files?.length > 0 && (
+                      <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                        {course.audio_files.sort((a, b) => (a.order || 0) - (b.order || 0)).map((audio, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-lg p-2">
+                            <p className="text-xs text-gray-600 mb-1 font-medium">Audio {idx + 1}</p>
+                            <audio 
+                              src={audio.url.includes('drive.google.com') ? `/api/functions/streamGoogleDriveAudio?url=${encodeURIComponent(audio.url)}` : audio.url}
+                              controls 
+                              preload="metadata"
+                              className="w-full"
+                              style={{ height: '35px' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <Button onClick={() => handleEdit(course)} variant="outline" size="sm" className="flex-1 rounded-xl">
                         <Edit className="w-3 h-3 mr-1" /> Modifier
@@ -334,6 +357,23 @@ export default function AdminCourses() {
                 </div>
                 {audioSource === 'url' ? (
                   <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
+                    {editingCourse?.audio_files?.length > 0 && (
+                      <div className="bg-blue-50 rounded-lg p-3 mb-2">
+                        <p className="text-xs text-blue-700 font-medium mb-2">Audios actuels :</p>
+                        {editingCourse.audio_files.sort((a, b) => (a.order || 0) - (b.order || 0)).map((audio, idx) => (
+                          <div key={idx} className="mb-2">
+                            <p className="text-xs text-gray-600 mb-1">Audio {idx + 1}</p>
+                            <audio 
+                              src={audio.url.includes('drive.google.com') ? `/api/functions/streamGoogleDriveAudio?url=${encodeURIComponent(audio.url)}` : audio.url}
+                              controls 
+                              preload="metadata"
+                              className="w-full"
+                              style={{ height: '35px' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {audioUrls.map((url, i) => (
                       <div key={i} className="flex gap-2">
                         <Input 
