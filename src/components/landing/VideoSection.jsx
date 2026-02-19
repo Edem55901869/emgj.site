@@ -15,7 +15,7 @@ export default function VideoSection() {
   if (!activeVideo) return null;
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-white via-blue-50 to-purple-50 relative overflow-hidden">
+    <section className="py-20 px-4 bg-gradient-to-br from-white via-blue-50 to-purple-50 relative overflow-hidden" aria-label="Vidéo de présentation de l'école">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -69,6 +69,8 @@ export default function VideoSection() {
               src={activeVideo.video_url}
               controls
               controlsList="nodownload"
+              preload="metadata"
+              aria-label="Vidéo de présentation de l'École Missionnaire Génération Joël"
               className="w-full h-full"
             >
               Votre navigateur ne supporte pas la lecture de vidéos.

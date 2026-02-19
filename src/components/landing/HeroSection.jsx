@@ -14,11 +14,12 @@ export default function HeroSection() {
         id="hero"
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1920&q=80&fm=webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
         }}
+        aria-label="Section principale - École Missionnaire Génération Joël"
       >
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-indigo-900/90 to-purple-900/95" />
@@ -51,7 +52,7 @@ export default function HeroSection() {
         >
           ÉCOLE MISSIONNAIRE
           <br />
-          <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-200 via-blue-300 to-blue-400 bg-clip-text text-transparent">
             GÉNÉRATION JOËL
           </span>
         </motion.h1>
@@ -83,16 +84,17 @@ export default function HeroSection() {
           <Link to={createPageUrl('Connexion')}>
             <Button
               size="lg"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:shadow-blue-500/40 hover:scale-105"
+              aria-label="Commencer votre inscription maintenant"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-6 min-h-[56px] text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:shadow-blue-500/40 hover:scale-105"
             >
               Commencer maintenant
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight className="ml-2 w-5 h-5" aria-hidden="true" />
             </Button>
           </Link>
-          <a href="#domaines">
+          <a href="#domaines" aria-label="Découvrir toutes nos formations">
             <Button
               size="lg"
-              className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-6 text-lg rounded-xl shadow-lg font-semibold"
+              className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-6 min-h-[56px] text-lg rounded-xl shadow-lg font-semibold"
             >
               Découvrir nos formations
             </Button>

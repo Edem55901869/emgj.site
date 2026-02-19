@@ -3,15 +3,16 @@ import { GraduationCap, Facebook, Music } from 'lucide-react';
 
 export default function FooterSection() {
   return (
-    <footer className="bg-[#0a1628] text-white py-16 px-6">
+    <footer className="bg-[#0f1f3d] text-white py-16 px-6" role="contentinfo">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6988dd24f34fbffabf6f6551/4d6e0c9a2_IMG_4736.jpeg" 
-                alt="FTGJ Logo" 
+                alt="Logo de Formation Théologique Génération Joël" 
                 className="w-12 h-12 rounded-xl object-contain"
+                loading="lazy"
               />
               <span className="font-bold text-lg">FTGJ</span>
             </div>
@@ -24,16 +25,18 @@ export default function FooterSection() {
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-blue-200">Liens rapides</h4>
-            <ul className="space-y-3 text-sm text-blue-200/60">
-              <li><a href="#domaines" className="hover:text-white transition-colors hover:pl-2 inline-block">Nos domaines</a></li>
-              <li><a href="#contact" className="hover:text-white transition-colors hover:pl-2 inline-block">Contact</a></li>
-              <li><a href="#temoignages" className="hover:text-white transition-colors hover:pl-2 inline-block">Témoignages</a></li>
-            </ul>
+            <h3 className="font-semibold mb-4 text-blue-100">Liens rapides</h3>
+            <nav aria-label="Navigation secondaire">
+              <ul className="space-y-3 text-sm text-blue-200/70">
+                <li><a href="#domaines" className="hover:text-white transition-colors hover:pl-2 inline-block min-h-[44px] flex items-center">Nos domaines</a></li>
+                <li><a href="#contact" className="hover:text-white transition-colors hover:pl-2 inline-block min-h-[44px] flex items-center">Contact</a></li>
+                <li><a href="#testimonials" className="hover:text-white transition-colors hover:pl-2 inline-block min-h-[44px] flex items-center">Témoignages</a></li>
+              </ul>
+            </nav>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-blue-200">Nos domaines</h4>
-            <ul className="space-y-2 text-sm text-blue-200/60">
+            <h3 className="font-semibold mb-4 text-blue-100">Nos domaines</h3>
+            <ul className="space-y-2 text-sm text-blue-200/70">
               <li>• Théologie</li>
               <li>• Leadership & Administration</li>
               <li>• Missiologie</li>
@@ -42,20 +45,20 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-blue-200">Coordonnées</h4>
+            <h3 className="font-semibold mb-4 text-blue-100">Coordonnées</h3>
             <ul className="space-y-3 text-sm text-blue-200/60">
               <li>📧 emgj2020@gmail.com</li>
               <li>📞 +228 92 61 49 61</li>
               <li>📍 Lomé-Togo</li>
             </ul>
             <div className="mt-6">
-              <h5 className="font-semibold mb-3 text-blue-200 text-sm">Suivez-nous</h5>
+              <h4 className="font-semibold mb-3 text-blue-100 text-sm">Suivez-nous</h4>
               <div className="flex gap-3">
-                <a href="https://www.facebook.com/profile.php?id=61576165315442" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-blue-600/20 hover:bg-blue-600 flex items-center justify-center transition-all group">
-                  <Facebook className="w-4 h-4 text-blue-300 group-hover:text-white" />
+                <a href="https://www.facebook.com/profile.php?id=61576165315442" target="_blank" rel="noopener noreferrer" aria-label="Visitez notre page Facebook" className="w-11 h-11 rounded-lg bg-blue-600/20 hover:bg-blue-600 flex items-center justify-center transition-all group">
+                  <Facebook className="w-5 h-5 text-blue-300 group-hover:text-white" aria-hidden="true" />
                 </a>
-                <a href="https://www.tiktok.com/@apotre_nestor?_r=1&_t=ZS-93INNWc0915" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-pink-600/20 hover:bg-pink-600 flex items-center justify-center transition-all group">
-                  <Music className="w-4 h-4 text-pink-300 group-hover:text-white" />
+                <a href="https://www.tiktok.com/@apotre_nestor?_r=1&_t=ZS-93INNWc0915" target="_blank" rel="noopener noreferrer" aria-label="Visitez notre compte TikTok" className="w-11 h-11 rounded-lg bg-pink-600/20 hover:bg-pink-600 flex items-center justify-center transition-all group">
+                  <Music className="w-5 h-5 text-pink-300 group-hover:text-white" aria-hidden="true" />
                 </a>
               </div>
             </div>

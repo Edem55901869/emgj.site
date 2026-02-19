@@ -25,7 +25,7 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-24 px-6 bg-white">
+    <section id="testimonials" className="py-24 px-6 bg-white" aria-labelledby="testimonials-title">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,7 +34,7 @@ export default function TestimonialsSection() {
           className="text-center mb-16"
         >
           <span className="text-blue-600 font-semibold text-sm uppercase tracking-widest">Témoignages</span>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mt-3">
+          <h2 id="testimonials-title" className="text-3xl md:text-5xl font-bold text-gray-900 mt-3">
             Ce qu'ils en disent
           </h2>
         </motion.div>

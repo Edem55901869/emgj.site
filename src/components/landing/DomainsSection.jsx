@@ -65,7 +65,7 @@ const formations = ['Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master'
 
 export default function DomainsSection() {
   return (
-    <section id="domaines" className="py-24 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white scroll-mt-16">
+    <section id="domaines" className="py-24 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white scroll-mt-16" aria-labelledby="domaines-title">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,8 +73,8 @@ export default function DomainsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-1.5 bg-blue-600 text-white font-medium text-xs uppercase tracking-wider rounded-full mb-4">✨ NOS FORMATIONS D'EXCELLENCE</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-3">
+          <span className="inline-block px-4 py-1.5 bg-blue-600 text-white font-medium text-xs uppercase tracking-wider rounded-full mb-4" aria-hidden="true">✨ NOS FORMATIONS D'EXCELLENCE</span>
+          <h2 id="domaines-title" className="text-4xl md:text-5xl font-bold text-gray-900 mt-3">
             7 Domaines de Formation
           </h2>
           <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
@@ -92,7 +92,7 @@ export default function DomainsSection() {
               transition={{ delay: i * 0.08 }}
               className={`group relative overflow-hidden rounded-2xl ${domain.bgGradient} border border-gray-200 p-6 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2`}
             >
-              <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${domain.color} mb-4 shadow-lg`}>
+              <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${domain.color} mb-4 shadow-lg`} aria-hidden="true">
                 <domain.icon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{domain.name}</h3>
