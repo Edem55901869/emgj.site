@@ -23,7 +23,8 @@ export default function AdminSettings() {
       if (adminData) {
         const admin = JSON.parse(adminData);
         if (admin.role === 'admin_principal') {
-          setCurrentAdmin({ ...admin, email: admin.email || 'emgj2020@gmail.com' });
+          // Toujours afficher emgj2020@gmail.com pour l'admin principal
+          setCurrentAdmin({ ...admin, email: 'emgj2020@gmail.com' });
         } else {
           const admins = await base44.entities.AdminUser.filter({ email: admin.email });
           if (admins.length > 0) {
