@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 export default function CourseQCM({ course, evaluation, studentEmail, onSuccess }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [writtenAnswers, setWrittenAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -18,12 +19,19 @@ export default function CourseQCM({ course, evaluation, studentEmail, onSuccess 
   const generateQCM = async () => {
     setGenerating(true);
     try {
-      const prompt = `Génère un QCM pour valider les connaissances sur ce cours:
+      const qcmQuestions = evaluation.questions.filter(q => q.question_type === 'qcm' || !q.question_type);
+      const redactionQuestions = evaluation.questions.filter(q => q.question_type === 'redaction');
+
+      let generatedQuestions = [];
+
+      // Générer les QCM
+      if (qcmQuestions.length > 0) {
+        const prompt = `Génère un QCM pour valider les connaissances sur ce cours:
 Titre: ${course.title}
 Description: ${course.description}
 
 Questions de l'admin:
-${evaluation.questions.map((q, i) => `${i + 1}. ${q.question}\nRéponse correcte: ${q.correct_answer}`).join('\n\n')}
+${qcmQuestions.map((q, i) => `${i + 1}. ${q.question}\nRéponse correcte: ${q.correct_answer}`).join('\n\n')}
 
 Pour chaque question admin, génère 3 à 4 réponses FAUSSES mais plausibles (en plus de la vraie réponse).
 
@@ -38,38 +46,51 @@ Format JSON strict:
   ]
 }`;
 
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            questions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  question: { type: "string" },
-                  options: { type: "array", items: { type: "string" } },
-                  correctIndex: { type: "number" }
+        const response = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              questions: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    question: { type: "string" },
+                    options: { type: "array", items: { type: "string" } },
+                    correctIndex: { type: "number" }
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
 
-      // Mélanger les options pour chaque question
-      const shuffledQuestions = response.questions.map(q => {
-        const correctAnswer = q.options[q.correctIndex];
-        const shuffled = [...q.options].sort(() => Math.random() - 0.5);
-        return {
-          ...q,
-          options: shuffled,
-          correctIndex: shuffled.indexOf(correctAnswer)
-        };
-      });
+        const shuffledQuestions = response.questions.map(q => {
+          const correctAnswer = q.options[q.correctIndex];
+          const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+          return {
+            ...q,
+            type: 'qcm',
+            options: shuffled,
+            correctIndex: shuffled.indexOf(correctAnswer)
+          };
+        });
 
-      setQuestions(shuffledQuestions);
+        generatedQuestions = [...generatedQuestions, ...shuffledQuestions];
+      }
+
+      // Ajouter les questions de rédaction
+      if (redactionQuestions.length > 0) {
+        const redactionQs = redactionQuestions.map(q => ({
+          question: q.question,
+          type: 'redaction',
+          correctAnswer: q.correct_answer
+        }));
+        generatedQuestions = [...generatedQuestions, ...redactionQs];
+      }
+
+      setQuestions(generatedQuestions);
       setGenerating(false);
     } catch (error) {
       toast.error('Erreur lors de la génération du QCM');
@@ -78,8 +99,47 @@ Format JSON strict:
   };
 
   const submitQCM = async () => {
-    const correctAnswers = questions.filter((q, i) => selectedAnswers[i] === q.correctIndex).length;
-    const score = (correctAnswers / questions.length) * 20;
+    // Évaluer les QCM
+    const qcmQuestions = questions.filter(q => q.type === 'qcm');
+    const correctQCM = qcmQuestions.filter((q, i) => {
+      const qIndex = questions.indexOf(q);
+      return selectedAnswers[qIndex] === q.correctIndex;
+    }).length;
+
+    // Évaluer les questions de rédaction avec IA
+    const redactionQuestions = questions.filter(q => q.type === 'redaction');
+    let redactionScore = 0;
+
+    if (redactionQuestions.length > 0) {
+      const evaluationPrompt = `Évalue ces réponses d'étudiant par rapport aux réponses attendues. Donne un score de 0 à 1 pour chaque réponse (0 = incorrect, 1 = correct).
+
+${redactionQuestions.map((q, i) => {
+  const qIndex = questions.indexOf(q);
+  return `Question ${i + 1}: ${q.question}
+Réponse attendue: ${q.correctAnswer}
+Réponse de l'étudiant: ${writtenAnswers[qIndex] || '(Pas de réponse)'}`;
+}).join('\n\n')}
+
+Retourne un JSON avec le score moyen de 0 à 1.`;
+
+      try {
+        const evalResult = await base44.integrations.Core.InvokeLLM({
+          prompt: evaluationPrompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              average_score: { type: "number" }
+            }
+          }
+        });
+        redactionScore = evalResult.average_score * redactionQuestions.length;
+      } catch {
+        redactionScore = 0;
+      }
+    }
+
+    const totalCorrect = correctQCM + redactionScore;
+    const score = (totalCorrect / questions.length) * 20;
     const passed = score >= 12;
 
     await base44.entities.StudentCourseProgress.create({
@@ -139,8 +199,12 @@ Format JSON strict:
   }
 
   if (showResults) {
-    const correctAnswers = questions.filter((q, i) => selectedAnswers[i] === q.correctIndex).length;
-    const score = (correctAnswers / questions.length) * 20;
+    const qcmQuestions = questions.filter(q => q.type === 'qcm');
+    const correctQCM = qcmQuestions.filter((q, i) => {
+      const qIndex = questions.indexOf(q);
+      return selectedAnswers[qIndex] === q.correctIndex;
+    }).length;
+    const score = (Object.keys(selectedAnswers).length + Object.keys(writtenAnswers).filter(k => writtenAnswers[k]?.trim()).length) / questions.length * 20;
     const passed = score >= 12;
 
     return (
@@ -152,11 +216,8 @@ Format JSON strict:
         <p className="text-gray-600 mb-4">
           {passed ? 'Cours validé ! Vous pouvez continuer.' : 'Note insuffisante. Reprenez le cours.'}
         </p>
-        <Badge className={passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
-          {correctAnswers} / {questions.length} réponses correctes
-        </Badge>
         {!passed && (
-          <Button onClick={() => { setShowResults(false); setCurrentQuestion(0); setSelectedAnswers({}); generateQCM(); }} variant="outline" className="mt-4 rounded-xl">
+          <Button onClick={() => { setShowResults(false); setCurrentQuestion(0); setSelectedAnswers({}); setWrittenAnswers({}); generateQCM(); }} variant="outline" className="mt-4 rounded-xl">
             <RefreshCw className="w-4 h-4 mr-2" />
             Réessayer
           </Button>
@@ -178,28 +239,43 @@ Format JSON strict:
 
       <Card className="p-6">
         <h3 className="font-bold text-gray-900 mb-4">{question.question}</h3>
-        <div className="space-y-2">
-          {question.options.map((option, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectedAnswers({ ...selectedAnswers, [currentQuestion]: i })}
-              className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                selectedAnswers[currentQuestion] === i
-                  ? 'border-blue-600 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedAnswers[currentQuestion] === i ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
-                }`}>
-                  {selectedAnswers[currentQuestion] === i && <div className="w-2 h-2 rounded-full bg-white" />}
+        
+        {question.type === 'qcm' ? (
+          <div className="space-y-2">
+            {question.options.map((option, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedAnswers({ ...selectedAnswers, [currentQuestion]: i })}
+                className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                  selectedAnswers[currentQuestion] === i
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedAnswers[currentQuestion] === i ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
+                  }`}>
+                    {selectedAnswers[currentQuestion] === i && <div className="w-2 h-2 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-gray-900">{option}</span>
                 </div>
-                <span className="text-gray-900">{option}</span>
-              </div>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <textarea
+              value={writtenAnswers[currentQuestion] || ''}
+              onChange={(e) => setWrittenAnswers({ ...writtenAnswers, [currentQuestion]: e.target.value })}
+              placeholder="Rédigez votre réponse ici..."
+              className="w-full p-4 border-2 border-gray-200 rounded-xl min-h-[150px] focus:border-blue-600 focus:outline-none"
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              ✍️ Question à développement - Rédigez votre réponse complète
+            </p>
+          </div>
+        )}
       </Card>
 
       <div className="flex gap-2">
@@ -211,7 +287,11 @@ Format JSON strict:
         {currentQuestion < questions.length - 1 ? (
           <Button
             onClick={() => setCurrentQuestion(currentQuestion + 1)}
-            disabled={selectedAnswers[currentQuestion] === undefined}
+            disabled={
+              question.type === 'qcm' 
+                ? selectedAnswers[currentQuestion] === undefined 
+                : !writtenAnswers[currentQuestion]?.trim()
+            }
             className="ml-auto bg-blue-600 hover:bg-blue-700 rounded-xl"
           >
             Suivant
@@ -219,7 +299,12 @@ Format JSON strict:
         ) : (
           <Button
             onClick={submitQCM}
-            disabled={Object.keys(selectedAnswers).length !== questions.length}
+            disabled={
+              questions.some((q, i) => {
+                if (q.type === 'qcm') return selectedAnswers[i] === undefined;
+                return !writtenAnswers[i]?.trim();
+              })
+            }
             className="ml-auto bg-green-600 hover:bg-green-700 rounded-xl"
           >
             Soumettre
