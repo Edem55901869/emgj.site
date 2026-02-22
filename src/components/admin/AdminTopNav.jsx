@@ -13,10 +13,11 @@ const navItems = [
   { name: 'Blog', icon: Newspaper, page: 'AdminBlog' },
   { name: 'Galerie', icon: Image, page: 'AdminGallery' },
   { name: 'Bibliothèque', icon: Library, page: 'AdminLibrary' },
-  { name: 'Conférences', icon: Radio, page: 'AdminConferences' },
 ];
 
 const moreItems = [
+  { name: 'Questions Cours', icon: MessagesSquare, page: 'AdminCourseQuestions' },
+  { name: 'Conférences', icon: Radio, page: 'AdminConferences' },
   { name: 'Groupes', icon: MessageCircle, page: 'AdminGroups' },
   { name: 'Bulletins', icon: FileText, page: 'AdminBulletins' },
   { name: 'Changements de formation', icon: RefreshCw, page: 'AdminFormationChanges' },
@@ -34,6 +35,7 @@ const moreItems = [
 const PERMISSION_MAP = {
   'AdminDashboard': 'dashboard',
   'AdminCourses': 'courses',
+  'AdminCourseQuestions': 'courses',
   'AdminStudents': 'students',
   'AdminBlog': 'blog',
   'AdminGallery': 'blog',
