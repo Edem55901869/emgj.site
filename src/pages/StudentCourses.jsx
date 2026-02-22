@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Search, Headphones, User, Loader2, Lock, CheckCircle, Award } from 'lucide-react';
+import { BookOpen, Search, Headphones, User, Loader2, Lock, CheckCircle, Award, MessageCircle, FileText, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import CourseQCM from '../components/course/CourseQCM';
+import AskQuestionDialog from '../components/course/AskQuestionDialog';
 import { convertGoogleDriveUrl } from '../components/utils/googleDriveHelper';
 
 const getAudioUrl = (audioUrl) => {
@@ -29,6 +30,8 @@ export default function StudentCourses() {
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showQCM, setShowQCM] = useState(false);
+  const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+  const [questionCourse, setQuestionCourse] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -182,6 +185,23 @@ export default function StudentCourses() {
                     </div>
                   </div>
                   {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
+                  
+                  {unlocked && course.document_files?.length > 0 && (
+                    <div className="mb-3 space-y-2">
+                      <p className="text-xs font-medium text-gray-500">📄 Documents du cours :</p>
+                      {course.document_files.map((doc, idx) => (
+                        <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="block">
+                          <div className="bg-orange-50 rounded-xl p-3 border border-orange-100 hover:bg-orange-100 transition-colors">
+                            <p className="text-sm text-orange-700 font-medium flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              {doc.name || `Document ${idx + 1}`}
+                            </p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  
                   {unlocked && course.pdf_url && (
                     <a href={course.pdf_url} target="_blank" rel="noopener noreferrer" className="block mb-3">
                       <div className="bg-red-50 rounded-xl p-3 border border-red-100 hover:bg-red-100 transition-colors">
@@ -192,7 +212,8 @@ export default function StudentCourses() {
                     </a>
                   )}
                   {unlocked && course.audio_files?.length > 0 && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 mb-3">
+                      <p className="text-xs font-medium text-gray-500">🎧 Fichiers audio :</p>
                       {course.audio_files
                         .sort((a, b) => (a.order || 0) - (b.order || 0))
                         .map((audio, idx) => (
@@ -207,6 +228,37 @@ export default function StudentCourses() {
                             />
                           </div>
                         ))}
+                    </div>
+                  )}
+                  
+                  {unlocked && course.video_files?.length > 0 && (
+                    <div className="space-y-3 mb-3">
+                      <p className="text-xs font-medium text-gray-500">🎥 Vidéos :</p>
+                      {course.video_files
+                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                        .map((video, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-xs text-gray-600 mb-2 font-medium">Vidéo {idx + 1}</p>
+                            <video 
+                              src={video.url} 
+                              controls 
+                              preload="metadata"
+                              className="w-full rounded-xl"
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  
+                  {unlocked && (
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => { setQuestionCourse(course); setShowQuestionDialog(true); }} 
+                        className="w-full py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Poser une question
+                      </button>
                       {evaluation && !status && (
                         <button onClick={() => { setSelectedCourse(course); setShowQCM(true); }} className="w-full py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:from-green-700 hover:to-emerald-700 transition-all">
                           <Award className="w-4 h-4 inline mr-2" />
@@ -237,6 +289,16 @@ export default function StudentCourses() {
           )}
         </DialogContent>
       </Dialog>
+
+      {questionCourse && (
+        <AskQuestionDialog
+          open={showQuestionDialog}
+          onOpenChange={setShowQuestionDialog}
+          course={questionCourse}
+          studentEmail={user?.email}
+          studentName={student ? `${student.first_name} ${student.last_name}` : 'Étudiant'}
+        />
+      )}
 
       <StudentBottomNav />
     </div>
