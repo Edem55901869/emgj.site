@@ -33,8 +33,11 @@ export default function Connexion() {
     setAdminLoading(true);
     
     try {
-      // Vérifier le mot de passe principal
-      if (adminEmail === 'agnimakaedeme@gmail.com' && adminPassword === 'EDEMS229') {
+      // Vérifier les mots de passe principaux
+      const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail, password_type: 'principal' });
+      const validPrincipal = passwords.find(p => p.password_hash === adminPassword);
+      
+      if (validPrincipal) {
         localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
         toast.success('Connexion administrateur réussie !');
@@ -43,9 +46,9 @@ export default function Connexion() {
         return;
       }
 
-      // Vérifier les mots de passe de secours du principal
-      const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
-      const validBackup = passwords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
+      // Vérifier les mots de passe de secours
+      const backupPasswords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
+      const validBackup = backupPasswords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
       
       if (validBackup) {
         localStorage.removeItem('admin_student_view');
