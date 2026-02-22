@@ -182,6 +182,15 @@ export default function StudentCourses() {
                     </div>
                   </div>
                   {course.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>}
+                  {unlocked && course.pdf_url && (
+                    <a href={course.pdf_url} target="_blank" rel="noopener noreferrer" className="block mb-3">
+                      <div className="bg-red-50 rounded-xl p-3 border border-red-100 hover:bg-red-100 transition-colors">
+                        <p className="text-sm text-red-700 font-medium flex items-center gap-2">
+                          📄 Télécharger le PDF du cours
+                        </p>
+                      </div>
+                    </a>
+                  )}
                   {unlocked && course.audio_files?.length > 0 && (
                     <div className="space-y-3">
                       {course.audio_files

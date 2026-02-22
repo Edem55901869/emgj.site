@@ -16,7 +16,8 @@ import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMappin
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', audio_files: [] });
+  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', pdf_url: '', audio_files: [] });
+  const [pdfFile, setPdfFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
   const [filterFormation, setFilterFormation] = useState('');
@@ -46,7 +47,14 @@ export default function AdminCourses() {
     mutationFn: async (data) => {
       setUploading(true);
       let cover_image = data.cover_image || '';
+      let pdf_url = data.pdf_url || '';
       let audioFilesData = [];
+
+      // Upload du PDF si fourni
+      if (pdfFile) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+        pdf_url = file_url;
+      }
 
       // Upload des fichiers audio
       if (audioSource === 'file' && audioFiles.length > 0) {
@@ -76,6 +84,7 @@ export default function AdminCourses() {
       const courseData = {
         ...data,
         audio_files: audioFilesData,
+        pdf_url,
         cover_image,
         order
       };
@@ -127,13 +136,14 @@ export default function AdminCourses() {
 
   const resetForm = () => {
     const savedTeacher = localStorage.getItem('last_teacher_name');
-    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', audio_files: [], order: '', prerequisite_course_id: '' });
+    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFiles([]);
     setAudioUrls(['']);
+    setPdfFile(null);
     setCoverFile(null);
     setAudioSource('url');
-    setQcmQuestions([{ question: '', correct_answer: '' }]);
+    setQcmQuestions([{ question: '', correct_answer: '', question_type: 'qcm' }]);
   };
 
   const handleEdit = (course) => {
@@ -344,6 +354,25 @@ export default function AdminCourses() {
                 <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />
               </div>
               <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Fichier PDF du cours (optionnel)</label>
+                {editingCourse?.pdf_url && (
+                  <div className="mb-2 p-2 bg-red-50 rounded-lg border border-red-100">
+                    <a href={editingCourse.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm text-red-700 hover:underline flex items-center gap-1">
+                      📄 PDF actuel du cours
+                    </a>
+                  </div>
+                )}
+                <Input 
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setPdfFile(e.target.files[0])}
+                  className="rounded-xl"
+                />
+                {pdfFile && (
+                  <p className="text-xs text-gray-600 mt-1">✓ {pdfFile.name}</p>
+                )}
+              </div>
+              <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Fichiers audio * (jusqu'à 10)
                 </label>
@@ -452,10 +481,31 @@ export default function AdminCourses() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Questions QCM</label>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Questions d'évaluation</label>
                 <div className="space-y-3 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
                   {qcmQuestions.map((q, i) => (
-                    <div key={i} className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                    <div key={i} className="space-y-2 p-3 bg-gray-50 rounded-lg relative">
+                      <Button
+                        type="button"
+                        onClick={() => setQcmQuestions(qcmQuestions.filter((_, idx) => idx !== i))}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-1 right-1 h-7 w-7 p-0 text-red-600"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                      <select
+                        value={q.question_type || 'qcm'}
+                        onChange={(e) => {
+                          const newQ = [...qcmQuestions];
+                          newQ[i].question_type = e.target.value;
+                          setQcmQuestions(newQ);
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      >
+                        <option value="qcm">QCM (choix multiples)</option>
+                        <option value="redaction">Rédaction libre</option>
+                      </select>
                       <Input 
                         value={q.question} 
                         onChange={(e) => {
@@ -473,13 +523,18 @@ export default function AdminCourses() {
                           newQ[i].correct_answer = e.target.value;
                           setQcmQuestions(newQ);
                         }}
-                        placeholder="Réponse correcte"
+                        placeholder={q.question_type === 'redaction' ? "Éléments de réponse attendus" : "Réponse correcte"}
                         className="rounded-xl h-10"
                       />
+                      {q.question_type === 'redaction' && (
+                        <p className="text-xs text-blue-600">
+                          ✍️ L'étudiant rédigera sa réponse librement
+                        </p>
+                      )}
                     </div>
                   ))}
-                  <Button type="button" onClick={() => setQcmQuestions([...qcmQuestions, { question: '', correct_answer: '' }])} variant="outline" size="sm" className="w-full rounded-xl">
-                    + Ajouter une question
+                  <Button type="button" onClick={() => setQcmQuestions([...qcmQuestions, { question: '', correct_answer: '', question_type: 'qcm' }])} variant="outline" size="sm" className="w-full rounded-xl">
+                    <Plus className="w-4 h-4 mr-1" /> Ajouter une question
                   </Button>
                 </div>
               </div>
