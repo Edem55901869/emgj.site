@@ -16,17 +16,22 @@ import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMappin
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', pdf_url: '', audio_files: [] });
+  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', pdf_url: '', audio_files: [], video_files: [], document_files: [] });
   const [pdfFile, setPdfFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
   const [filterFormation, setFilterFormation] = useState('');
   const [sortBy, setSortBy] = useState('recent');
   const [audioFiles, setAudioFiles] = useState([]);
+  const [videoFiles, setVideoFiles] = useState([]);
+  const [documentFiles, setDocumentFiles] = useState([]);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [audioSource, setAudioSource] = useState('url');
+  const [videoSource, setVideoSource] = useState('url');
+  const [documentSource, setDocumentSource] = useState('file');
   const [audioUrls, setAudioUrls] = useState(['']);
+  const [videoUrls, setVideoUrls] = useState(['']);
   const [qcmQuestions, setQcmQuestions] = useState([{ question: '', correct_answer: '' }]);
   const queryClient = useQueryClient();
 
@@ -66,6 +71,31 @@ export default function AdminCourses() {
         audioFilesData = audioUrls.filter(url => url.trim()).map((url, i) => ({ url: url.trim(), order: i + 1 }));
       }
 
+      // Upload des fichiers vidéo
+      let videoFilesData = [];
+      if (videoSource === 'file' && videoFiles.length > 0) {
+        for (let i = 0; i < videoFiles.length; i++) {
+          const { file_url } = await base44.integrations.Core.UploadFile({ file: videoFiles[i] });
+          videoFilesData.push({ url: file_url, order: i + 1 });
+        }
+      } else if (videoSource === 'url') {
+        videoFilesData = videoUrls.filter(url => url.trim()).map((url, i) => ({ url: url.trim(), order: i + 1 }));
+      }
+
+      // Upload des documents
+      let documentFilesData = [];
+      if (documentFiles.length > 0) {
+        for (let i = 0; i < documentFiles.length; i++) {
+          const { file_url } = await base44.integrations.Core.UploadFile({ file: documentFiles[i] });
+          documentFilesData.push({
+            url: file_url,
+            name: documentFiles[i].name,
+            type: documentFiles[i].type,
+            order: i + 1
+          });
+        }
+      }
+
       if (coverFile) {
         const { file_url } = await base44.integrations.Core.UploadFile({ file: coverFile });
         cover_image = file_url;
@@ -83,7 +113,9 @@ export default function AdminCourses() {
 
       const courseData = {
         ...data,
-        audio_files: audioFilesData,
+        audio_files: audioFilesData.length > 0 ? audioFilesData : null,
+        video_files: videoFilesData.length > 0 ? videoFilesData : null,
+        document_files: documentFilesData.length > 0 ? documentFilesData : null,
         pdf_url,
         cover_image,
         order
@@ -136,13 +168,18 @@ export default function AdminCourses() {
 
   const resetForm = () => {
     const savedTeacher = localStorage.getItem('last_teacher_name');
-    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], order: '', prerequisite_course_id: '' });
+    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFiles([]);
+    setVideoFiles([]);
+    setDocumentFiles([]);
     setAudioUrls(['']);
+    setVideoUrls(['']);
     setPdfFile(null);
     setCoverFile(null);
     setAudioSource('url');
+    setVideoSource('url');
+    setDocumentSource('file');
     setQcmQuestions([{ question: '', correct_answer: '', question_type: 'qcm' }]);
   };
 
@@ -154,6 +191,12 @@ export default function AdminCourses() {
       setAudioUrls(course.audio_files.map(a => a.url));
     } else {
       setAudioUrls(['']);
+    }
+    if (course.video_files?.length > 0) {
+      setVideoSource('url');
+      setVideoUrls(course.video_files.map(v => v.url));
+    } else {
+      setVideoUrls(['']);
     }
     setDialogOpen(true);
   };
@@ -185,8 +228,8 @@ export default function AdminCourses() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Cours Audio</h1>
-                <p className="text-gray-500 text-sm mt-1">Gérez les cours en format audio</p>
+                <h1 className="text-3xl font-bold text-gray-900">Cours</h1>
+                <p className="text-gray-500 text-sm mt-1">Gérez les cours (audio, vidéo, documents)</p>
               </div>
               <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
                 <Plus className="w-4 h-4 mr-2" /> Nouveau cours
@@ -283,6 +326,16 @@ export default function AdminCourses() {
                           {course.audio_files.length} audio(s)
                         </Badge>
                       )}
+                      {course.video_files?.length > 0 && (
+                        <Badge className="bg-purple-50 text-purple-700 border-purple-100 text-xs">
+                          {course.video_files.length} vidéo(s)
+                        </Badge>
+                      )}
+                      {course.document_files?.length > 0 && (
+                        <Badge className="bg-orange-50 text-orange-700 border-orange-100 text-xs">
+                          {course.document_files.length} doc(s)
+                        </Badge>
+                      )}
                     </div>
                     {course.audio_files?.length > 0 && (
                       <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
@@ -316,9 +369,9 @@ export default function AdminCourses() {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingCourse ? 'Modifier le cours' : 'Nouveau cours audio'}</DialogTitle>
+              <DialogTitle>{editingCourse ? 'Modifier le cours' : 'Nouveau cours'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
@@ -354,27 +407,33 @@ export default function AdminCourses() {
                 <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Fichier PDF du cours (optionnel)</label>
-                {editingCourse?.pdf_url && (
-                  <div className="mb-2 p-2 bg-red-50 rounded-lg border border-red-100">
-                    <a href={editingCourse.pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm text-red-700 hover:underline flex items-center gap-1">
-                      📄 PDF actuel du cours
-                    </a>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Documents (PDF, Word, txt, etc. - jusqu'à 10)
+                </label>
+                {editingCourse?.document_files?.length > 0 && (
+                  <div className="mb-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
+                    <p className="text-xs text-orange-700 mb-2">Documents actuels :</p>
+                    {editingCourse.document_files.map((doc, idx) => (
+                      <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-orange-700 hover:underline">
+                        📄 {doc.name || `Document ${idx + 1}`}
+                      </a>
+                    ))}
                   </div>
                 )}
                 <Input 
                   type="file"
-                  accept=".pdf"
-                  onChange={(e) => setPdfFile(e.target.files[0])}
+                  accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
+                  multiple
+                  onChange={(e) => setDocumentFiles(Array.from(e.target.files).slice(0, 10))}
                   className="rounded-xl"
                 />
-                {pdfFile && (
-                  <p className="text-xs text-gray-600 mt-1">✓ {pdfFile.name}</p>
+                {documentFiles.length > 0 && (
+                  <p className="text-xs text-gray-600 mt-1">✓ {documentFiles.length} document(s) sélectionné(s)</p>
                 )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Fichiers audio * (jusqu'à 10)
+                  Fichiers audio (optionnel - jusqu'à 10)
                 </label>
                 <div className="flex gap-2 mb-3">
                   <Button type="button" onClick={() => setAudioSource('url')} variant={audioSource === 'url' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
@@ -452,6 +511,74 @@ export default function AdminCourses() {
                     {audioFiles.length > 0 && (
                       <div className="text-sm text-gray-600 bg-blue-50 rounded-lg p-2">
                         {audioFiles.length} fichier(s) sélectionné(s)
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Fichiers vidéo (optionnel - jusqu'à 10)
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <Button type="button" onClick={() => setVideoSource('url')} variant={videoSource === 'url' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
+                    <LinkIcon className="w-4 h-4 mr-1" /> Liens externes
+                  </Button>
+                  <Button type="button" onClick={() => setVideoSource('file')} variant={videoSource === 'file' ? 'default' : 'outline'} size="sm" className="flex-1 rounded-xl">
+                    <Upload className="w-4 h-4 mr-1" /> Fichiers
+                  </Button>
+                </div>
+                {videoSource === 'url' ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3">
+                    {videoUrls.map((url, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input 
+                          value={url} 
+                          onChange={(e) => {
+                            const newUrls = [...videoUrls];
+                            newUrls[i] = e.target.value;
+                            setVideoUrls(newUrls);
+                          }}
+                          placeholder={`Lien vidéo ${i + 1}`}
+                          className="rounded-xl h-10"
+                        />
+                        {videoUrls.length > 1 && (
+                          <Button 
+                            type="button" 
+                            onClick={() => setVideoUrls(videoUrls.filter((_, idx) => idx !== i))} 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-10 w-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {videoUrls.length < 10 && (
+                      <Button 
+                        type="button" 
+                        onClick={() => setVideoUrls([...videoUrls, ''])} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full rounded-xl"
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Ajouter une vidéo
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Input 
+                      type="file" 
+                      accept="video/*" 
+                      multiple 
+                      onChange={(e) => setVideoFiles(Array.from(e.target.files).slice(0, 10))} 
+                      className="rounded-xl" 
+                    />
+                    {videoFiles.length > 0 && (
+                      <div className="text-sm text-gray-600 bg-purple-50 rounded-lg p-2">
+                        {videoFiles.length} vidéo(s) sélectionnée(s)
                       </div>
                     )}
                   </div>
@@ -540,7 +667,7 @@ export default function AdminCourses() {
               </div>
               <Button
                 onClick={() => saveMutation.mutate(form)}
-                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || (audioSource === 'url' && !audioUrls.some(u => u.trim())) || (audioSource === 'file' && audioFiles.length === 0) || saveMutation.isPending || uploading}
+                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || saveMutation.isPending || uploading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
                 {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingCourse ? 'Mettre à jour' : 'Publier le cours')}
