@@ -23,7 +23,7 @@ export default function AdminSettings() {
       if (adminData) {
         const admin = JSON.parse(adminData);
         if (admin.role === 'admin_principal') {
-          setCurrentAdmin({ ...admin, email: admin.email || 'agnimakaedeme@gmail.com' });
+          setCurrentAdmin({ ...admin, email: admin.email || 'emgj2020@gmail.com' });
         } else {
           const admins = await base44.entities.AdminUser.filter({ email: admin.email });
           if (admins.length > 0) {
@@ -173,7 +173,7 @@ export default function AdminSettings() {
                           onClick={() => {
                             if (newPassword.trim() && availableBackupTypes.length > 0) {
                               addPasswordMutation.mutate({
-                                admin_email: 'agnimakaedeme@gmail.com',
+                                admin_email: 'emgj2020@gmail.com',
                                 password_type: availableBackupTypes[0],
                                 password_hash: newPassword
                               });
@@ -208,7 +208,7 @@ export default function AdminSettings() {
             <CardContent className="pt-5 space-y-3">
               <div className="flex justify-between p-3 rounded-xl bg-gray-50">
                 <span className="text-sm text-gray-600">Email</span>
-                <span className="text-sm font-medium text-gray-900">{currentAdmin?.email || 'agnimakaedeme@gmail.com'}</span>
+                <span className="text-sm font-medium text-gray-900">{currentAdmin?.email || 'emgj2020@gmail.com'}</span>
               </div>
               <div className="flex justify-between p-3 rounded-xl bg-gray-50">
                 <span className="text-sm text-gray-600">Rôle</span>
