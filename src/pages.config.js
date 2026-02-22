@@ -85,6 +85,7 @@ import StudentNotifications from './pages/StudentNotifications';
 import StudentProfile from './pages/StudentProfile';
 import StudentSettings from './pages/StudentSettings';
 import StudentTuition from './pages/StudentTuition';
+import AdminCourseQuestions from './pages/AdminCourseQuestions';
 
 
 export const PAGES = {
@@ -126,6 +127,7 @@ export const PAGES = {
     "StudentProfile": StudentProfile,
     "StudentSettings": StudentSettings,
     "StudentTuition": StudentTuition,
+    "AdminCourseQuestions": AdminCourseQuestions,
 }
 
 export const pagesConfig = {
