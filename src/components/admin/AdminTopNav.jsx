@@ -75,8 +75,11 @@ export default function AdminTopNav() {
   };
 
   const handleLogout = () => {
+    // Nettoyage complet de la session et des données sensibles
     localStorage.removeItem('emgj_admin');
     localStorage.removeItem('admin_student_view');
+    localStorage.removeItem('emgj_last_activity');
+    sessionStorage.clear();
     navigate(createPageUrl('Connexion'));
   };
 
