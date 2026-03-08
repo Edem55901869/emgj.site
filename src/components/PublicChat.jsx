@@ -236,7 +236,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
   };
 
   const handleSend = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !user) return;
     sendMutation.mutate({
       sender_email: user.email,
       sender_name: user.full_name,
