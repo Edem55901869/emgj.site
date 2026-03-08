@@ -64,6 +64,13 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // Essayer d'abord le compte admin local
+        const adminData = JSON.parse(localStorage.getItem('emgj_admin') || '{}');
+        if (adminData?.admin_email) {
+          setUser({ email: adminData.admin_email, full_name: adminData.full_name || 'Administrateur' });
+          return;
+        }
+        // Sinon utilisateur normal
         const u = await base44.auth.me();
         setUser(u);
       } catch {}
