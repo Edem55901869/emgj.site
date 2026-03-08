@@ -243,9 +243,19 @@ export default function AdminLibrary() {
                     </div>
                   )}
                 </div>
-                <Button type="button" onClick={handleRegenerateCover} disabled={!form.title.trim()} variant="outline" className="w-full rounded-xl h-9 text-sm">
-                  <RefreshCw className="w-3.5 h-3.5 mr-2" /> Changer de style
-                </Button>
+                {/* Navigation entre les 1080 styles */}
+                <div className="flex items-center gap-2">
+                  <Button type="button" onClick={handlePrevStyle} disabled={!form.title.trim()} variant="outline" size="icon" className="rounded-xl h-9 w-9 flex-shrink-0">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button type="button" onClick={handleRandomStyle} disabled={!form.title.trim()} variant="outline" className="flex-1 rounded-xl h-9 text-xs gap-1.5">
+                    <Shuffle className="w-3.5 h-3.5" /> Aléatoire
+                  </Button>
+                  <Button type="button" onClick={handleNextStyle} disabled={!form.title.trim()} variant="outline" size="icon" className="rounded-xl h-9 w-9 flex-shrink-0">
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-center text-xs text-gray-400">Style {styleIdx + 1} / {TOTAL_STYLES}</p>
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">Ou importer votre propre image</label>
                   <Input type="file" accept="image/*" onChange={(e) => {
