@@ -135,13 +135,18 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">WhatsApp *</label>
-              <Input
-                value={form.whatsapp}
-                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-                placeholder="+229 XX XX XX XX"
-                className="h-12 rounded-xl"
-              />
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Numéro WhatsApp * <span className="text-blue-600 font-normal text-xs">(obligatoire)</span></label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-600 font-bold text-lg">📱</span>
+                <Input
+                  value={form.whatsapp}
+                  onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                  placeholder="+229 XX XX XX XX (avec indicatif pays)"
+                  className="h-12 rounded-xl pl-10"
+                  required
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Exemple: +229 97 XX XX XX — Ce numéro sera utilisé pour vous contacter</p>
             </div>
             <Button
               onClick={() => setStep(2)}

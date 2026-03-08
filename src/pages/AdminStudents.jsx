@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Search, Check, X, Ban, Trash2, Eye, Send, Loader2, Award, BookOpen, Clock, Activity, FileText } from 'lucide-react';
+import { Users, Search, Check, X, Ban, Trash2, Eye, Send, Loader2, Award, BookOpen, Clock, Activity, FileText, MessageCircle, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
