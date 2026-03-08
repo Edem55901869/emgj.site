@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
-import { generateSVGCover } from '../components/library/LibraryCoverGenerator';
+import { generateSVGCover, TOTAL_STYLES } from '../components/library/LibraryCoverGenerator';
 
 export default function AdminLibrary() {
   const [dialogOpen, setDialogOpen] = useState(false);
