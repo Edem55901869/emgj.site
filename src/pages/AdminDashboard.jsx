@@ -42,11 +42,17 @@ export default function AdminDashboard() {
   const daysRemaining = activePlan ? Math.ceil((new Date(activePlan.verified_date).getTime() + (30 * 24 * 60 * 60 * 1000) - Date.now()) / (24 * 60 * 60 * 1000)) : null;
   const showHostingAlert = daysRemaining && daysRemaining <= 90;
 
+  // Seulement les étudiants ENCORE présents sur la plateforme
+  const activeStudentEmails = new Set(students.map(s => s.user_email));
+  
   const studentsCompleted = students.filter(student => {
     const studentCourses = courses.filter(c => c.domain === student.domain && c.formation_type === student.formation_type);
     if (studentCourses.length === 0) return false;
     return studentCourses.every(course => allProgress.some(p => p.student_email === student.user_email && p.course_id === course.id && p.passed));
   }).length;
+
+  // Cours validés par des étudiants actifs uniquement
+  const validatedByActive = allProgress.filter(p => p.passed && activeStudentEmails.has(p.student_email)).length;
 
   const stats = [
     { label: 'Étudiants', value: students.length, icon: Users, color: 'from-blue-500 to-indigo-500', pending: students.filter(s => s.status === 'en_attente').length },
@@ -181,7 +187,7 @@ export default function AdminDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-gray-600">Cours validés</span>
-                      <span className="font-bold text-gray-900">{allProgress.filter(p => p.passed).length} / {courses.length * students.length}</span>
+                      <span className="font-bold text-gray-900">{validatedByActive} / {courses.length * students.length}</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2.5">
                       <div 
