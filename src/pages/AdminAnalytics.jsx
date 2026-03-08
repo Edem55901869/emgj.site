@@ -108,7 +108,7 @@ export default function AdminAnalytics() {
   });
   const maxMonthly = Math.max(1, ...monthlySignups.map(m => m.count));
 
-  const deviceIcons = { mobile: Smartphone, desktop: Monitor, tablet: Tablet };
+  // unused but kept for compatibility
 
   return (
     <AdminGuard>
