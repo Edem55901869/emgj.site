@@ -58,15 +58,42 @@ export default function AdminAnalytics() {
   const topCountries = Object.entries(countryStats).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   // Visiteurs stats
+  const totalVisits = visitors.length;
   const deviceStats = visitors.reduce((acc, v) => {
     acc[v.device_type] = (acc[v.device_type] || 0) + 1;
     return acc;
   }, {});
   const visitorCountryStats = visitors.reduce((acc, v) => {
-    acc[v.country] = (acc[v.country] || 0) + 1;
+    const c = v.country || 'Inconnu';
+    acc[c] = (acc[c] || 0) + 1;
     return acc;
   }, {});
-  const topVisitorCountries = Object.entries(visitorCountryStats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const topVisitorCountries = Object.entries(visitorCountryStats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  // Visites par jour (14 derniers jours)
+  const dailyVisits = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (13 - i));
+    const label = d.toLocaleDateString('fr', { day: '2-digit', month: '2-digit' });
+    const count = visitors.filter(v => {
+      const vd = new Date(v.created_date);
+      return vd.toDateString() === d.toDateString();
+    }).length;
+    return { label, count };
+  });
+  const maxDaily = Math.max(1, ...dailyVisits.map(d => d.count));
+
+  // Visites par mois (6 derniers mois)
+  const monthlyVisits = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const label = d.toLocaleString('fr', { month: 'short', year: '2-digit' });
+    const count = visitors.filter(v => {
+      const vd = new Date(v.created_date);
+      return vd.getMonth() === d.getMonth() && vd.getFullYear() === d.getFullYear();
+    }).length;
+    return { label, count };
+  });
+  const maxMonthlyVisits = Math.max(1, ...monthlyVisits.map(m => m.count));
 
   // Inscriptions par mois (6 derniers mois)
   const now = new Date();
