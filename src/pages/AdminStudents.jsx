@@ -195,7 +195,21 @@ export default function AdminStudents() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900">{student.first_name} {student.last_name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-gray-900">{student.first_name} {student.last_name}</p>
+                      {student.whatsapp && (
+                        <a
+                          href={`https://wa.me/${student.whatsapp.replace(/[\s+\-()]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`WhatsApp: ${student.whatsapp}`}
+                          className="flex-shrink-0 w-7 h-7 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MessageCircle className="w-4 h-4 text-white" />
+                        </a>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 mt-0.5">{student.user_email}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{student.domain}</Badge>
