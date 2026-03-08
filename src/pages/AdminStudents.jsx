@@ -249,6 +249,17 @@ export default function AdminStudents() {
                   <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-900">{selectedStudent.first_name} {selectedStudent.last_name}</h2>
                     <p className="text-gray-600 mt-1">{selectedStudent.user_email}</p>
+                    {selectedStudent.whatsapp && (
+                      <a
+                        href={`https://wa.me/${selectedStudent.whatsapp.replace(/[\s+\-()]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        WhatsApp : {selectedStudent.whatsapp}
+                      </a>
+                    )}
                   </div>
                   
                   <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
@@ -372,12 +383,12 @@ export default function AdminStudents() {
                   </div>
                   
                   <div className="flex flex-wrap gap-2 pt-2">
-                    <Button onClick={() => { updateMutation.mutate({ id: selectedStudent.id, data: { status: 'certifié' } }); setSelectedStudent(null); }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
-                    <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'rejeté' } })} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><X className="w-3 h-3 mr-1" />Rejeter</Button>
-                    <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'bloqué' } })} size="sm" variant="outline" className="rounded-xl"><Ban className="w-3 h-3 mr-1" />Bloquer</Button>
-                    <Button onClick={() => deleteMutation.mutate(selectedStudent.id)} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><Trash2 className="w-3 h-3 mr-1" />Supprimer</Button>
-                    <Button onClick={() => { setNotifDialog(selectedStudent); setSelectedStudent(null); }} size="sm" variant="outline" className="rounded-xl"><Send className="w-3 h-3 mr-1" />Notifier</Button>
-                  </div>
+                     <Button onClick={() => { updateMutation.mutate({ id: selectedStudent.id, data: { status: 'certifié' } }); setSelectedStudent(null); }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
+                     <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'rejeté' } })} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><X className="w-3 h-3 mr-1" />Rejeter</Button>
+                     <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'bloqué' } })} size="sm" variant="outline" className="rounded-xl"><Ban className="w-3 h-3 mr-1" />Bloquer</Button>
+                     <Button onClick={() => { initiateDelete(selectedStudent); }} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><Trash2 className="w-3 h-3 mr-1" />Supprimer</Button>
+                     <Button onClick={() => { setNotifDialog(selectedStudent); setSelectedStudent(null); }} size="sm" variant="outline" className="rounded-xl"><Send className="w-3 h-3 mr-1" />Notifier</Button>
+                   </div>
                 </div>
               );
             })()}
