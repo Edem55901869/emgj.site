@@ -93,6 +93,7 @@ export default function AdminLibrary() {
     setPdfFile(null);
     setCoverFile(null);
     setCoverPreview(null);
+    setStyleIdx(0);
   };
 
   const handleEdit = (doc) => {
