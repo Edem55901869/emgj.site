@@ -192,7 +192,7 @@ export default function AdminDashboard() {
                     <div className="w-full bg-gray-100 rounded-full h-2.5">
                       <div 
                         className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all" 
-                        style={{ width: `${Math.min(100, (allProgress.filter(p => p.passed).length / Math.max(1, courses.length * students.length)) * 100)}%` }}
+                        style={{ width: `${Math.min(100, (validatedByActive / Math.max(1, courses.length * students.length)) * 100)}%` }}
                       />
                     </div>
                   </div>
