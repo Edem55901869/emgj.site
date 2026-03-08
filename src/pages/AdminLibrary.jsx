@@ -30,13 +30,17 @@ export default function AdminLibrary() {
     queryFn: () => base44.entities.LibraryDocument.list('-created_date', 100),
   });
 
-  // Génère instantanément la couverture SVG locale (0 latence)
-  const handleRegenerateCover = () => {
-    if (!form.title.trim()) { toast.error('Saisissez d\'abord le titre'); return; }
-    const url = generateSVGCover(form.title);
-    setCoverPreview(url);
-    toast.success('Couverture régénérée !');
+  const applyStyle = (idx) => {
+    const clamped = ((idx % TOTAL_STYLES) + TOTAL_STYLES) % TOTAL_STYLES;
+    setStyleIdx(clamped);
+    if (form.title.trim() && !coverFile) {
+      setCoverPreview(generateSVGCover(form.title, clamped));
+    }
   };
+
+  const handlePrevStyle = () => applyStyle(styleIdx - 1);
+  const handleNextStyle = () => applyStyle(styleIdx + 1);
+  const handleRandomStyle = () => applyStyle(Math.floor(Math.random() * TOTAL_STYLES));
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
