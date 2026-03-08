@@ -44,37 +44,45 @@ export default function AdminLibrary() {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      let pdf_url = data.pdf_url || '';
-      let cover_image = data.cover_image || '';
+      let pdf_url = editingDoc?.pdf_url || '';
+      let cover_image = editingDoc?.cover_image || '';
 
-      // Si pas de couverture existante et pas de fichier → générer SVG local
-      if (!coverFile && !cover_image && form.title) {
+      // Générer la couverture SVG si pas de fichier image fourni
+      if (!coverFile) {
         cover_image = coverPreview || generateSVGCover(form.title, styleIdx);
       }
 
       setUploading(true);
       if (pdfFile) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-        pdf_url = file_url;
+        const res = await base44.integrations.Core.UploadFile({ file: pdfFile });
+        pdf_url = res.file_url;
       }
       if (coverFile) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: coverFile });
-        cover_image = file_url;
+        const res = await base44.integrations.Core.UploadFile({ file: coverFile });
+        cover_image = res.file_url;
       }
       setUploading(false);
 
+      const payload = {
+        title: data.title,
+        author: data.author,
+        description: data.description,
+        pdf_url,
+        cover_image,
+      };
+
       if (editingDoc) {
-        return base44.entities.LibraryDocument.update(editingDoc.id, { ...data, pdf_url, cover_image });
+        return base44.entities.LibraryDocument.update(editingDoc.id, payload);
       } else {
-        if (!pdf_url) { toast.error('PDF requis'); return; }
-        return base44.entities.LibraryDocument.create({ ...data, pdf_url, cover_image });
+        if (!pdf_url) { toast.error('PDF requis'); return null; }
+        return base44.entities.LibraryDocument.create(payload);
       }
     },
     onSuccess: (result) => {
       if (!result) return;
       queryClient.invalidateQueries({ queryKey: ['adminDocs'] });
       resetForm();
-      toast.success(editingDoc ? 'Document modifié' : 'Document publié');
+      toast.success(editingDoc ? 'Document modifié ✓' : 'Document publié ✓');
     },
   });
 
