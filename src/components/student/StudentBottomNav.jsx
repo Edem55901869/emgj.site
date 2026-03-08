@@ -11,7 +11,7 @@ import PublicChat from '../PublicChat';
 const navItems = [
   { name: 'Accueil', icon: LayoutDashboard, page: 'StudentDashboard' },
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
-  { name: 'Galerie', icon: Image, page: 'StudentGallery' },
+  { name: 'Biblio', icon: Library, page: 'StudentLibrary' },
   { name: 'Groupes', icon: Users, page: 'StudentGroups' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
