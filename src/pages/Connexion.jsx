@@ -293,7 +293,13 @@ export default function Connexion() {
                 <h2 className="text-2xl font-bold text-white">Espace Administrateur</h2>
                 <p className="text-blue-200/50 text-sm mt-2">Accédez au panneau de gestion</p>
               </div>
-              <form onSubmit={handleAdminLogin} className="space-y-4">
+              {lockoutInfo && (
+                <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3 mb-4 text-center">
+                  <p className="text-red-200 text-sm font-semibold">🔒 Compte verrouillé</p>
+                  <p className="text-red-300 text-xs mt-1">Réessayez dans {lockoutInfo} minute(s)</p>
+                </div>
+              )}
+              <form onSubmit={handleAdminLogin} className="space-y-4" autoComplete="off">
                 <div>
                   <label className="text-sm text-blue-200/70 mb-1 block">Email</label>
                   <Input
@@ -302,6 +308,9 @@ export default function Connexion() {
                     onChange={(e) => setAdminEmail(e.target.value)}
                     placeholder="admin@email.com"
                     required
+                    autoComplete="email"
+                    maxLength={150}
+                    disabled={!!lockoutInfo}
                     className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-blue-200/30"
                   />
                 </div>
@@ -313,6 +322,9 @@ export default function Connexion() {
                     onChange={(e) => setAdminPassword(e.target.value)}
                     placeholder="••••••••"
                     required
+                    autoComplete="current-password"
+                    maxLength={200}
+                    disabled={!!lockoutInfo}
                     className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-blue-200/30 pr-10"
                   />
                   <button
@@ -325,10 +337,10 @@ export default function Connexion() {
                 </div>
                 <Button
                   type="submit"
-                  disabled={adminLoading}
-                  className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white text-base rounded-xl shadow-lg shadow-indigo-600/25"
+                  disabled={adminLoading || !!lockoutInfo}
+                  className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white text-base rounded-xl shadow-lg shadow-indigo-600/25 disabled:opacity-50"
                 >
-                  {adminLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Se connecter'}
+                  {adminLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : '🔐 Se connecter'}
                 </Button>
               </form>
             </motion.div>
