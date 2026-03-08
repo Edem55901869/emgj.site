@@ -12,12 +12,12 @@ import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE', 'École de dimanche'];
+
 
 export default function AdminLibrary() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
-  const [form, setForm] = useState({ title: '', author: '', domain: '', description: '' });
+  const [form, setForm] = useState({ title: '', author: 'Voir document', description: '' });
   const [pdfFile, setPdfFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -81,7 +81,7 @@ export default function AdminLibrary() {
   const resetForm = () => {
     setDialogOpen(false);
     setEditingDoc(null);
-    setForm({ title: '', author: '', domain: '', description: '' });
+    setForm({ title: '', author: 'Voir document', description: '' });
     setPdfFile(null);
     setCoverFile(null);
   };
@@ -159,7 +159,7 @@ export default function AdminLibrary() {
                   <div className="p-4">
                     <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{doc.title}</h3>
                     <p className="text-xs text-gray-500 mb-2">{doc.author}</p>
-                    {doc.domain && <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs mb-2">{doc.domain}</Badge>}
+
                     <div className="flex items-center justify-between text-xs text-gray-400">
                       <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {doc.downloads_count || 0}</span>
                       {doc.pdf_url && (
@@ -182,17 +182,9 @@ export default function AdminLibrary() {
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du document" className="rounded-xl h-11" />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Auteur *</label>
-                <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Nom de l'auteur" className="rounded-xl h-11" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine</label>
-                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v })}>
-                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Choisir un domaine" /></SelectTrigger>
-                  <SelectContent>
-                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Auteur</label>
+                <Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} placeholder="Voir document" className="rounded-xl h-11" />
+                <p className="text-xs text-gray-400 mt-1">Par défaut : "Voir document" (le nom de l'auteur est dans le document)</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
@@ -208,7 +200,7 @@ export default function AdminLibrary() {
               </div>
               <Button
                 onClick={() => saveMutation.mutate(form)}
-                disabled={!form.title || !form.author || (!editingDoc && !pdfFile) || saveMutation.isPending || uploading}
+                disabled={!form.title || (!editingDoc && !pdfFile) || saveMutation.isPending || uploading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
                 {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingDoc ? 'Mettre à jour' : 'Publier')}
