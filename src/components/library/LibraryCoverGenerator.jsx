@@ -79,7 +79,7 @@ const ORNAMENTS = [
 // Le titre est toujours bien centré et lisible
 
 const LAYOUTS = [
-  // 0: Titre centré, EMGJ bas centré, bande top/bottom
+  // 0: Titre centré, EMGJ bas centré, bande top/bottom — titre zone 120–430, centre=275
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
@@ -90,116 +90,122 @@ const LAYOUTS = [
     <rect x="0" y="456" width="400" height="4" fill="${p.accent}"/>
     <text x="200" y="65" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="8" opacity="0.9">ÉCOLE MISSIOLOGIQUE</text>
     <text x="200" y="84" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="8" opacity="0.9">GÉNÉRATION JOËL</text>
-    ${wrapText(title, 200, 240, 320, 28, p.text, 'center', 'Georgia,serif', 'bold')}
+    ${wrapText(title, 200, 278, 320, 28, p.text, 'center', 'Georgia,serif', 'bold')}
     <text x="200" y="498" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${p.accent}" letter-spacing="10" font-weight="bold">EMGJ</text>
     <text x="200" y="514" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="3" opacity="0.6">PUBLICATION OFFICIELLE</text>`,
 
-  // 1: Titre à gauche grand, bande latérale gauche, EMGJ bas droite
+  // 1: Titre à gauche grand, bande latérale gauche, EMGJ bas droite — centre=280
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
     <rect x="0" y="0" width="7" height="560" fill="${p.accent}"/>
     <rect x="7" y="0" width="3" height="560" fill="${p.accent}" opacity="0.4"/>
-    <rect x="30" y="290" width="55" height="3" fill="${p.accent}" rx="1.5"/>
-    ${wrapText(title, 30, 160, 340, 32, p.text, 'left', 'Arial,sans-serif', '900')}
+    <rect x="30" y="180" width="55" height="3" fill="${p.accent}" rx="1.5"/>
+    ${wrapText(title, 30, 280, 340, 32, p.text, 'left', 'Arial,sans-serif', '900')}
+    <rect x="30" y="380" width="55" height="3" fill="${p.accent}" rx="1.5"/>
     <text x="370" y="510" text-anchor="end" font-family="Georgia,serif" font-size="18" fill="${p.accent}" letter-spacing="6" font-weight="bold">EMGJ</text>
     <text x="370" y="526" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="2" opacity="0.6">École Missiologique</text>`,
 
-  // 2: Header rouge avec EMGJ en gros, titre en bas sur fond sombre
+  // 2: Header avec EMGJ en gros, titre centré entre 180–430 => centre=305
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
     <rect x="0" y="0" width="400" height="160" fill="${p.accent}" opacity="0.18"/>
     <line x1="0" y1="160" x2="400" y2="160" stroke="${p.accent}" stroke-width="3"/>
-    <text x="200" y="85" text-anchor="middle" font-family="Georgia,serif" font-size="38" fill="${p.accent}" letter-spacing="10" font-weight="bold">EMGJ</text>
-    <text x="200" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="${p.text}" letter-spacing="3" opacity="0.7">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
-    <line x1="80" y1="130" x2="320" y2="130" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
-    ${wrapText(title, 200, 230, 320, 27, p.text, 'center', 'Georgia,serif', 'bold')}
-    <rect x="0" y="510" width="400" height="50" fill="${p.accent}" opacity="0.1"/>`,
+    <text x="200" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="38" fill="${p.accent}" letter-spacing="10" font-weight="bold">EMGJ</text>
+    <text x="200" y="112" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="${p.text}" letter-spacing="3" opacity="0.7">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
+    <line x1="80" y1="132" x2="320" y2="132" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
+    ${wrapText(title, 200, 305, 320, 27, p.text, 'center', 'Georgia,serif', 'bold')}
+    <rect x="0" y="490" width="400" height="70" fill="${p.accent}" opacity="0.08"/>
+    <text x="200" y="530" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="${p.accent}" letter-spacing="3" opacity="0.6">PUBLICATION ACADÉMIQUE</text>`,
 
-  // 3: Titre en bas, grand espace ornemental en haut
+  // 3: Logo EMGJ en haut, titre centré 290–450 => centre=370
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
-    <circle cx="200" cy="175" r="90" fill="${p.accent}" opacity="0.07"/>
-    <circle cx="200" cy="175" r="65" fill="none" stroke="${p.accent}" stroke-width="1" opacity="0.3"/>
-    <text x="200" y="168" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="${p.accent}" letter-spacing="6" font-weight="bold">EMGJ</text>
-    <text x="200" y="188" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="${p.accent}" letter-spacing="2" opacity="0.7">GÉN. JOËL</text>
-    <line x1="60" y1="305" x2="340" y2="305" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
-    ${wrapText(title, 200, 330, 320, 28, p.text, 'center', 'Georgia,serif', 'bold')}
+    <circle cx="200" cy="140" r="80" fill="${p.accent}" opacity="0.07"/>
+    <circle cx="200" cy="140" r="58" fill="none" stroke="${p.accent}" stroke-width="1" opacity="0.3"/>
+    <text x="200" y="134" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="${p.accent}" letter-spacing="6" font-weight="bold">EMGJ</text>
+    <text x="200" y="152" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="${p.accent}" letter-spacing="2" opacity="0.7">GÉNÉRATION JOËL</text>
+    <line x1="60" y1="240" x2="340" y2="240" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
+    ${wrapText(title, 200, 370, 320, 28, p.text, 'center', 'Georgia,serif', 'bold')}
+    <line x1="60" y1="490" x2="340" y2="490" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
     <text x="200" y="525" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="3" opacity="0.6">PUBLICATION ACADÉMIQUE</text>`,
 
-  // 4: Split diagonal
+  // 4: Split diagonal — titre centré 220–440 => centre=330
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
-    <polygon points="0,0 400,0 400,200 0,320" fill="${p.accent}" opacity="0.12"/>
+    <polygon points="0,0 400,0 400,180 0,280" fill="${p.accent}" opacity="0.12"/>
     ${orn}
-    <text x="200" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="${p.accent}" letter-spacing="7" opacity="0.9">EMGJ</text>
-    <text x="200" y="150" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
-    <line x1="120" y1="165" x2="280" y2="165" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
-    ${wrapText(title, 200, 260, 330, 29, p.text, 'center', 'Arial,sans-serif', '800')}
-    <rect x="0" y="520" width="400" height="40" fill="${p.accent}" opacity="0.08"/>
-    <text x="30" y="546" font-family="Arial,sans-serif" font-size="9" fill="${p.accent}" opacity="0.6" letter-spacing="2">RESSOURCE ACADÉMIQUE</text>`,
+    <text x="200" y="100" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="${p.accent}" letter-spacing="7" opacity="0.9">EMGJ</text>
+    <text x="200" y="120" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
+    <line x1="120" y1="138" x2="280" y2="138" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
+    ${wrapText(title, 200, 330, 330, 29, p.text, 'center', 'Arial,sans-serif', '800')}
+    <rect x="0" y="490" width="400" height="70" fill="${p.accent}" opacity="0.08"/>
+    <text x="30" y="530" font-family="Arial,sans-serif" font-size="9" fill="${p.accent}" opacity="0.6" letter-spacing="2">RESSOURCE ACADÉMIQUE</text>`,
 
-  // 5: Minimaliste ligne médiane
+  // 5: Minimaliste — titre 80–260 centre=170, EMGJ 300–400
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
-    <rect x="30" y="275" width="340" height="2" fill="${p.accent}" opacity="0.6"/>
-    ${wrapText(title, 200, 155, 330, 30, p.text, 'center', 'Georgia,serif', 'bold')}
-    <rect x="150" y="295" width="100" height="2" fill="${p.accent}" rx="1"/>
-    <text x="200" y="340" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="${p.accent}" letter-spacing="8" font-weight="bold">EMGJ</text>
-    <text x="200" y="358" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">École Missiologique Génération Joël</text>`,
+    <line x1="60" y1="80" x2="340" y2="80" stroke="${p.accent}" stroke-width="1.5" opacity="0.4"/>
+    ${wrapText(title, 200, 200, 330, 30, p.text, 'center', 'Georgia,serif', 'bold')}
+    <line x1="60" y1="310" x2="340" y2="310" stroke="${p.accent}" stroke-width="1.5" opacity="0.4"/>
+    <rect x="150" y="330" width="100" height="2" fill="${p.accent}" rx="1"/>
+    <text x="200" y="390" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="${p.accent}" letter-spacing="8" font-weight="bold">EMGJ</text>
+    <text x="200" y="412" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="2" opacity="0.6">École Missiologique Génération Joël</text>`,
 
-  // 6: Couverture "livre ouvert" — tranche à gauche
+  // 6: Livre avec tranche gauche — titre zone 145–410 => centre=277
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     <rect x="0" y="0" width="40" height="560" fill="${p.accent}" opacity="0.15"/>
     <rect x="37" y="0" width="3" height="560" fill="${p.accent}" opacity="0.5"/>
     ${orn}
-    <text x="220" y="100" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="5" opacity="0.8">ÉCOLE MISSIOLOGIQUE</text>
-    <text x="220" y="118" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="5" opacity="0.8">GÉNÉRATION JOËL</text>
-    <line x1="55" y1="135" x2="375" y2="135" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
-    ${wrapText(title, 215, 190, 310, 30, p.text, 'center', 'Georgia,serif', 'bold')}
+    <text x="220" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="5" opacity="0.8">ÉCOLE MISSIOLOGIQUE</text>
+    <text x="220" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="5" opacity="0.8">GÉNÉRATION JOËL</text>
+    <line x1="55" y1="125" x2="375" y2="125" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
+    ${wrapText(title, 215, 277, 310, 30, p.text, 'center', 'Georgia,serif', 'bold')}
     <line x1="55" y1="420" x2="375" y2="420" stroke="${p.accent}" stroke-width="1.5" opacity="0.5"/>
     <text x="215" y="480" text-anchor="middle" font-family="Georgia,serif" font-size="24" fill="${p.accent}" letter-spacing="8" font-weight="bold">EMGJ</text>`,
 
-  // 7: Carte académique — style diplôme
+  // 7: Style diplôme — titre zone 100–410 => centre=255
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     <rect x="15" y="15" width="370" height="530" rx="4" fill="none" stroke="${p.accent}" stroke-width="1" opacity="0.3"/>
     <rect x="22" y="22" width="356" height="516" rx="3" fill="none" stroke="${p.accent}" stroke-width="0.5" opacity="0.15"/>
     ${orn}
-    <text x="200" y="75" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${p.accent}" letter-spacing="6" opacity="0.9">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
-    <line x1="60" y1="90" x2="340" y2="90" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
-    ${wrapText(title, 200, 200, 330, 28, p.text, 'center', 'Georgia,serif', 'bold')}
-    <line x1="60" y1="420" x2="340" y2="420" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
-    <text x="200" y="475" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="${p.accent}" letter-spacing="10" font-weight="bold">EMGJ</text>
-    <text x="200" y="495" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="2" opacity="0.5">PUBLICATION OFFICIELLE</text>`,
+    <text x="200" y="65" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${p.accent}" letter-spacing="6" opacity="0.9">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
+    <line x1="60" y1="82" x2="340" y2="82" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
+    ${wrapText(title, 200, 255, 330, 28, p.text, 'center', 'Georgia,serif', 'bold')}
+    <line x1="60" y1="410" x2="340" y2="410" stroke="${p.accent}" stroke-width="0.8" opacity="0.4"/>
+    <text x="200" y="462" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="${p.accent}" letter-spacing="10" font-weight="bold">EMGJ</text>
+    <text x="200" y="482" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="${p.accent}" letter-spacing="2" opacity="0.5">PUBLICATION OFFICIELLE</text>`,
 
-  // 8: Moderne asymétrique droite
+  // 8: Asymétrique droite — titre centré 100–350 => centre=225
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
     <rect x="360" y="0" width="40" height="560" fill="${p.accent}" opacity="0.15"/>
     <rect x="360" y="0" width="3" height="560" fill="${p.accent}" opacity="0.5"/>
-    ${wrapText(title, 190, 180, 320, 30, p.text, 'center', 'Arial,sans-serif', '800')}
-    <rect x="30" y="350" width="60" height="3" fill="${p.accent}" rx="1.5"/>
-    <text x="30" y="405" font-family="Georgia,serif" font-size="20" fill="${p.accent}" letter-spacing="6" font-weight="bold">EMGJ</text>
-    <text x="30" y="422" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">École Missiologique</text>
-    <text x="30" y="435" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">Génération Joël</text>`,
+    <line x1="30" y1="100" x2="340" y2="100" stroke="${p.accent}" stroke-width="1.5" opacity="0.4"/>
+    ${wrapText(title, 185, 255, 300, 30, p.text, 'center', 'Arial,sans-serif', '800')}
+    <line x1="30" y1="390" x2="340" y2="390" stroke="${p.accent}" stroke-width="1.5" opacity="0.4"/>
+    <text x="30" y="450" font-family="Georgia,serif" font-size="20" fill="${p.accent}" letter-spacing="6" font-weight="bold">EMGJ</text>
+    <text x="30" y="468" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">École Missiologique</text>
+    <text x="30" y="482" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.6">Génération Joël</text>`,
 
-  // 9: Plein centre — style affiche
+  // 9: Style affiche — titre centré zone 150–420 => centre=285
   ({ p, title, orn }) => `
     <rect width="400" height="560" fill="url(#grad)"/>
     ${orn}
-    <ellipse cx="200" cy="280" rx="160" ry="180" fill="${p.accent}" opacity="0.05"/>
-    <ellipse cx="200" cy="280" rx="130" ry="150" fill="none" stroke="${p.accent}" stroke-width="0.5" opacity="0.15"/>
-    <text x="200" y="110" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${p.accent}" letter-spacing="6" opacity="0.7">✦ EMGJ ✦</text>
-    <line x1="80" y1="125" x2="320" y2="125" stroke="${p.accent}" stroke-width="0.6" opacity="0.3"/>
-    ${wrapText(title, 200, 200, 310, 31, p.text, 'center', 'Georgia,serif', 'bold')}
-    <line x1="80" y1="420" x2="320" y2="420" stroke="${p.accent}" stroke-width="0.6" opacity="0.3"/>
-    <text x="200" y="460" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="8" opacity="0.8">GÉNÉRATION JOËL</text>`,
+    <ellipse cx="200" cy="280" rx="165" ry="185" fill="${p.accent}" opacity="0.05"/>
+    <ellipse cx="200" cy="280" rx="135" ry="155" fill="none" stroke="${p.accent}" stroke-width="0.5" opacity="0.15"/>
+    <text x="200" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${p.accent}" letter-spacing="6" opacity="0.7">✦ EMGJ ✦</text>
+    <text x="200" y="108" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" fill="${p.accent}" letter-spacing="2" opacity="0.5">ÉCOLE MISSIOLOGIQUE GÉNÉRATION JOËL</text>
+    <line x1="80" y1="124" x2="320" y2="124" stroke="${p.accent}" stroke-width="0.6" opacity="0.3"/>
+    ${wrapText(title, 200, 285, 310, 31, p.text, 'center', 'Georgia,serif', 'bold')}
+    <line x1="80" y1="430" x2="320" y2="430" stroke="${p.accent}" stroke-width="0.6" opacity="0.3"/>
+    <text x="200" y="468" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="${p.accent}" letter-spacing="8" opacity="0.8">GÉNÉRATION JOËL</text>`,
 ];
 
 // ─── UTILITAIRE : wrap text en SVG ──────────────────────────────────────────
