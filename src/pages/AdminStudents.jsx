@@ -70,11 +70,23 @@ export default function AdminStudents() {
 
   const deleteMutation = useMutation({
     mutationFn: async (student) => {
-      // Supprimer aussi les progressions pour que le tableau de bord reste cohérent
-      const progresses = await base44.entities.StudentCourseProgress.filter({ student_email: student.user_email });
-      for (const p of progresses) {
-        await base44.entities.StudentCourseProgress.delete(p.id);
-      }
+      const email = student.user_email;
+      // Suppression en cascade de toutes les données liées à l'étudiant
+      const [progresses, questions, notifications, activities, paymentProofs] = await Promise.all([
+        base44.entities.StudentCourseProgress.filter({ student_email: email }),
+        base44.entities.StudentCourseQuestion.filter({ student_email: email }),
+        base44.entities.Notification.filter({ recipient_email: email }),
+        base44.entities.RecentActivity.filter({ related_user: email }),
+        base44.entities.PaymentProof.filter({ student_email: email }),
+      ]);
+      // Supprimer tout en parallèle
+      await Promise.all([
+        ...progresses.map(p => base44.entities.StudentCourseProgress.delete(p.id)),
+        ...questions.map(q => base44.entities.StudentCourseQuestion.delete(q.id)),
+        ...notifications.map(n => base44.entities.Notification.delete(n.id)),
+        ...activities.map(a => base44.entities.RecentActivity.delete(a.id)),
+        ...paymentProofs.map(p => base44.entities.PaymentProof.delete(p.id)),
+      ]);
       return base44.entities.Student.delete(student.id);
     },
     onSuccess: () => {
@@ -84,7 +96,7 @@ export default function AdminStudents() {
       setSelectedStudent(null);
       setStudentToDelete(null);
       setDeleteConfirmStep(0);
-      toast.success('Étudiant supprimé définitivement');
+      toast.success('Étudiant et toutes ses données supprimés définitivement');
     },
   });
 
