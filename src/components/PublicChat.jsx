@@ -246,8 +246,6 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!user) return null;
-
   const currentTheme = THEMES[themeIndex];
 
   return (

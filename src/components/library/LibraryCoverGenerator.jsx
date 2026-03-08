@@ -203,11 +203,11 @@ const LAYOUTS = [
 ];
 
 // ─── UTILITAIRE : wrap text en SVG ──────────────────────────────────────────
+// startY = centre vertical de la zone de titre
 function wrapText(title, cx, startY, maxWidth, fontSize, color, align, fontFamily, fontWeight) {
-  // Estimation : ~0.55 * fontSize par caractère
   const charW = fontSize * (fontFamily.includes('Georgia') ? 0.52 : 0.56);
-  const charsPerLine = Math.floor(maxWidth / charW);
-  
+  const charsPerLine = Math.max(1, Math.floor(maxWidth / charW));
+
   const words = title.split(' ');
   const lines = [];
   let current = '';
@@ -223,14 +223,14 @@ function wrapText(title, cx, startY, maxWidth, fontSize, color, align, fontFamil
   }
   if (current) lines.push(current);
 
-  // Max 5 lignes
   const displayLines = lines.slice(0, 5);
-  const lineH = fontSize * 1.35;
-  const totalH = displayLines.length * lineH;
-  const yStart = startY - totalH / 2 + fontSize * 0.5;
+  const lineH = fontSize * 1.4;
+  const totalH = (displayLines.length - 1) * lineH;
+  // Le premier texte est centré sur startY
+  const yStart = startY - totalH / 2;
 
   const textAnchor = align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
-  const x = align === 'center' ? cx : align === 'right' ? cx + maxWidth / 2 : cx;
+  const x = align === 'center' ? cx : cx;
 
   return displayLines.map((line, i) =>
     `<text x="${x}" y="${yStart + i * lineH}" text-anchor="${textAnchor}" font-family="${fontFamily}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" style="letter-spacing:0.5px">${escXML(line)}</text>`
