@@ -99,7 +99,6 @@ export default function AdminAnalytics() {
   const maxMonthlyVisits = Math.max(1, ...monthlyVisits.map(m => m.count));
 
   // Inscriptions par mois (6 derniers mois)
-  const now = new Date();
   const monthlySignups = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
     const label = d.toLocaleString('fr', { month: 'short', year: '2-digit' });
