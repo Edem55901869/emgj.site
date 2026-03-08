@@ -19,6 +19,7 @@ export default function AdminLibrary() {
   const [pdfFile, setPdfFile] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
+  const [styleIdx, setStyleIdx] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('recent');
