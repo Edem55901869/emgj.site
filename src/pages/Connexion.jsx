@@ -8,12 +8,46 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 
+// Sécurité : rate limiting côté client
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 heures
+
+function getLoginAttempts(email) {
+  const data = JSON.parse(localStorage.getItem('emgj_login_attempts') || '{}');
+  return data[email] || { count: 0, lockedUntil: null };
+}
+
+function recordFailedAttempt(email) {
+  const data = JSON.parse(localStorage.getItem('emgj_login_attempts') || '{}');
+  const current = data[email] || { count: 0, lockedUntil: null };
+  current.count = (current.count || 0) + 1;
+  if (current.count >= MAX_ATTEMPTS) {
+    current.lockedUntil = Date.now() + LOCKOUT_DURATION;
+  }
+  data[email] = current;
+  localStorage.setItem('emgj_login_attempts', JSON.stringify(data));
+  return current;
+}
+
+function clearLoginAttempts(email) {
+  const data = JSON.parse(localStorage.getItem('emgj_login_attempts') || '{}');
+  delete data[email];
+  localStorage.setItem('emgj_login_attempts', JSON.stringify(data));
+}
+
+// Nettoyage basique XSS : retirer les caractères dangereux
+function sanitize(str) {
+  return String(str || '').replace(/[<>"'`]/g, '').trim().slice(0, 200);
+}
+
 export default function Connexion() {
   const [panel, setPanel] = useState(null);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
+  const [lockoutInfo, setLockoutInfo] = useState(null);
   const navigate = useNavigate();
 
   const handleStudentLogin = async () => {
@@ -30,16 +64,31 @@ export default function Connexion() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
+
+    const cleanEmail = sanitize(adminEmail.toLowerCase());
+
+    // Vérifier le verrouillage
+    const attempts = getLoginAttempts(cleanEmail);
+    if (attempts.lockedUntil && Date.now() < attempts.lockedUntil) {
+      const minutesLeft = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
+      setLockoutInfo(minutesLeft);
+      toast.error(`Compte temporairement verrouillé. Réessayez dans ${minutesLeft} minute(s).`);
+      return;
+    }
+    setLockoutInfo(null);
     setAdminLoading(true);
     
     try {
+      const sessionExpiry = Date.now() + SESSION_DURATION;
+
       // Vérifier les mots de passe principaux
-      const passwords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail, password_type: 'principal' });
+      const passwords = await base44.entities.AdminPassword.filter({ admin_email: cleanEmail, password_type: 'principal' });
       const validPrincipal = passwords.find(p => p.password_hash === adminPassword);
       
       if (validPrincipal) {
+        clearLoginAttempts(cleanEmail);
         localStorage.removeItem('admin_student_view');
-        localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
+        localStorage.setItem('emgj_admin', JSON.stringify({ email: cleanEmail, role: 'admin_principal', loggedIn: true, expiresAt: sessionExpiry }));
         toast.success('Connexion administrateur réussie !');
         navigate(createPageUrl('AdminDashboard'));
         setAdminLoading(false);
@@ -47,12 +96,13 @@ export default function Connexion() {
       }
 
       // Vérifier les mots de passe de secours
-      const backupPasswords = await base44.entities.AdminPassword.filter({ admin_email: adminEmail });
+      const backupPasswords = await base44.entities.AdminPassword.filter({ admin_email: cleanEmail });
       const validBackup = backupPasswords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
       
       if (validBackup) {
+        clearLoginAttempts(cleanEmail);
         localStorage.removeItem('admin_student_view');
-        localStorage.setItem('emgj_admin', JSON.stringify({ email: adminEmail, role: 'admin_principal', loggedIn: true }));
+        localStorage.setItem('emgj_admin', JSON.stringify({ email: cleanEmail, role: 'admin_principal', loggedIn: true, expiresAt: sessionExpiry }));
         toast.success('Connexion administrateur réussie !');
         navigate(createPageUrl('AdminDashboard'));
         setAdminLoading(false);
@@ -60,30 +110,32 @@ export default function Connexion() {
       }
 
       // Vérifier les admins secondaires
-      const admins = await base44.entities.AdminUser.filter({ email: adminEmail });
+      const admins = await base44.entities.AdminUser.filter({ email: cleanEmail });
       const admin = admins[0];
       
       if (admin) {
         if (!admin.is_active) {
-          toast.error('Compte désactivé');
+          toast.error('Compte désactivé. Contactez un administrateur principal.');
           setAdminLoading(false);
           return;
         }
         
         if (admin.password === adminPassword) {
+          clearLoginAttempts(cleanEmail);
           localStorage.removeItem('admin_student_view');
           localStorage.setItem('emgj_admin', JSON.stringify({ 
-            email: adminEmail, 
+            email: cleanEmail, 
             role: admin.role,
             permissions: admin.permissions || [],
-            loggedIn: true 
+            loggedIn: true,
+            expiresAt: sessionExpiry
           }));
           
           await base44.entities.AdminAction.create({
-            admin_email: adminEmail,
+            admin_email: cleanEmail,
             admin_name: `${admin.first_name} ${admin.last_name}`,
             action_type: 'Connexion',
-            description: 'Connexion réussie à la plateforme'
+            description: `Connexion réussie à la plateforme depuis ${navigator.userAgent.slice(0,80)}`
           });
           
           toast.success('Connexion réussie !');
@@ -93,9 +145,17 @@ export default function Connexion() {
         }
       }
       
-      toast.error('Identifiants incorrects');
+      // Échec : incrémenter le compteur
+      const updatedAttempts = recordFailedAttempt(cleanEmail);
+      const remaining = MAX_ATTEMPTS - updatedAttempts.count;
+      if (remaining <= 0) {
+        toast.error(`Trop de tentatives. Compte verrouillé pendant 15 minutes.`);
+        setLockoutInfo(15);
+      } else {
+        toast.error(`Identifiants incorrects. ${remaining} tentative(s) restante(s) avant verrouillage.`);
+      }
     } catch (error) {
-      toast.error('Erreur de connexion');
+      toast.error('Erreur de connexion. Vérifiez votre connexion internet.');
     }
     
     setAdminLoading(false);
