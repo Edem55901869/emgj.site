@@ -300,61 +300,171 @@ export default function AdminAnalytics() {
                 </TabsContent>
 
                 <TabsContent value="traffic" className="space-y-6">
-                  {visitors.length === 0 ? (
-                    <Card className="border-none shadow-lg">
-                      <CardContent className="py-16 text-center">
-                        <Eye className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                        <p className="text-gray-500 font-medium">Aucune donnée de trafic disponible</p>
-                        <p className="text-gray-400 text-sm mt-2">Les visites seront enregistrées automatiquement</p>
+                  {/* KPIs trafic */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="border-none shadow-md bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
+                      <CardContent className="pt-4 pb-3">
+                        <Eye className="w-7 h-7 text-cyan-200 mb-1" />
+                        <p className="text-2xl font-bold">{totalVisits}</p>
+                        <p className="text-cyan-100 text-xs">Visites totales</p>
                       </CardContent>
                     </Card>
-                  ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <Card className="border-none shadow-lg">
-                        <CardHeader className="border-b border-gray-100">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Globe className="w-5 h-5 text-blue-600" />
-                            Top pays (visiteurs)
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-5 space-y-3">
-                          {topVisitorCountries.map(([country, count]) => (
-                            <div key={country} className="space-y-1">
-                              <div className="flex justify-between text-sm">
-                                <span className="font-medium text-gray-900">{country || 'Inconnu'}</span>
-                                <Badge className="bg-blue-50 text-blue-700 border-blue-100">{count}</Badge>
-                              </div>
-                              <Progress value={(count / visitors.length) * 100} className="h-2" />
+                    <Card className="border-none shadow-md bg-gradient-to-br from-violet-500 to-purple-700 text-white">
+                      <CardContent className="pt-4 pb-3">
+                        <MapPin className="w-7 h-7 text-violet-200 mb-1" />
+                        <p className="text-2xl font-bold">{topVisitorCountries.length}</p>
+                        <p className="text-violet-100 text-xs">Pays différents</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-none shadow-md bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                      <CardContent className="pt-4 pb-3">
+                        <Smartphone className="w-7 h-7 text-emerald-200 mb-1" />
+                        <p className="text-2xl font-bold">{deviceStats['mobile'] || 0}</p>
+                        <p className="text-emerald-100 text-xs">Visites mobile</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-none shadow-md bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                      <CardContent className="pt-4 pb-3">
+                        <TrendingUp className="w-7 h-7 text-amber-200 mb-1" />
+                        <p className="text-2xl font-bold">{dailyVisits[dailyVisits.length - 1]?.count || 0}</p>
+                        <p className="text-amber-100 text-xs">Visites aujourd'hui</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Graphe évolutif 14 jours */}
+                  <Card className="border-none shadow-lg">
+                    <CardHeader className="border-b border-gray-100">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart2 className="w-5 h-5 text-cyan-600" />
+                        Évolution des visites — 14 derniers jours
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-5">
+                      {totalVisits === 0 ? (
+                        <div className="text-center py-8 text-gray-400">
+                          <Eye className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">Les visites de la page d'accueil seront trackées automatiquement</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1 h-36 overflow-x-auto pb-2">
+                          {dailyVisits.map((d, i) => (
+                            <div key={i} className="flex-1 min-w-[20px] flex flex-col items-center gap-1">
+                              <span className="text-[10px] font-bold text-gray-600">{d.count > 0 ? d.count : ''}</span>
+                              <div
+                                className="w-full rounded-t-md transition-all"
+                                style={{
+                                  height: `${(d.count / maxDaily) * 110}px`,
+                                  minHeight: d.count > 0 ? '6px' : '2px',
+                                  background: d.count > 0
+                                    ? `linear-gradient(to top, #0891b2, #06b6d4)`
+                                    : '#e5e7eb'
+                                }}
+                              />
+                              <span className="text-[9px] text-gray-400 whitespace-nowrap">{d.label}</span>
                             </div>
                           ))}
-                        </CardContent>
-                      </Card>
-                      <Card className="border-none shadow-lg">
-                        <CardHeader className="border-b border-gray-100">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Smartphone className="w-5 h-5 text-indigo-600" />
-                            Appareils utilisés
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-5 space-y-3">
-                          {Object.entries(deviceStats).map(([device, count]) => {
-                            const Icon = deviceIcons[device] || Monitor;
-                            return (
-                              <div key={device} className="space-y-1">
-                                <div className="flex justify-between text-sm items-center">
-                                  <div className="flex items-center gap-2">
-                                    <Icon className="w-4 h-4 text-gray-500" />
-                                    <span className="font-medium text-gray-900 capitalize">{device}</span>
-                                  </div>
-                                  <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100">{((count / visitors.length) * 100).toFixed(1)}%</Badge>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Graphe mensuel + pays */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Visites par mois */}
+                    <Card className="border-none shadow-lg">
+                      <CardHeader className="border-b border-gray-100">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-blue-600" />
+                          Visites mensuelles (6 mois)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="flex items-end gap-2 h-28">
+                          {monthlyVisits.map((m, i) => (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                              <span className="text-xs font-bold text-gray-700">{m.count}</span>
+                              <div
+                                className="w-full rounded-t-lg"
+                                style={{
+                                  height: `${(m.count / maxMonthlyVisits) * 80}px`,
+                                  minHeight: m.count > 0 ? '6px' : '2px',
+                                  background: m.count > 0 ? 'linear-gradient(to top, #6366f1, #818cf8)' : '#e5e7eb'
+                                }}
+                              />
+                              <span className="text-[10px] text-gray-500">{m.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Top pays visiteurs */}
+                    <Card className="border-none shadow-lg">
+                      <CardHeader className="border-b border-gray-100">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                          Pays de provenance
+                          {totalVisits > 0 && <span className="ml-auto text-xs font-normal text-gray-400">{totalVisits} visites</span>}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4 space-y-2">
+                        {totalVisits === 0 ? (
+                          <p className="text-gray-400 text-center py-6 text-sm">Aucune visite enregistrée</p>
+                        ) : (
+                          topVisitorCountries.map(([country, count], i) => (
+                            <div key={country} className="flex items-center gap-3">
+                              <span className="text-xs text-gray-400 w-4 font-bold">{i + 1}</span>
+                              <div className="flex-1">
+                                <div className="flex justify-between text-sm mb-0.5">
+                                  <span className="font-medium text-gray-800 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3 text-gray-400" /> {country}
+                                  </span>
+                                  <span className="text-gray-500 text-xs">{count} — {((count / totalVisits) * 100).toFixed(0)}%</span>
                                 </div>
-                                <Progress value={(count / visitors.length) * 100} className="h-2" />
+                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{
+                                      width: `${(count / totalVisits) * 100}%`,
+                                      background: `hsl(${210 + i * 25}, 70%, 55%)`
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Appareils */}
+                  {totalVisits > 0 && (
+                    <Card className="border-none shadow-lg">
+                      <CardHeader className="border-b border-gray-100">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Smartphone className="w-4 h-4 text-indigo-600" />
+                          Répartition par appareil
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          {[['mobile', Smartphone, '#10b981'], ['desktop', Monitor, '#6366f1'], ['tablet', Tablet, '#f59e0b']].map(([type, Icon, color]) => {
+                            const count = deviceStats[type] || 0;
+                            const pct = totalVisits > 0 ? ((count / totalVisits) * 100).toFixed(0) : 0;
+                            return (
+                              <div key={type} className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <Icon className="w-7 h-7 mx-auto mb-2" style={{ color }} />
+                                <p className="text-2xl font-bold text-gray-800">{pct}%</p>
+                                <p className="text-xs text-gray-500 capitalize mt-1">{type === 'mobile' ? 'Mobile' : type === 'desktop' ? 'Ordinateur' : 'Tablette'}</p>
+                                <p className="text-xs text-gray-400">{count} visites</p>
                               </div>
                             );
                           })}
-                        </CardContent>
-                      </Card>
-                    </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
                 </TabsContent>
               </Tabs>
