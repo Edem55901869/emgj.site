@@ -99,6 +99,7 @@ export default function AdminLibrary() {
     setEditingDoc(doc);
     setForm({ title: doc.title, author: doc.author || 'Voir document', description: doc.description || '', pdf_url: doc.pdf_url, cover_image: doc.cover_image });
     setCoverPreview(doc.cover_image || null);
+    setStyleIdx(0);
     setDialogOpen(true);
   };
 
