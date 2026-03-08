@@ -395,6 +395,49 @@ export default function AdminStudents() {
           </DialogContent>
         </Dialog>
 
+        {/* Dialog double confirmation suppression */}
+        <Dialog open={deleteConfirmStep > 0} onOpenChange={cancelDelete}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+                {deleteConfirmStep === 1 ? 'Confirmer la suppression' : '⚠️ Dernière confirmation'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              {deleteConfirmStep === 1 ? (
+                <>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <p className="text-sm font-bold text-red-800 mb-1">Vous êtes sur le point de supprimer :</p>
+                    <p className="text-red-700 font-medium">{studentToDelete?.first_name} {studentToDelete?.last_name}</p>
+                    <p className="text-xs text-red-600">{studentToDelete?.user_email}</p>
+                  </div>
+                  <p className="text-sm text-gray-600">Cette action supprimera l'étudiant ET toutes ses progressions de cours. Êtes-vous sûr ?</p>
+                </>
+              ) : (
+                <>
+                  <div className="bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
+                    <AlertTriangle className="w-10 h-10 text-red-600 mx-auto mb-2" />
+                    <p className="text-sm font-bold text-red-900">ACTION IRRÉVERSIBLE</p>
+                    <p className="text-xs text-red-700 mt-1">L'étudiant et toutes ses données seront définitivement effacés de la plateforme.</p>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-800 text-center">Cliquez sur "Supprimer définitivement" pour confirmer.</p>
+                </>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={cancelDelete} variant="outline" className="flex-1 rounded-xl">Annuler</Button>
+                <Button
+                  onClick={confirmDelete}
+                  disabled={deleteMutation.isPending}
+                  className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl text-white"
+                >
+                  {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : deleteConfirmStep === 1 ? 'Continuer' : 'Supprimer définitivement'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <Dialog open={!!notifDialog} onOpenChange={() => setNotifDialog(null)}>
           <DialogContent className="max-w-sm rounded-2xl">
             <DialogHeader><DialogTitle>Envoyer une notification</DialogTitle></DialogHeader>
