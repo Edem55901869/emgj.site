@@ -105,14 +105,15 @@ export default function AdminLibrary() {
 
   const handleOpen = () => {
     resetForm();
+    const rnd = Math.floor(Math.random() * TOTAL_STYLES);
+    setStyleIdx(rnd);
     setDialogOpen(true);
   };
 
-  // Mise à jour de la prévisualisation quand le titre change
   const handleTitleChange = (title) => {
     setForm(f => ({ ...f, title }));
     if (title.trim() && !coverFile) {
-      setCoverPreview(generateSVGCover(title));
+      setCoverPreview(generateSVGCover(title, styleIdx));
     }
   };
 
