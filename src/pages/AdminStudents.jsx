@@ -24,6 +24,8 @@ export default function AdminStudents() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [notifDialog, setNotifDialog] = useState(null);
   const [notifMessage, setNotifMessage] = useState({ title: '', message: '' });
+  const [deleteConfirmStep, setDeleteConfirmStep] = useState(0); // 0=none, 1=first confirm, 2=second confirm
+  const [studentToDelete, setStudentToDelete] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: students = [], isLoading } = useQuery({
@@ -67,13 +69,42 @@ export default function AdminStudents() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Student.delete(id),
+    mutationFn: async (student) => {
+      // Supprimer aussi les progressions pour que le tableau de bord reste cohérent
+      const progresses = await base44.entities.StudentCourseProgress.filter({ student_email: student.user_email });
+      for (const p of progresses) {
+        await base44.entities.StudentCourseProgress.delete(p.id);
+      }
+      return base44.entities.Student.delete(student.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminStudents'] });
+      queryClient.invalidateQueries({ queryKey: ['allStudentProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['allProgress'] });
       setSelectedStudent(null);
-      toast.success('Étudiant supprimé');
+      setStudentToDelete(null);
+      setDeleteConfirmStep(0);
+      toast.success('Étudiant supprimé définitivement');
     },
   });
+
+  const initiateDelete = (student) => {
+    setStudentToDelete(student);
+    setDeleteConfirmStep(1);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmStep === 1) {
+      setDeleteConfirmStep(2);
+    } else if (deleteConfirmStep === 2) {
+      deleteMutation.mutate(studentToDelete);
+    }
+  };
+
+  const cancelDelete = () => {
+    setStudentToDelete(null);
+    setDeleteConfirmStep(0);
+  };
 
   const sendNotification = async () => {
     await base44.entities.Notification.create({
