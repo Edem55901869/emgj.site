@@ -83,7 +83,6 @@ export default function AdminAnalytics() {
   });
   const maxDaily = Math.max(1, ...dailyVisits.map(d => d.count));
 
-  // now doit être déclaré AVANT d'être utilisé
   const now = new Date();
 
   // Visites par mois (6 derniers mois)
