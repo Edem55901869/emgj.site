@@ -49,7 +49,7 @@ export default function AdminLibrary() {
 
       // Si pas de couverture existante et pas de fichier → générer SVG local
       if (!coverFile && !cover_image && form.title) {
-        cover_image = coverPreview || generateSVGCover(form.title);
+        cover_image = coverPreview || generateSVGCover(form.title, styleIdx);
       }
 
       setUploading(true);
