@@ -62,6 +62,8 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
+      <Route path="/StudentTuition" element={<StudentTuitionPage />} />
+      <Route path="/AdminTuition" element={<AdminTuitionPage />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
