@@ -97,13 +97,18 @@ export default function StudentTuition() {
         status: 'en_attente'
       });
 
-      // Notifier tous les admins
-      await base44.entities.Notification.create({
-        recipient_email: 'admin',
-        type: 'info',
-        title: '💰 Nouvelle preuve de paiement',
-        message: `${student.first_name} ${student.last_name} a soumis une preuve de paiement (${paymentType}) — ${myConfig.amount} XOF`
-      });
+      // Notifier les admins (récupérer leurs emails)
+      const adminUsers = await base44.entities.AdminUser.list();
+      for (const admin of adminUsers) {
+        if (admin.email) {
+          await base44.entities.Notification.create({
+            recipient_email: admin.email,
+            type: 'info',
+            title: '💰 Nouvelle preuve de paiement',
+            message: `${student.first_name} ${student.last_name} a soumis une preuve de paiement (${paymentType}) — ${myConfig.amount} XOF`
+          });
+        }
+      }
 
       queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
       setProofDialog(false);
