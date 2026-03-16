@@ -66,8 +66,8 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
       try {
         // Essayer d'abord le compte admin local
         const adminData = JSON.parse(localStorage.getItem('emgj_admin') || '{}');
-        if (adminData?.admin_email) {
-          setUser({ email: adminData.admin_email, full_name: adminData.full_name || 'Administrateur' });
+        if (adminData?.loggedIn && adminData?.email) {
+          setUser({ email: adminData.email, full_name: adminData.full_name || 'Administrateur' });
           return;
         }
         // Sinon utilisateur normal
