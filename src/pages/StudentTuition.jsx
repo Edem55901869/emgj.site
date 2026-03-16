@@ -85,6 +85,8 @@ export default function StudentTuition() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: receiptFile });
       
+      const paymentDate = new Date().toISOString();
+
       await base44.entities.PaymentProof.create({
         student_email: user.email,
         student_name: `${student.first_name} ${student.last_name}`,
@@ -95,12 +97,29 @@ export default function StudentTuition() {
         status: 'en_attente'
       });
 
+      // Notifier tous les admins
+      await base44.entities.Notification.create({
+        recipient_email: 'admin',
+        type: 'info',
+        title: '💰 Nouvelle preuve de paiement',
+        message: `${student.first_name} ${student.last_name} a soumis une preuve de paiement (${paymentType}) — ${myConfig.amount} XOF`
+      });
+
       queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
       setProofDialog(false);
       setTransactionId('');
       setReceiptFile(null);
       setPaymentType('');
-      toast.success('Preuve de paiement envoyée !');
+
+      // Stocker les données de confirmation et rediriger
+      sessionStorage.setItem('payment_success_data', JSON.stringify({
+        student_name: `${student.first_name} ${student.last_name}`,
+        domain: student.domain,
+        formation_type: student.formation_type,
+        payment_type: paymentType,
+        payment_date: paymentDate,
+      }));
+      navigate(createPageUrl('PaymentSuccess'));
     } catch (error) {
       toast.error('Erreur lors de l\'envoi');
     }
