@@ -1,39 +1,30 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DollarSign, Plus, Trash2, Loader2, Check, X, Eye, ExternalLink, TrendingUp, Clock, CheckCircle2, Filter } from 'lucide-react';
+import { DollarSign, Plus, Trash2, Loader2, Check, X, TrendingUp, Clock, CheckCircle2, Users, Zap, Hash, AlertTriangle, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
 const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
 
-const FORMATION_BY_DOMAIN = {
-  'THÉOLOGIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
-  'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
-  'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
-  'AUMÔNERIE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'MINISTÈRE APOSTOLIQUE': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat']
-};
-
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
   const [configForm, setConfigForm] = useState({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '', payment_type: '' });
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('en_attente');
   const queryClient = useQueryClient();
 
   const { data: configs = [] } = useQuery({ queryKey: ['tuitionConfigs'], queryFn: () => base44.entities.TuitionConfig.list() });
   const { data: tuitions = [] } = useQuery({ queryKey: ['tuitions'], queryFn: () => base44.entities.Tuition.list('-created_date', 500) });
-  const { data: paymentProofs = [] } = useQuery({ queryKey: ['paymentProofs'], queryFn: () => base44.entities.PaymentProof.list('-created_date', 500) });
+  const { data: paymentProofs = [], isLoading: loadingProofs } = useQuery({ queryKey: ['paymentProofs'], queryFn: () => base44.entities.PaymentProof.list('-created_date', 500), refetchInterval: 10000 });
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
 
   const createConfigMutation = useMutation({
@@ -48,289 +39,287 @@ export default function AdminTuition() {
 
   const deleteConfigMutation = useMutation({
     mutationFn: (id) => base44.entities.TuitionConfig.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] });
-      toast.success('Configuration supprimée');
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] }); toast.success('Supprimée'); },
   });
 
-  const updateProofMutation = useMutation({
-    mutationFn: async ({ id, status, studentEmail, studentName, amount }) => {
-      await base44.entities.PaymentProof.update(id, { status });
-      
-      if (status === 'validé') {
-        await base44.entities.Tuition.create({
-          student_email: studentEmail,
-          student_name: studentName,
-          amount,
-          currency: 'XOF',
-          status: 'payé',
-          period: new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-        });
-        
-        await base44.entities.Notification.create({
-          recipient_email: studentEmail,
-          type: 'success',
-          title: '✅ Paiement validé',
-          message: 'Votre preuve de paiement a été validée. Votre scolarité est à jour !'
-        });
-      } else if (status === 'rejeté') {
-        await base44.entities.Notification.create({
-          recipient_email: studentEmail,
-          type: 'warning',
-          title: '❌ Paiement rejeté',
-          message: 'Votre preuve de paiement a été rejetée. Veuillez soumettre une nouvelle preuve valide.'
-        });
-      }
+  const validateMutation = useMutation({
+    mutationFn: async ({ proof }) => {
+      await base44.entities.PaymentProof.update(proof.id, { status: 'validé' });
+      await base44.entities.Tuition.create({
+        student_email: proof.student_email,
+        student_name: proof.student_name,
+        amount: proof.amount,
+        currency: 'XOF',
+        status: 'payé',
+        period: proof.period || format(new Date(), 'MMMM yyyy', { locale: fr }),
+        notes: `Réf. transaction: ${proof.proof_url}`
+      });
+      await base44.entities.Notification.create({
+        recipient_email: proof.student_email,
+        type: 'success',
+        title: '✅ Paiement validé !',
+        message: `Votre paiement de ${proof.amount?.toLocaleString()} XOF a été confirmé. Votre scolarité est à jour !`
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
       queryClient.invalidateQueries({ queryKey: ['tuitions'] });
-      toast.success('Statut mis à jour');
+      toast.success('Paiement validé ✅');
     },
   });
 
-  // Calculs statistiques
-  const totalRevenue = tuitions.filter(t => t.status === 'payé').reduce((sum, t) => sum + (t.amount || 0), 0);
-  const pendingAmount = paymentProofs.filter(p => p.status === 'en_attente').reduce((sum, p) => sum + (p.amount || 0), 0);
-  
-  const unpaidAmount = students.reduce((sum, student) => {
-    const config = configs.find(c => c.domain === student.domain && c.formation_type === student.formation_type);
-    const hasPaid = tuitions.some(t => t.student_email === student.user_email && t.status === 'payé') || 
-                    paymentProofs.some(p => p.student_email === student.user_email && p.status === 'validé');
-    return hasPaid ? sum : sum + (config?.amount || 0);
-  }, 0);
+  const rejectMutation = useMutation({
+    mutationFn: async ({ proof }) => {
+      await base44.entities.PaymentProof.update(proof.id, { status: 'rejeté' });
+      await base44.entities.Notification.create({
+        recipient_email: proof.student_email,
+        type: 'warning',
+        title: '❌ Référence invalide',
+        message: `La référence de transaction "${proof.proof_url}" n'a pas pu être vérifiée. Veuillez recontacter l'administration.`
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
+      toast.error('Transaction rejetée');
+    },
+  });
 
+  // Stats
+  const totalRevenue = tuitions.filter(t => t.status === 'payé').reduce((s, t) => s + (t.amount || 0), 0);
   const pendingProofs = paymentProofs.filter(p => p.status === 'en_attente');
+  const pendingAmount = pendingProofs.reduce((s, p) => s + (p.amount || 0), 0);
+  const paidStudents = new Set(tuitions.filter(t => t.status === 'payé').map(t => t.student_email)).size;
+  const unpaidStudents = students.filter(s => {
+    const paid = tuitions.some(t => t.student_email === s.user_email && t.status === 'payé') ||
+                 paymentProofs.some(p => p.student_email === s.user_email && p.status === 'validé');
+    return !paid;
+  }).length;
+
   const filteredProofs = statusFilter === 'all' ? paymentProofs : paymentProofs.filter(p => p.status === statusFilter);
+
+  const statusColors = {
+    'en_attente': 'bg-amber-50 text-amber-700 border-amber-200',
+    'validé': 'bg-green-50 text-green-700 border-green-200',
+    'rejeté': 'bg-red-50 text-red-700 border-red-200',
+  };
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-[#0f172a]">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Scolarité & Paiements</h1>
-              <p className="text-gray-600 mt-1">Gestion financière de la plateforme</p>
+              <h1 className="text-3xl font-black text-white">Scolarité & Paiements</h1>
+              <p className="text-white/40 text-sm mt-1">Suivi financier en temps réel</p>
             </div>
-            <Button onClick={() => setConfigDialog(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg">
-              <Plus className="w-4 h-4 mr-2" /> Configuration
+            <Button onClick={() => setConfigDialog(true)} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg shadow-blue-500/20">
+              <Plus className="w-4 h-4 mr-2" /> Nouvelle config
             </Button>
           </div>
 
-          {/* Statistiques */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-green-500 flex items-center justify-center shadow-lg">
-                    <TrendingUp className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-green-700 font-medium mb-1">Revenus encaissés</p>
-                    <p className="text-3xl font-bold text-green-900">{totalRevenue.toLocaleString()}</p>
-                    <p className="text-xs text-green-600 mt-1">XOF</p>
-                  </div>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-green-900/50 to-emerald-900/30 border border-green-500/20 rounded-2xl p-5">
+              <TrendingUp className="w-6 h-6 text-green-400 mb-3" />
+              <p className="text-2xl font-black text-white">{totalRevenue.toLocaleString()}</p>
+              <p className="text-green-400/70 text-xs mt-1">XOF encaissés</p>
+            </div>
+            <div className={`bg-gradient-to-br from-amber-900/50 to-yellow-900/30 border rounded-2xl p-5 relative ${pendingProofs.length > 0 ? 'border-amber-400/50 animate-pulse' : 'border-amber-500/20'}`}>
+              {pendingProofs.length > 0 && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{pendingProofs.length}</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-100 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg">
-                    <Clock className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-amber-700 font-medium mb-1">En attente</p>
-                    <p className="text-3xl font-bold text-amber-900">{pendingAmount.toLocaleString()}</p>
-                    <p className="text-xs text-amber-600 mt-1">{pendingProofs.length} preuve(s)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-100 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-red-500 flex items-center justify-center shadow-lg">
-                    <DollarSign className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-red-700 font-medium mb-1">Non payé</p>
-                    <p className="text-3xl font-bold text-red-900">{unpaidAmount.toLocaleString()}</p>
-                    <p className="text-xs text-red-600 mt-1">XOF</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-
-
-          {/* Configurations */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 mb-6">
-            <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-blue-600" />
-              Configurations de scolarité
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {configs.map(config => (
-                <div key={config.id} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{config.amount.toLocaleString()} {config.currency}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        <Badge className="bg-blue-500 text-white text-xs">{config.domain}</Badge>
-                        <Badge className="bg-indigo-500 text-white text-xs">{config.formation_type}</Badge>
-                        {config.payment_type && (
-                          <Badge className="bg-purple-500 text-white text-xs">{config.payment_type}</Badge>
-                        )}
-                      </div>
-                    </div>
-                    <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {config.payment_link && (
-                    <a href={config.payment_link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1 mt-2">
-                      <ExternalLink className="w-3 h-3" /> Lien de paiement
-                    </a>
-                  )}
-                </div>
-              ))}
+              )}
+              <Clock className="w-6 h-6 text-amber-400 mb-3" />
+              <p className="text-2xl font-black text-white">{pendingAmount.toLocaleString()}</p>
+              <p className="text-amber-400/70 text-xs mt-1">XOF à vérifier</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-900/50 to-indigo-900/30 border border-blue-500/20 rounded-2xl p-5">
+              <Users className="w-6 h-6 text-blue-400 mb-3" />
+              <p className="text-2xl font-black text-white">{paidStudents}</p>
+              <p className="text-blue-400/70 text-xs mt-1">Étudiants à jour</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-900/50 to-rose-900/30 border border-red-500/20 rounded-2xl p-5">
+              <AlertTriangle className="w-6 h-6 text-red-400 mb-3" />
+              <p className="text-2xl font-black text-white">{unpaidStudents}</p>
+              <p className="text-red-400/70 text-xs mt-1">Non payés</p>
             </div>
           </div>
 
-          {/* Preuves de paiement en attente */}
+          {/* Preuves en attente - Zone d'action prioritaire */}
           {pendingProofs.length > 0 && (
-            <div className="mb-6 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-5 shadow-lg">
-              <h3 className="font-bold text-amber-900 mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Preuves de paiement en attente ({pendingProofs.length})
-              </h3>
-              <div className="grid gap-3">
+            <div className="bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border border-amber-500/30 rounded-2xl p-6 mb-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-white font-bold text-lg">Transactions à vérifier</h2>
+                    <p className="text-amber-400/70 text-xs">{pendingProofs.length} en attente de confirmation</p>
+                  </div>
+                </div>
+                <button onClick={() => queryClient.invalidateQueries({ queryKey: ['paymentProofs'] })} className="text-amber-400/50 hover:text-amber-400 transition-colors">
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
                 {pendingProofs.map(proof => (
-                  <div key={proof.id} className="bg-white rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-900">{proof.student_name}</p>
-                      <p className="text-sm text-gray-600">{proof.student_email}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-sm font-medium text-amber-700">{proof.amount.toLocaleString()} XOF • {proof.period}</p>
-                        {proof.payment_type && (
-                          <Badge className={
-                            proof.payment_type === 'Frais de diplôme' ? 'bg-green-100 text-green-700' :
-                            proof.payment_type === 'Frais de mémoire' ? 'bg-purple-100 text-purple-700' :
-                            'bg-indigo-100 text-indigo-700'
-                          }>
-                            {proof.payment_type}
-                          </Badge>
-                        )}
+                  <div key={proof.id} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">{proof.student_name?.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-semibold truncate">{proof.student_name}</p>
+                          <p className="text-white/40 text-xs truncate">{proof.student_email}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5">
+                              <Hash className="w-3 h-3 text-white/40" />
+                              <span className="text-white/70 text-xs font-mono">{proof.proof_url}</span>
+                            </div>
+                            <span className="text-amber-400 font-bold text-sm">{proof.amount?.toLocaleString()} XOF</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <Button
+                          onClick={() => validateMutation.mutate({ proof })}
+                          disabled={validateMutation.isPending}
+                          size="sm"
+                          className="bg-green-500 hover:bg-green-600 rounded-xl h-9 px-4 shadow-lg shadow-green-500/20"
+                        >
+                          {validateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                          <span className="ml-1 hidden sm:inline">Valider</span>
+                        </Button>
+                        <Button
+                          onClick={() => rejectMutation.mutate({ proof })}
+                          disabled={rejectMutation.isPending}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-xl h-9 px-3"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
-                    <a href={proof.proof_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="rounded-xl">
-                        <Eye className="w-4 h-4 mr-1" /> Voir
-                      </Button>
-                    </a>
-                    <Button
-                      onClick={() => updateProofMutation.mutate({ id: proof.id, status: 'validé', studentEmail: proof.student_email, studentName: proof.student_name, amount: proof.amount })}
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700 rounded-xl"
-                    >
-                      <Check className="w-4 h-4 mr-1" /> Valider
-                    </Button>
-                    <Button
-                      onClick={() => updateProofMutation.mutate({ id: proof.id, status: 'rejeté', studentEmail: proof.student_email })}
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 border-red-200 hover:bg-red-50 rounded-xl"
-                    >
-                      <X className="w-4 h-4 mr-1" /> Rejeter
-                    </Button>
+                    {proof.payment_type && (
+                      <div className="mt-2 ml-13">
+                        <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs ml-0">{proof.payment_type}</Badge>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Liste des preuves avec filtre */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900 text-lg">Historique des preuves de paiement</h3>
+          {/* Configurations */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+            <h3 className="font-bold text-white text-lg mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-blue-400" />
+              Configurations de scolarité
+            </h3>
+            {configs.length === 0 ? (
+              <p className="text-white/30 text-center py-6 text-sm">Aucune configuration. Cliquez sur "Nouvelle config" pour commencer.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {configs.map(config => (
+                  <div key={config.id} className="bg-gradient-to-br from-blue-900/40 to-indigo-900/20 border border-blue-500/20 rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="text-2xl font-black text-white">{config.amount?.toLocaleString()} <span className="text-sm text-white/40">XOF</span></p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{config.formation_type}</Badge>
+                          {config.payment_type && <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">{config.payment_type}</Badge>}
+                        </div>
+                        <p className="text-white/30 text-xs mt-2 leading-tight">{config.domain}</p>
+                      </div>
+                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="icon" className="h-8 w-8 text-red-400/50 hover:text-red-400 hover:bg-red-500/10">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    {config.payment_link && (
+                      <a href={config.payment_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-blue-400/70 hover:text-blue-400 transition-colors">
+                        <ArrowUpRight className="w-3 h-3" /> Lien de paiement
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Historique complet */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+              <h3 className="font-bold text-white text-lg">Historique des transactions</h3>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-48 h-10 rounded-xl">
+                <SelectTrigger className="w-44 h-9 rounded-xl bg-white/10 border-white/20 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="en_attente">En attente</SelectItem>
-                  <SelectItem value="validé">Validé</SelectItem>
-                  <SelectItem value="rejeté">Rejeté</SelectItem>
+                  <SelectItem value="validé">Validés</SelectItem>
+                  <SelectItem value="rejeté">Rejetés</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
-              {filteredProofs.map(p => (
-                <div key={p.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{p.student_name}</p>
-                    <p className="text-sm text-gray-500">{p.student_email}</p>
-                    {p.payment_type && (
-                      <Badge className={
-                        p.payment_type === 'Frais de diplôme' ? 'bg-green-100 text-green-700 mt-1' :
-                        p.payment_type === 'Frais de mémoire' ? 'bg-purple-100 text-purple-700 mt-1' :
-                        'bg-indigo-100 text-indigo-700 mt-1'
-                      }>
-                        {p.payment_type}
-                      </Badge>
-                    )}
+            <div className="divide-y divide-white/5 max-h-96 overflow-y-auto">
+              {loadingProofs ? (
+                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
+              ) : filteredProofs.length === 0 ? (
+                <div className="py-12 text-center text-white/30 text-sm">Aucune transaction</div>
+              ) : (
+                filteredProofs.map(p => (
+                  <div key={p.id} className="p-4 flex items-center gap-4 hover:bg-white/3 transition-colors">
+                    <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-white/70 font-bold text-sm">{p.student_name?.charAt(0)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium text-sm truncate">{p.student_name}</p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Hash className="w-3 h-3 text-white/20" />
+                        <span className="text-white/30 text-xs font-mono truncate">{p.proof_url}</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-white font-bold text-sm">{p.amount?.toLocaleString()} XOF</p>
+                      <p className="text-white/30 text-xs">{p.period}</p>
+                    </div>
+                    <Badge className={`flex-shrink-0 text-xs ${statusColors[p.status] || 'bg-gray-100 text-gray-700'}`}>
+                      {p.status}
+                    </Badge>
                   </div>
-                  <div className="text-right mr-4">
-                    <p className="font-bold text-gray-900">{p.amount.toLocaleString()} XOF</p>
-                    <p className="text-xs text-gray-500">{p.period}</p>
-                  </div>
-                  <Badge className={
-                    p.status === 'validé' ? 'bg-green-50 text-green-700 border-green-200' : 
-                    p.status === 'rejeté' ? 'bg-red-50 text-red-700 border-red-200' : 
-                    'bg-amber-50 text-amber-700 border-amber-200'
-                  }>
-                    {p.status}
-                  </Badge>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
 
+        {/* Dialog configuration */}
         <Dialog open={configDialog} onOpenChange={setConfigDialog}>
-          <DialogContent className="max-w-md rounded-3xl bg-white">
-            <DialogHeader><DialogTitle className="text-xl">Nouvelle configuration</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-md rounded-3xl bg-[#1e293b] border border-white/10 text-white">
+            <DialogHeader><DialogTitle className="text-white">Nouvelle configuration</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <Select value={configForm.domain} onValueChange={(v) => setConfigForm({ ...configForm, domain: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
+                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Domaine" /></SelectTrigger>
                 <SelectContent>{DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={configForm.formation_type} onValueChange={(v) => setConfigForm({ ...configForm, formation_type: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de formation" /></SelectTrigger>
+                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Type de formation" /></SelectTrigger>
                 <SelectContent>{FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
               </Select>
-              <Input
-                type="number"
-                value={configForm.amount}
-                onChange={(e) => setConfigForm({ ...configForm, amount: e.target.value })}
-                placeholder="Montant"
-                className="rounded-xl h-11"
-              />
-              <Input
-                value={configForm.payment_link}
-                onChange={(e) => setConfigForm({ ...configForm, payment_link: e.target.value })}
-                placeholder="Lien de paiement (optionnel)"
-                className="rounded-xl h-11"
-              />
+              <Input type="number" value={configForm.amount} onChange={(e) => setConfigForm({ ...configForm, amount: e.target.value })} placeholder="Montant (XOF)" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+              <Input value={configForm.payment_link} onChange={(e) => setConfigForm({ ...configForm, payment_link: e.target.value })} placeholder="Lien de paiement (FedaPay, Wave...)" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
               <Select value={configForm.payment_type} onValueChange={(v) => setConfigForm({ ...configForm, payment_type: v })}>
-                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Type de frais" /></SelectTrigger>
+                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Type de frais" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
                   <SelectItem value="Frais de mémoire">Frais de mémoire</SelectItem>
@@ -338,11 +327,11 @@ export default function AdminTuition() {
                 </SelectContent>
               </Select>
               <Button
-                onClick={() => createConfigMutation.mutate(configForm)}
+                onClick={() => createConfigMutation.mutate({ ...configForm, amount: Number(configForm.amount) })}
                 disabled={!configForm.domain || !configForm.formation_type || !configForm.amount || !configForm.payment_type || createConfigMutation.isPending}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl h-11 font-bold"
               >
-                {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer'}
+                {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer la configuration'}
               </Button>
             </div>
           </DialogContent>

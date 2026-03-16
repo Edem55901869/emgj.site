@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, DollarSign, Calendar, CheckCircle, Clock, AlertCircle, Loader2, ExternalLink, Upload, CreditCard, Award, X } from 'lucide-react';
+import { ArrowLeft, Zap, CheckCircle, Clock, AlertCircle, Loader2, ExternalLink, CreditCard, Award, ChevronRight, Hash, Sparkles, Shield, TrendingUp, GraduationCap, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -20,11 +19,9 @@ export default function StudentTuition() {
   const [user, setUser] = useState(null);
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [proofDialog, setProofDialog] = useState(false);
-  const [transactionId, setTransactionId] = useState('');
-  const [receiptFile, setReceiptFile] = useState(null);
-  const [paymentType, setPaymentType] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(false);
+  const [txRef, setTxRef] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -32,17 +29,10 @@ export default function StudentTuition() {
       if (adminView) {
         const viewData = JSON.parse(adminView);
         setUser({ email: 'admin@preview.emgj' });
-        setStudent({
-          first_name: 'Admin',
-          last_name: 'Preview',
-          domain: viewData.domain,
-          formation_type: viewData.formation_type,
-          user_email: 'admin@preview.emgj'
-        });
+        setStudent({ first_name: 'Admin', last_name: 'Preview', domain: viewData.domain, formation_type: viewData.formation_type, user_email: 'admin@preview.emgj' });
         setLoading(false);
         return;
       }
-
       const u = await base44.auth.me();
       setUser(u);
       const students = await base44.entities.Student.filter({ user_email: u.email });
@@ -72,81 +62,56 @@ export default function StudentTuition() {
     enabled: !!user && !isPreview,
   });
 
-  const myConfig = configs.find(c => c.domain === student?.domain && c.formation_type === student?.formation_type);
+  const myConfigs = configs.filter(c => c.domain === student?.domain && c.formation_type === student?.formation_type);
+  const myConfig = myConfigs[0];
   const hasPaid = tuitions.some(t => t.status === 'payé') || paymentProofs.some(p => p.status === 'validé');
+  const pendingProof = paymentProofs.find(p => p.status === 'en_attente');
 
-  const submitProof = async () => {
-    if (!receiptFile || !transactionId.trim() || !paymentType) {
-      toast.error('Veuillez remplir tous les champs');
+  const confirmPayment = async () => {
+    if (!txRef.trim()) {
+      toast.error('Veuillez entrer votre référence de transaction');
       return;
     }
+    setSubmitting(true);
 
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: receiptFile });
-      
-      const paymentDate = new Date().toISOString();
+    const paymentDate = new Date().toISOString();
 
-      await base44.entities.PaymentProof.create({
-        student_email: user.email,
-        student_name: `${student.first_name} ${student.last_name}`,
-        amount: myConfig.amount,
-        proof_url: file_url,
-        period: format(new Date(), 'MMMM yyyy', { locale: fr }),
-        payment_type: paymentType,
-        status: 'en_attente'
-      });
+    await base44.entities.PaymentProof.create({
+      student_email: user.email,
+      student_name: `${student.first_name} ${student.last_name}`,
+      amount: myConfig.amount,
+      proof_url: txRef.trim(),
+      period: format(new Date(), 'MMMM yyyy', { locale: fr }),
+      payment_type: myConfig.payment_type || 'Frais de scolarité',
+      status: 'en_attente'
+    });
 
-      // Notifier les admins (récupérer leurs emails)
-      const adminUsers = await base44.entities.AdminUser.list();
-      for (const admin of adminUsers) {
-        if (admin.email) {
-          await base44.entities.Notification.create({
-            recipient_email: admin.email,
-            type: 'info',
-            title: '💰 Nouvelle preuve de paiement',
-            message: `${student.first_name} ${student.last_name} a soumis une preuve de paiement (${paymentType}) — ${myConfig.amount} XOF`
-          });
-        }
+    // Notifier les admins
+    const adminUsers = await base44.entities.AdminUser.list();
+    for (const admin of adminUsers) {
+      if (admin.email) {
+        await base44.entities.Notification.create({
+          recipient_email: admin.email,
+          type: 'info',
+          title: '💰 Nouveau paiement à confirmer',
+          message: `${student.first_name} ${student.last_name} — Réf: ${txRef.trim()} — ${myConfig.amount.toLocaleString()} XOF`
+        });
       }
-
-      queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
-      setProofDialog(false);
-      setTransactionId('');
-      setReceiptFile(null);
-      setPaymentType('');
-
-      // Stocker les données de confirmation et rediriger
-      sessionStorage.setItem('payment_success_data', JSON.stringify({
-        student_name: `${student.first_name} ${student.last_name}`,
-        domain: student.domain,
-        formation_type: student.formation_type,
-        payment_type: paymentType,
-        payment_date: paymentDate,
-      }));
-      navigate(createPageUrl('PaymentSuccess'));
-    } catch (error) {
-      toast.error('Erreur lors de l\'envoi');
     }
-    setUploading(false);
-  };
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'payé': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'en_attente': return <Clock className="w-5 h-5 text-amber-500" />;
-      case 'en_retard': return <AlertCircle className="w-5 h-5 text-red-500" />;
-      default: return null;
-    }
-  };
+    queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
+    setConfirmDialog(false);
+    setTxRef('');
+    setSubmitting(false);
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'payé': case 'validé': return 'bg-green-50 text-green-700 border-green-200';
-      case 'en_attente': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'en_retard': case 'rejeté': return 'bg-red-50 text-red-700 border-red-200';
-      default: return 'bg-gray-50 text-gray-700';
-    }
+    sessionStorage.setItem('payment_success_data', JSON.stringify({
+      student_name: `${student.first_name} ${student.last_name}`,
+      domain: student.domain,
+      formation_type: student.formation_type,
+      payment_type: myConfig.payment_type || 'Frais de scolarité',
+      payment_date: paymentDate,
+    }));
+    navigate(createPageUrl('PaymentSuccess'));
   };
 
   if (loading) {
@@ -158,191 +123,235 @@ export default function StudentTuition() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
-      <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-4 pt-12 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Button onClick={() => navigate(createPageUrl('StudentMore'))} variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Scolarité</h1>
-            <p className="text-green-100 text-sm">Paiements et factures</p>
+    <div className="min-h-screen bg-[#0f172a] pb-24">
+      {/* Header sombre premium */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-transparent" />
+        <div className="relative px-4 pt-12 pb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Button onClick={() => navigate(createPageUrl('StudentMore'))} variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 rounded-full">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-white">Ma Scolarité</h1>
+              <p className="text-white/50 text-xs">Paiements & Finances</p>
+            </div>
+          </div>
+
+          {/* Carte principale du solde */}
+          <div className="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 rounded-3xl p-6 shadow-2xl shadow-blue-900/50 mb-2">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-blue-100 text-xs font-medium uppercase tracking-widest mb-1">Frais de scolarité</p>
+                {myConfig ? (
+                  <p className="text-4xl font-black text-white">{myConfig.amount.toLocaleString()} <span className="text-xl font-medium text-blue-200">XOF</span></p>
+                ) : (
+                  <p className="text-2xl font-bold text-white/70">Non configuré</p>
+                )}
+              </div>
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
+                hasPaid ? 'bg-green-400/20 text-green-300 border border-green-400/30' :
+                pendingProof ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' :
+                'bg-red-400/20 text-red-300 border border-red-400/30'
+              }`}>
+                {hasPaid ? <><CheckCircle className="w-3 h-3" /> Payé</> :
+                 pendingProof ? <><Clock className="w-3 h-3" /> En vérification</> :
+                 <><AlertCircle className="w-3 h-3" /> Non payé</>}
+              </div>
+            </div>
+
+            {/* Formation info */}
+            {student && (
+              <div className="flex items-center gap-4 border-t border-white/10 pt-4">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-blue-300" />
+                  <span className="text-blue-100 text-xs">{student.formation_type}</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="text-blue-200 text-xs truncate">{student.domain}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 -mt-2">
-        {hasPaid && (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 mb-4 border-2 border-green-200">
+      <div className="px-4 space-y-4">
+
+        {/* Statut principal */}
+        {hasPaid ? (
+          <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/20 border border-green-500/30 rounded-2xl p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30 flex-shrink-0">
+                <Award className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-green-300 text-lg">Scolarité à jour ! ✅</h3>
+                <p className="text-green-400/70 text-sm">Votre paiement a été validé par l'administration.</p>
+              </div>
+            </div>
+          </div>
+        ) : pendingProof ? (
+          <div className="bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border border-amber-500/30 rounded-2xl p-5">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                <Award className="w-8 h-8 text-white" />
+              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 flex-shrink-0">
+                <Clock className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-green-900 text-xl mb-2">Scolarité réglée !</h3>
-                <p className="text-sm text-green-700 mb-3">
-                  Votre paiement a été validé. Vous êtes à jour pour la période en cours.
-                </p>
-                <div className="bg-white rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="w-10 h-10 text-green-600" />
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase">Étudiant inscrit</p>
-                      <p className="font-bold text-gray-900">{student.first_name} {student.last_name}</p>
-                      <p className="text-xs text-gray-600">{student.domain} - {student.formation_type}</p>
-                    </div>
-                  </div>
+                <h3 className="font-bold text-amber-300 text-lg">Paiement en vérification</h3>
+                <p className="text-amber-400/70 text-sm mb-2">L'administration vérifie votre transaction sous 24h.</p>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                  <p className="text-xs text-amber-400/60 uppercase mb-1">Référence transmise</p>
+                  <p className="text-amber-200 font-mono text-sm font-bold">{pendingProof.proof_url}</p>
                 </div>
               </div>
             </div>
           </div>
-        )}
-
-        {myConfig && !hasPaid && (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-4 border border-blue-200">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
-                <DollarSign className="w-6 h-6 text-white" />
+        ) : myConfig ? (
+          /* Flux de paiement en 2 étapes */
+          <div className="space-y-3">
+            {/* Étape 1 : Payer */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
+                  <p className="text-white font-semibold">Effectuez votre paiement</p>
+                </div>
+                <p className="text-white/40 text-sm ml-8">Cliquez pour accéder à la plateforme de paiement sécurisée</p>
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-blue-900 mb-1">Frais de scolarité</h3>
-                <p className="text-2xl font-bold text-blue-600 mb-2">{myConfig.amount} {myConfig.currency}</p>
-                <p className="text-sm text-blue-700 mb-3">{myConfig.domain} - {myConfig.formation_type}</p>
-                
-                {myConfig.payment_link && (
-                  <a href={myConfig.payment_link} target="_blank" rel="noopener noreferrer" className="block mb-3">
-                    <Button variant="outline" className="w-full rounded-xl border-blue-300 text-blue-700 hover:bg-blue-50">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Payer en ligne
-                    </Button>
-                  </a>
-                )}
-
-                <Button onClick={() => setProofDialog(true)} className="bg-blue-600 hover:bg-blue-700 rounded-xl w-full">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Envoyer une preuve de paiement
-                </Button>
-              </div>
+              {myConfig.payment_link ? (
+                <a href={myConfig.payment_link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Payer {myConfig.amount.toLocaleString()} XOF</p>
+                      <p className="text-white/40 text-xs">Paiement en ligne sécurisé</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-xl transition-colors">
+                    <span className="text-white text-sm font-semibold">Payer</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </a>
+              ) : (
+                <div className="px-5 py-4">
+                  <p className="text-white/40 text-sm">Contactez l'administration pour les modalités de paiement.</p>
+                </div>
+              )}
             </div>
+
+            {/* Étape 2 : Confirmer */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
+                  <p className="text-white font-semibold">Confirmez votre paiement</p>
+                </div>
+                <p className="text-white/40 text-sm ml-8">Après paiement, entrez votre référence de transaction</p>
+              </div>
+              <button
+                onClick={() => setConfirmDialog(true)}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                    <Hash className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-medium">J'ai payé, confirmer</p>
+                    <p className="text-white/40 text-xs">Entrez votre réf. de transaction</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+              </button>
+            </div>
+
+            {/* Badge sécurité */}
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Shield className="w-4 h-4 text-white/20" />
+              <p className="text-white/20 text-xs">Paiement 100% sécurisé • Validation sous 24h</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+            <Sparkles className="w-10 h-10 text-white/20 mx-auto mb-3" />
+            <p className="text-white/50 text-sm">Aucune configuration de scolarité pour votre formation.</p>
+            <p className="text-white/30 text-xs mt-1">Contactez l'administration pour plus d'informations.</p>
           </div>
         )}
 
-        {paymentProofs.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-2 px-2">Preuves de paiement</h3>
+        {/* Historique des paiements */}
+        {(tuitions.length > 0 || paymentProofs.filter(p => p.status === 'validé').length > 0) && (
+          <div>
+            <p className="text-white/40 text-xs uppercase tracking-widest mb-3 px-1">Historique</p>
             <div className="space-y-2">
-              {paymentProofs.map(proof => (
-                <div key={proof.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-bold text-gray-900">{proof.amount} {myConfig?.currency || 'XOF'}</p>
-                      <p className="text-xs text-gray-500">{proof.period}</p>
-                      {proof.payment_type && (
-                        <Badge className="mt-1 bg-blue-50 text-blue-700 text-xs">{proof.payment_type}</Badge>
-                      )}
+              {tuitions.filter(t => t.status === 'payé').map(t => (
+                <div key={t.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
-                    <Badge className={getStatusColor(proof.status)}>
-                      {proof.status}
-                    </Badge>
+                    <div>
+                      <p className="text-white font-medium text-sm">{t.amount?.toLocaleString()} XOF</p>
+                      <p className="text-white/40 text-xs">{t.period}</p>
+                    </div>
                   </div>
-                  <a href={proof.proof_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
-                    Voir le reçu
-                  </a>
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Validé</Badge>
+                </div>
+              ))}
+              {paymentProofs.filter(p => p.status === 'rejeté').map(p => (
+                <div key={p.id} className="bg-white/5 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
+                      <AlertCircle className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-sm">{p.amount?.toLocaleString()} XOF</p>
+                      <p className="text-white/40 text-xs">{p.period}</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Rejeté</Badge>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {tuitions.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-gray-700 px-2">Historique</h3>
-            {tuitions.map(tuition => (
-              <div key={tuition.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(tuition.status)}
-                    <div>
-                      <p className="font-bold text-gray-900">{tuition.amount} {tuition.currency}</p>
-                      <p className="text-sm text-gray-500">{tuition.period}</p>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(tuition.status)}>
-                    {tuition.status}
-                  </Badge>
-                </div>
-                {tuition.notes && (
-                  <p className="text-xs text-gray-600 mt-2">{tuition.notes}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  {tuition.created_date && format(new Date(tuition.created_date), "d MMMM yyyy", { locale: fr })}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      <Dialog open={proofDialog} onOpenChange={setProofDialog}>
-        <DialogContent className="max-w-md rounded-2xl">
+      {/* Dialog confirmation référence */}
+      <Dialog open={confirmDialog} onOpenChange={setConfirmDialog}>
+        <DialogContent className="max-w-sm rounded-3xl bg-[#1e293b] border border-white/10 text-white mx-4">
           <DialogHeader>
-            <DialogTitle>Preuve de paiement</DialogTitle>
+            <DialogTitle className="text-white text-center text-lg">Confirmer le paiement</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div>
-              <label className="text-sm text-gray-700 mb-2 block">Type de frais *</label>
-              <Select value={paymentType} onValueChange={setPaymentType}>
-                <SelectTrigger className="rounded-xl h-11">
-                  <SelectValue placeholder="Sélectionnez le type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
-                  <SelectItem value="Frais de mémoire">Frais de mémoire</SelectItem>
-                  <SelectItem value="Frais de graduation">Frais de graduation</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-5 pt-2">
+            <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/10">
+              <p className="text-white/50 text-xs uppercase mb-1">Montant payé</p>
+              <p className="text-3xl font-black text-white">{myConfig?.amount?.toLocaleString()} <span className="text-lg text-white/50">XOF</span></p>
             </div>
+
             <div>
-              <label className="text-sm text-gray-700 mb-2 block">Numéro de transaction</label>
-              <Input
-                value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
-                placeholder="Ex: TRX123456789"
-                className="rounded-xl h-11"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-700 mb-2 block">Capture d'écran du reçu</label>
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setReceiptFile(e.target.files[0])}
-                  className="hidden"
-                  id="receipt-upload"
+              <label className="text-white/60 text-sm mb-2 block">Référence / ID de transaction *</label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Input
+                  value={txRef}
+                  onChange={(e) => setTxRef(e.target.value)}
+                  placeholder="Ex: TXN-2024-XXXXXX"
+                  className="pl-10 h-12 rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-blue-400"
                 />
-                <label htmlFor="receipt-upload" className="cursor-pointer">
-                  {receiptFile ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-sm text-green-700">{receiptFile.name}</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Cliquez pour charger</p>
-                    </div>
-                  )}
-                </label>
               </div>
+              <p className="text-white/30 text-xs mt-2">Visible sur votre reçu de paiement Wave, FedaPay, Mobile Money...</p>
             </div>
+
             <Button
-              onClick={submitProof}
-              disabled={uploading || !receiptFile || !transactionId.trim() || !paymentType}
-              className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-11"
+              onClick={confirmPayment}
+              disabled={submitting || !txRef.trim()}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-2xl h-12 text-base font-bold shadow-lg shadow-blue-500/30"
             >
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              {uploading ? 'Envoi...' : 'Envoyer'}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              {submitting ? 'Envoi...' : 'Confirmer le paiement'}
             </Button>
           </div>
         </DialogContent>
