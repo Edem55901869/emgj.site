@@ -372,12 +372,12 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                           onClick={() => addReaction(msg.id, emoji)}
                           className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all ${
                             reacted 
-                              ? msg.sender_email === user.email ? 'bg-white/30' : 'bg-blue-100' 
-                              : msg.sender_email === user.email ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'
+                              ? (user && msg.sender_email === user.email) ? 'bg-white/30' : 'bg-blue-100' 
+                              : (user && msg.sender_email === user.email) ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'
                           }`}
                         >
                           <span>{emoji}</span>
-                          <span className={`font-medium ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{count}</span>
+                          <span className={`font-medium ${user && msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{count}</span>
                         </button>
                       );
                     })}
