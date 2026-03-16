@@ -59,6 +59,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
