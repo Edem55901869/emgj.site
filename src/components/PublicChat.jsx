@@ -396,23 +396,23 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                   </div>
 
                   <div className="flex items-center gap-2 mt-1">
-                    <p className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                    <p className={`text-[10px] ${user && msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                       {msg.created_date && format(new Date(msg.created_date), 'HH:mm', { locale: fr })}
                     </p>
-                    {(isAdmin || msg.sender_email === user.email) && (
+                    {(isAdmin || (user && msg.sender_email === user.email)) && (
                       <div className="flex gap-1">
                         {isAdmin && (
                           <>
-                            <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                            <button onClick={() => pinMutation.mutate({ id: msg.id, isPinned: msg.is_pinned })} className={`text-[10px] ${msg.is_pinned ? 'text-amber-400' : (user && msg.sender_email === user.email) ? 'text-white/70' : 'text-gray-400'}`}>
                               <Pin className="w-3 h-3" />
                             </button>
-                            <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                            <button onClick={() => markImportantMutation.mutate({ id: msg.id, isImportant: msg.is_important })} className={`text-[10px] ${msg.is_important ? 'text-amber-400' : (user && msg.sender_email === user.email) ? 'text-white/70' : 'text-gray-400'}`}>
                               <Star className="w-3 h-3" />
                             </button>
                           </>
                         )}
-                        {(isAdmin || msg.sender_email === user.email) && (
-                          <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
+                        {(isAdmin || (user && msg.sender_email === user.email)) && (
+                          <button onClick={() => deleteMutation.mutate(msg.id)} className={`text-[10px] ${user && msg.sender_email === user.email ? 'text-white/70' : 'text-gray-400'}`}>
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
