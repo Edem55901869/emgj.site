@@ -108,6 +108,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
   });
 
   const addReaction = async (messageId, emoji) => {
+    if (!user) return;
     const existing = reactions.find(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
     if (existing) {
       await base44.entities.MessageReaction.delete(existing.id);
@@ -128,6 +129,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
   };
 
   const hasReacted = (messageId, emoji) => {
+    if (!user) return false;
     return reactions.some(r => r.message_id === messageId && r.user_email === user.email && r.reaction === emoji);
   };
 
