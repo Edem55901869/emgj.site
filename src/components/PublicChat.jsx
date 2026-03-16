@@ -358,7 +358,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                       <span className="text-xs underline">Télécharger le document</span>
                     </a>
                   )}
-                  <p className={`text-sm ${msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
+                  <p className={`text-sm ${user && msg.sender_email === user.email ? 'text-white' : 'text-gray-700'}`}>{msg.content}</p>
                   
                   {/* Réactions */}
                   <div className="flex flex-wrap gap-1 mt-2">
