@@ -388,7 +388,7 @@ export default function PublicChat({ isAdmin = false, open: externalOpen, onClos
                           addReaction(msg.id, emoji);
                         }
                       }}
-                      className={`p-0.5 rounded-full transition-all ${msg.sender_email === user.email ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
+                      className={`p-0.5 rounded-full transition-all ${user && msg.sender_email === user.email ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
                       title="Ajouter une réaction"
                     >
                       <Smile className={`w-3 h-3 ${msg.sender_email === user.email ? 'text-white/50' : 'text-gray-400'}`} />
