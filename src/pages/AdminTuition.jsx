@@ -18,7 +18,7 @@ import { fr } from 'date-fns/locale';
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
   const [configForm, setConfigForm] = useState({ payment_link: '', description: '' });
-  const [statusFilter, setStatusFilter] = useState('en_attente');
+  const [statusFilter, setStatusFilter] = useState('all');
   const queryClient = useQueryClient();
 
   const { data: configs = [] } = useQuery({ queryKey: ['tuitionConfigs'], queryFn: () => base44.entities.TuitionConfig.list() });

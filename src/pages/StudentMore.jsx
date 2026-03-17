@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2, DollarSign, Award, Radio, BookOpen, RefreshCw } from 'lucide-react';
+import { Bell, User, Settings, HelpCircle, LogOut, ChevronRight, Loader2, DollarSign, Award, Radio, BookOpen, RefreshCw, Image } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +116,20 @@ export default function StudentMore() {
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </Link>
+
+          <button 
+            onClick={() => navigate(createPageUrl('StudentGallery'))}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center">
+              <Image className="w-6 h-6 text-pink-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium text-gray-900">Galerie</p>
+              <p className="text-sm text-gray-500">Photos et vidéos</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
 
           <button 
             onClick={() => navigate(createPageUrl('StudentBulletins'))}
