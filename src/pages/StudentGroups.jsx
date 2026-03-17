@@ -71,15 +71,15 @@ export default function StudentGroups() {
   });
 
   const joinMutation = useMutation({
-    mutationFn: (groupId) => base44.entities.GroupMembership.create({
+    mutationFn: ({ groupId, isPublic }) => base44.entities.GroupMembership.create({
       group_id: groupId,
       user_email: user.email,
       student_name: `${student.first_name} ${student.last_name}`,
-      status: 'en_attente'
+      status: isPublic ? 'accepté' : 'en_attente'
     }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['memberships'] });
-      toast.success('Demande envoyée !');
+      toast.success(variables.isPublic ? 'Vous avez rejoint le groupe !' : 'Demande envoyée !');
     },
   });
 
@@ -140,7 +140,14 @@ export default function StudentGroups() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-32">
-          {sortedMessages.map(msg => (
+          {sortedMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-12">
+              <Users className="w-16 h-16 text-gray-300 mb-3" />
+              <p className="text-gray-500 font-medium">Aucun message pour le moment</p>
+              <p className="text-gray-400 text-sm">Soyez le premier à écrire !</p>
+            </div>
+          ) : (
+            sortedMessages.map(msg => (
             <div key={msg.id} className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${msg.sender_email === user.email ? 'bg-blue-600 text-white' : 'bg-white border border-gray-100'}`}>
                 {msg.sender_email !== user.email && (
@@ -158,7 +165,7 @@ export default function StudentGroups() {
                 </p>
               </div>
             </div>
-          ))}
+          )))}
         </div>
 
         {isAccepted && (
@@ -218,13 +225,20 @@ export default function StudentGroups() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                      {group.is_public ? (
+                        <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">Public</Badge>
+                      ) : (
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">Privé</Badge>
+                      )}
+                    </div>
                     <p className="text-gray-500 text-sm line-clamp-1">{group.description}</p>
                     <p className="text-xs text-blue-600 mt-1">{memberCount} membre{memberCount !== 1 ? 's' : ''}</p>
                   </div>
                   {!status && (
-                    <Button onClick={(e) => { e.stopPropagation(); joinMutation.mutate(group.id); }} size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl flex-shrink-0">
-                      Rejoindre
+                    <Button onClick={(e) => { e.stopPropagation(); joinMutation.mutate({ groupId: group.id, isPublic: group.is_public }); }} size="sm" className="bg-blue-600 hover:bg-blue-700 rounded-xl flex-shrink-0">
+                      {group.is_public ? 'Rejoindre' : 'Demander'}
                     </Button>
                   )}
                   {status === 'en_attente' && <Badge className="bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0"><Clock className="w-3 h-3 mr-1" />En attente</Badge>}
