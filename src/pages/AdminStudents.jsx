@@ -72,13 +72,29 @@ export default function AdminStudents() {
     mutationFn: async (student) => {
       const email = student.user_email;
       // Suppression en cascade de toutes les données liées à l'étudiant
-      const [progresses, questions, notifications, activities, paymentProofs] = await Promise.all([
+      const [progresses, questions, notifications, activities, paymentProofs, tuitions, configs] = await Promise.all([
         base44.entities.StudentCourseProgress.filter({ student_email: email }),
         base44.entities.StudentCourseQuestion.filter({ student_email: email }),
         base44.entities.Notification.filter({ recipient_email: email }),
         base44.entities.RecentActivity.filter({ related_user: email }),
         base44.entities.PaymentProof.filter({ student_email: email }),
+        base44.entities.Tuition.filter({ student_email: email }),
+        base44.entities.TuitionConfig.list(),
       ]);
+
+      // Calculer le revenu validé de cet étudiant avant suppression
+      const validatedRevenue = tuitions
+        .filter(t => t.status === 'payé')
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      // Archiver ce revenu dans la config pour ne pas le perdre
+      if (validatedRevenue > 0 && configs.length > 0) {
+        const config = configs[0];
+        await base44.entities.TuitionConfig.update(config.id, {
+          archived_revenue: (config.archived_revenue || 0) + validatedRevenue,
+        });
+      }
+
       // Supprimer tout en parallèle
       await Promise.all([
         ...progresses.map(p => base44.entities.StudentCourseProgress.delete(p.id)),
@@ -86,6 +102,7 @@ export default function AdminStudents() {
         ...notifications.map(n => base44.entities.Notification.delete(n.id)),
         ...activities.map(a => base44.entities.RecentActivity.delete(a.id)),
         ...paymentProofs.map(p => base44.entities.PaymentProof.delete(p.id)),
+        ...tuitions.map(t => base44.entities.Tuition.delete(t.id)),
       ]);
       return base44.entities.Student.delete(student.id);
     },
