@@ -215,7 +215,7 @@ export default function StudentTuition() {
                   <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
                   <p className="text-white font-semibold">Effectuez votre paiement</p>
                 </div>
-                <p className="text-white/40 text-sm ml-8">Cliquez pour accéder à la plateforme de paiement sécurisée</p>
+                <p className="text-white/40 text-sm ml-8">{myConfig.description || 'Cliquez pour accéder à la plateforme de paiement sécurisée'}</p>
               </div>
               {myConfig.payment_link ? (
                 <a href={myConfig.payment_link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors group">
