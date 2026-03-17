@@ -143,7 +143,7 @@ export default function StudentTuition() {
               <div>
                 <p className="text-blue-100 text-xs font-medium uppercase tracking-widest mb-1">Frais de scolarité</p>
                 {myConfig ? (
-                  <p className="text-4xl font-black text-white">{myConfig.amount.toLocaleString()} <span className="text-xl font-medium text-blue-200">XOF</span></p>
+                  <p className="text-2xl font-bold text-white">Paiement en ligne disponible</p>
                 ) : (
                   <p className="text-2xl font-bold text-white/70">Non configuré</p>
                 )}
