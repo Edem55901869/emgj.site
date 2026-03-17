@@ -24,8 +24,8 @@ export default function AdminGroups() {
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: groups = [], isLoading } = useQuery({ queryKey: ['adminGroups'], queryFn: () => base44.entities.Group.list('-created_date', 100) });
-  const { data: memberships = [] } = useQuery({ queryKey: ['allMemberships'], queryFn: () => base44.entities.GroupMembership.list('-created_date', 2000) });
+  const { data: groups = [], isLoading } = useQuery({ queryKey: ['adminGroups'], queryFn: () => base44.entities.Group.list('-created_date', 200) });
+  const { data: memberships = [] } = useQuery({ queryKey: ['allMemberships'], queryFn: () => base44.entities.GroupMembership.list('-created_date', 5000) });
   const { data: groupAdmins = [] } = useQuery({ queryKey: ['groupAdmins'], queryFn: () => base44.entities.GroupAdmin.list() });
 
   const createMutation = useMutation({

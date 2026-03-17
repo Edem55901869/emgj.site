@@ -75,6 +75,10 @@ export default function StudentBulletins() {
   );
 
   const generateBulletin = async () => {
+    if (!student || !user) {
+      toast.error('Profil incomplet');
+      return;
+    }
     setGenerating(true);
     try {
       const courseScores = progress
@@ -172,9 +176,11 @@ export default function StudentBulletins() {
       queryClient.invalidateQueries({ queryKey: ['studentBulletins'] });
       toast.success('Bulletin généré avec succès !');
     } catch (error) {
-      toast.error('Erreur lors de la génération du bulletin');
+      console.error('Erreur génération bulletin:', error);
+      toast.error(`Erreur: ${error.message || 'Impossible de générer le bulletin'}`);
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   };
 
   if (loading) {

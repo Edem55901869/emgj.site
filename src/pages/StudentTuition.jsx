@@ -71,11 +71,16 @@ export default function StudentTuition() {
       toast.error('Veuillez entrer votre référence de transaction');
       return;
     }
+    if (!student || !user) {
+      toast.error('Session invalide');
+      return;
+    }
     setSubmitting(true);
 
-    const paymentDate = new Date().toISOString();
+    try {
+      const paymentDate = new Date().toISOString();
 
-    await base44.entities.PaymentProof.create({
+      await base44.entities.PaymentProof.create({
       student_email: user.email,
       student_name: `${student.first_name} ${student.last_name}`,
       amount: 0,
@@ -98,19 +103,24 @@ export default function StudentTuition() {
       }
     }
 
-    queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
-    setConfirmDialog(false);
-    setTxRef('');
-    setSubmitting(false);
+      queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
+      setConfirmDialog(false);
+      setTxRef('');
 
-    sessionStorage.setItem('payment_success_data', JSON.stringify({
-      student_name: `${student.first_name} ${student.last_name}`,
-      domain: student.domain,
-      formation_type: student.formation_type,
-      payment_type: 'Frais de scolarité',
-      payment_date: paymentDate,
-    }));
-    navigate(createPageUrl('PaymentSuccess'));
+      sessionStorage.setItem('payment_success_data', JSON.stringify({
+        student_name: `${student.first_name} ${student.last_name}`,
+        domain: student.domain,
+        formation_type: student.formation_type,
+        payment_type: 'Frais de scolarité',
+        payment_date: paymentDate,
+      }));
+      navigate(createPageUrl('PaymentSuccess'));
+    } catch (error) {
+      console.error('Erreur confirmation paiement:', error);
+      toast.error(`Erreur: ${error.message || 'Impossible de confirmer le paiement'}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {

@@ -30,12 +30,12 @@ export default function AdminStudents() {
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['adminStudents'],
-    queryFn: () => base44.entities.Student.list('-created_date', 500),
+    queryFn: () => base44.entities.Student.list('-created_date', 2000),
   });
 
   const { data: allProgress = [] } = useQuery({
     queryKey: ['allStudentProgress'],
-    queryFn: () => base44.entities.StudentCourseProgress.list(),
+    queryFn: () => base44.entities.StudentCourseProgress.list('-created_date', 5000),
   });
 
   const { data: courses = [] } = useQuery({
@@ -45,7 +45,7 @@ export default function AdminStudents() {
 
   const { data: allActivities = [] } = useQuery({
     queryKey: ['allActivities'],
-    queryFn: () => base44.entities.RecentActivity.list('-created_date', 500),
+    queryFn: () => base44.entities.RecentActivity.list('-created_date', 1000),
   });
 
   const updateMutation = useMutation({
@@ -70,41 +70,55 @@ export default function AdminStudents() {
 
   const deleteMutation = useMutation({
     mutationFn: async (student) => {
-      const email = student.user_email;
-      // Suppression en cascade de toutes les données liées à l'étudiant
-      const [progresses, questions, notifications, activities, paymentProofs, tuitions, configs] = await Promise.all([
-        base44.entities.StudentCourseProgress.filter({ student_email: email }),
-        base44.entities.StudentCourseQuestion.filter({ student_email: email }),
-        base44.entities.Notification.filter({ recipient_email: email }),
-        base44.entities.RecentActivity.filter({ related_user: email }),
-        base44.entities.PaymentProof.filter({ student_email: email }),
-        base44.entities.Tuition.filter({ student_email: email }),
-        base44.entities.TuitionConfig.list(),
-      ]);
+      try {
+        const email = student.user_email;
+        // Suppression en cascade de toutes les données liées à l'étudiant
+        const [progresses, questions, notifications, activities, paymentProofs, tuitions, configs] = await Promise.all([
+          base44.entities.StudentCourseProgress.filter({ student_email: email }),
+          base44.entities.StudentCourseQuestion.filter({ student_email: email }),
+          base44.entities.Notification.filter({ recipient_email: email }),
+          base44.entities.RecentActivity.filter({ related_user: email }),
+          base44.entities.PaymentProof.filter({ student_email: email }),
+          base44.entities.Tuition.filter({ student_email: email }),
+          base44.entities.TuitionConfig.list(),
+        ]);
 
-      // Calculer le revenu validé de cet étudiant avant suppression
-      const validatedRevenue = tuitions
-        .filter(t => t.status === 'payé')
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        // Calculer le revenu validé de cet étudiant avant suppression
+        const validatedRevenue = tuitions
+          .filter(t => t.status === 'payé')
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-      // Archiver ce revenu dans la config pour ne pas le perdre
-      if (validatedRevenue > 0 && configs.length > 0) {
-        const config = configs[0];
-        await base44.entities.TuitionConfig.update(config.id, {
-          archived_revenue: (config.archived_revenue || 0) + validatedRevenue,
-        });
+        // Archiver ce revenu dans la config pour ne pas le perdre
+        if (validatedRevenue > 0) {
+          if (configs.length > 0) {
+            const config = configs[0];
+            await base44.entities.TuitionConfig.update(config.id, {
+              archived_revenue: (config.archived_revenue || 0) + validatedRevenue,
+            });
+          } else {
+            // Créer une config si elle n'existe pas
+            await base44.entities.TuitionConfig.create({
+              payment_link: '',
+              archived_revenue: validatedRevenue,
+              is_active: false,
+            });
+          }
+        }
+
+        // Supprimer tout en parallèle
+        await Promise.all([
+          ...progresses.map(p => base44.entities.StudentCourseProgress.delete(p.id)),
+          ...questions.map(q => base44.entities.StudentCourseQuestion.delete(q.id)),
+          ...notifications.map(n => base44.entities.Notification.delete(n.id)),
+          ...activities.map(a => base44.entities.RecentActivity.delete(a.id)),
+          ...paymentProofs.map(p => base44.entities.PaymentProof.delete(p.id)),
+          ...tuitions.map(t => base44.entities.Tuition.delete(t.id)),
+        ]);
+        return base44.entities.Student.delete(student.id);
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        throw new Error(`Échec de la suppression: ${error.message}`);
       }
-
-      // Supprimer tout en parallèle
-      await Promise.all([
-        ...progresses.map(p => base44.entities.StudentCourseProgress.delete(p.id)),
-        ...questions.map(q => base44.entities.StudentCourseQuestion.delete(q.id)),
-        ...notifications.map(n => base44.entities.Notification.delete(n.id)),
-        ...activities.map(a => base44.entities.RecentActivity.delete(a.id)),
-        ...paymentProofs.map(p => base44.entities.PaymentProof.delete(p.id)),
-        ...tuitions.map(t => base44.entities.Tuition.delete(t.id)),
-      ]);
-      return base44.entities.Student.delete(student.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminStudents'] });

@@ -49,22 +49,27 @@ export default function AdminTuition() {
 
   const validateMutation = useMutation({
     mutationFn: async ({ proof }) => {
-      await base44.entities.PaymentProof.update(proof.id, { status: 'validé' });
-      await base44.entities.Tuition.create({
-        student_email: proof.student_email,
-        student_name: proof.student_name,
-        amount: proof.amount,
-        currency: 'XOF',
-        status: 'payé',
-        period: proof.period || format(new Date(), 'MMMM yyyy', { locale: fr }),
-        notes: `Réf. transaction: ${proof.proof_url}`
-      });
-      await base44.entities.Notification.create({
-        recipient_email: proof.student_email,
-        type: 'success',
-        title: '✅ Paiement validé !',
-        message: `Votre paiement de ${proof.amount?.toLocaleString()} XOF a été confirmé. Votre scolarité est à jour !`
-      });
+      try {
+        await base44.entities.PaymentProof.update(proof.id, { status: 'validé' });
+        await base44.entities.Tuition.create({
+          student_email: proof.student_email,
+          student_name: proof.student_name,
+          amount: proof.amount,
+          currency: 'XOF',
+          status: 'payé',
+          period: proof.period || format(new Date(), 'MMMM yyyy', { locale: fr }),
+          notes: `Réf. transaction: ${proof.proof_url}`
+        });
+        await base44.entities.Notification.create({
+          recipient_email: proof.student_email,
+          type: 'success',
+          title: '✅ Paiement validé !',
+          message: `Votre paiement de ${proof.amount?.toLocaleString()} XOF a été confirmé. Votre scolarité est à jour !`
+        });
+      } catch (error) {
+        console.error('Erreur validation paiement:', error);
+        throw new Error(`Échec de validation: ${error.message}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });
@@ -75,13 +80,18 @@ export default function AdminTuition() {
 
   const rejectMutation = useMutation({
     mutationFn: async ({ proof }) => {
-      await base44.entities.PaymentProof.update(proof.id, { status: 'rejeté' });
-      await base44.entities.Notification.create({
-        recipient_email: proof.student_email,
-        type: 'warning',
-        title: '❌ Référence invalide',
-        message: `La référence de transaction "${proof.proof_url}" n'a pas pu être vérifiée. Veuillez recontacter l'administration.`
-      });
+      try {
+        await base44.entities.PaymentProof.update(proof.id, { status: 'rejeté' });
+        await base44.entities.Notification.create({
+          recipient_email: proof.student_email,
+          type: 'warning',
+          title: '❌ Référence invalide',
+          message: `La référence de transaction "${proof.proof_url}" n'a pas pu être vérifiée. Veuillez recontacter l'administration.`
+        });
+      } catch (error) {
+        console.error('Erreur rejet paiement:', error);
+        throw new Error(`Échec de rejet: ${error.message}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['paymentProofs'] });

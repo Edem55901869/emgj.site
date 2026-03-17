@@ -32,30 +32,36 @@ export default function StudentDashboard() {
   }, []);
 
   const loadUser = async () => {
-    // Vérifier si on est en mode admin preview
-    const adminView = localStorage.getItem('admin_student_view');
-    if (adminView) {
-      const viewData = JSON.parse(adminView);
-      // Créer un profil virtuel pour l'admin
-      setUser({ email: 'admin@preview.emgj' });
-      setStudentProfile({
-        first_name: 'Admin',
-        last_name: 'Preview',
-        domain: viewData.domain,
-        formation_type: viewData.formation_type,
-        status: 'certifié',
-        profile_completed: true,
-        user_email: 'admin@preview.emgj'
-      });
-      setLoading(false);
-      return;
-    }
+    try {
+      // Vérifier si on est en mode admin preview
+      const adminView = localStorage.getItem('admin_student_view');
+      if (adminView) {
+        const viewData = JSON.parse(adminView);
+        // Créer un profil virtuel pour l'admin
+        setUser({ email: 'admin@preview.emgj' });
+        setStudentProfile({
+          first_name: 'Admin',
+          last_name: 'Preview',
+          domain: viewData.domain,
+          formation_type: viewData.formation_type,
+          status: 'certifié',
+          profile_completed: true,
+          user_email: 'admin@preview.emgj'
+        });
+        setLoading(false);
+        return;
+      }
 
-    const u = await base44.auth.me();
-    setUser(u);
-    const students = await base44.entities.Student.filter({ user_email: u.email });
-    if (students.length > 0) setStudentProfile(students[0]);
-    setLoading(false);
+      const u = await base44.auth.me();
+      setUser(u);
+      const students = await base44.entities.Student.filter({ user_email: u.email });
+      if (students.length > 0) setStudentProfile(students[0]);
+    } catch (error) {
+      console.error('Erreur chargement utilisateur:', error);
+      toast.error('Erreur de connexion');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const { data: posts = [], isLoading: postsLoading } = useQuery({
@@ -68,14 +74,14 @@ export default function StudentDashboard() {
     queryKey: ['blogLikes'],
     queryFn: () => base44.entities.BlogLike.filter({ user_email: user?.email }),
     enabled: !!user && studentProfile?.status === 'certifié',
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   const { data: allLikes = [] } = useQuery({
     queryKey: ['allBlogLikes'],
-    queryFn: () => base44.entities.BlogLike.list('-created_date', 1000),
+    queryFn: () => base44.entities.BlogLike.list('-created_date', 2000),
     enabled: studentProfile?.status === 'certifié',
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   const { data: bookmarks = [] } = useQuery({
@@ -86,9 +92,9 @@ export default function StudentDashboard() {
 
   const { data: allComments = [] } = useQuery({
     queryKey: ['blogComments'],
-    queryFn: () => base44.entities.BlogComment.list('-created_date', 200),
+    queryFn: () => base44.entities.BlogComment.list('-created_date', 500),
     enabled: studentProfile?.status === 'certifié',
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   const createProfileMutation = useMutation({
@@ -100,13 +106,19 @@ export default function StudentDashboard() {
   });
 
   const toggleLike = async (postId) => {
-    const existing = likes.find(l => l.post_id === postId);
-    if (existing) {
-      await base44.entities.BlogLike.delete(existing.id);
-    } else {
-      await base44.entities.BlogLike.create({ post_id: postId, user_email: user.email });
+    try {
+      const existing = likes.find(l => l.post_id === postId);
+      if (existing) {
+        await base44.entities.BlogLike.delete(existing.id);
+      } else {
+        await base44.entities.BlogLike.create({ post_id: postId, user_email: user.email });
+      }
+      queryClient.invalidateQueries({ queryKey: ['blogLikes'] });
+      queryClient.invalidateQueries({ queryKey: ['allBlogLikes'] });
+    } catch (error) {
+      console.error('Erreur toggle like:', error);
+      toast.error('Action impossible');
     }
-    queryClient.invalidateQueries({ queryKey: ['blogLikes'] });
   };
 
   const toggleBookmark = async (postId) => {

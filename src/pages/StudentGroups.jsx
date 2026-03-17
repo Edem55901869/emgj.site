@@ -65,9 +65,9 @@ export default function StudentGroups() {
 
   const { data: messages = [] } = useQuery({
     queryKey: ['groupMessages', selectedGroup?.id],
-    queryFn: () => base44.entities.GroupMessage.filter({ group_id: selectedGroup.id }, '-created_date', 100),
+    queryFn: () => base44.entities.GroupMessage.filter({ group_id: selectedGroup.id }, '-created_date', 200),
     enabled: !!selectedGroup,
-    refetchInterval: 3000,
+    refetchInterval: 8000,
   });
 
   const joinMutation = useMutation({
