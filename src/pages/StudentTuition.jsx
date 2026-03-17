@@ -93,7 +93,7 @@ export default function StudentTuition() {
           recipient_email: admin.email,
           type: 'info',
           title: '💰 Nouveau paiement à confirmer',
-          message: `${student.first_name} ${student.last_name} — Réf: ${txRef.trim()} — ${myConfig.amount.toLocaleString()} XOF`
+          message: `${student.first_name} ${student.last_name} — Réf: ${txRef.trim()}`
         });
       }
     }
