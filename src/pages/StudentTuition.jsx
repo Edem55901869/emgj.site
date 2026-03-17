@@ -62,8 +62,7 @@ export default function StudentTuition() {
     enabled: !!user && !isPreview,
   });
 
-  const myConfigs = configs.filter(c => c.domain === student?.domain && c.formation_type === student?.formation_type);
-  const myConfig = myConfigs[0];
+  const myConfig = configs.find(c => c.is_active) || configs[0];
   const hasPaid = tuitions.some(t => t.status === 'payé') || paymentProofs.some(p => p.status === 'validé');
   const pendingProof = paymentProofs.find(p => p.status === 'en_attente');
 
