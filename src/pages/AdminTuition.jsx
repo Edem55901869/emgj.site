@@ -28,18 +28,24 @@ export default function AdminTuition() {
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
 
   const createConfigMutation = useMutation({
-    mutationFn: (data) => base44.entities.TuitionConfig.create(data),
+    mutationFn: async (data) => {
+      // Supprimer les anciennes configs avant d'en créer une nouvelle
+      for (const c of configs) {
+        await base44.entities.TuitionConfig.delete(c.id);
+      }
+      return base44.entities.TuitionConfig.create({ ...data, is_active: true });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] });
       setConfigDialog(false);
-      setConfigForm({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '', payment_type: '' });
-      toast.success('Configuration créée');
+      setConfigForm({ payment_link: '', description: '' });
+      toast.success('Lien de paiement mis à jour');
     },
   });
 
   const deleteConfigMutation = useMutation({
     mutationFn: (id) => base44.entities.TuitionConfig.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] }); toast.success('Supprimée'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['tuitionConfigs'] }); toast.success('Supprimé'); },
   });
 
   const validateMutation = useMutation({
