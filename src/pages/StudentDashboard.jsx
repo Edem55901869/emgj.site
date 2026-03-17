@@ -250,17 +250,16 @@ export default function StudentDashboard() {
         <div className="max-w-2xl mx-auto px-4 -mt-8 relative">
           <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 p-5 transform hover:scale-[1.02] transition-all duration-300">
             <div className="flex items-center gap-4 w-full">
-                <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
-                  {studentProfile.profile_photo ? (
-                    <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-white">
-                        {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-lg flex-shrink-0">
+                {studentProfile.profile_photo ? (
+                  <img src={studentProfile.profile_photo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">
+                      {studentProfile.first_name?.[0]}{studentProfile.last_name?.[0]}
+                    </span>
+                  </div>
+                )}
                 {studentProfile.status === 'certifié' && (
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white flex items-center justify-center shadow-lg">
                     <CheckCircle2 className="w-3.5 h-3.5 text-white" />
@@ -274,6 +273,7 @@ export default function StudentDashboard() {
                   {studentProfile.domain}
                 </Badge>
               </div>
+            </div>
           </div>
         </div>
       </div>

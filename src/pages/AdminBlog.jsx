@@ -58,6 +58,14 @@ export default function AdminBlog() {
     },
   });
 
+  const deleteCommentMutation = useMutation({
+    mutationFn: (id) => base44.entities.BlogComment.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allComments'] });
+      toast.success('Commentaire supprimé');
+    },
+  });
+
   const saveMutation = useMutation({
     mutationFn: async (data) => {
       let media_url = data.media_url || '';
@@ -187,19 +195,27 @@ export default function AdminBlog() {
                               {postComments.filter(c => !c.parent_comment_id).map(comment => (
                                 <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
                                   <div className="flex items-start gap-2 mb-2">
-                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600 flex-shrink-0">
                                       {comment.author_name?.[0]}
                                     </div>
                                     <div className="flex-1">
                                       <p className="text-xs font-semibold text-gray-800">{comment.author_name}</p>
                                       <p className="text-sm text-gray-700">{comment.content}</p>
                                     </div>
+                                    <Button onClick={() => deleteCommentMutation.mutate(comment.id)} variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50 rounded flex-shrink-0">
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
                                   </div>
                                   {postComments.filter(r => r.parent_comment_id === comment.id).map(reply => (
-                                    <div key={reply.id} className="ml-8 mt-2 bg-white rounded-lg p-2 border border-gray-100">
-                                      <p className="text-xs font-semibold text-blue-600">{reply.author_name}</p>
-                                      <p className="text-xs text-gray-600">{reply.content}</p>
-                                    </div>
+                                   <div key={reply.id} className="ml-8 mt-2 bg-white rounded-lg p-2 border border-gray-100 flex items-start justify-between gap-2">
+                                     <div className="flex-1">
+                                       <p className="text-xs font-semibold text-blue-600">{reply.author_name}</p>
+                                       <p className="text-xs text-gray-600">{reply.content}</p>
+                                     </div>
+                                     <Button onClick={() => deleteCommentMutation.mutate(reply.id)} variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50 rounded">
+                                       <Trash2 className="w-3 h-3" />
+                                     </Button>
+                                   </div>
                                   ))}
                                   <div className="ml-8 mt-2 flex gap-2">
                                     <Input

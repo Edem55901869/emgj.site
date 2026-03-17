@@ -12,7 +12,7 @@ const navItems = [
   { name: 'Accueil', icon: LayoutDashboard, page: 'StudentDashboard' },
   { name: 'Cours', icon: BookOpen, page: 'StudentCourses' },
   { name: 'Biblio', icon: Library, page: 'StudentLibrary' },
-  { name: 'Groupes', icon: Users, page: 'StudentGroups' },
+  { name: 'Galerie', icon: Image, page: 'StudentGallery' },
   { name: 'Plus', icon: MoreHorizontal, page: 'StudentMore' },
 ];
 
