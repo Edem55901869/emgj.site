@@ -22,6 +22,17 @@ const getAudioUrl = (audioUrl) => {
   return audioUrl;
 };
 
+const getVideoUrl = (videoUrl) => {
+  if (!videoUrl) return null;
+  
+  // Si c'est un lien Google Drive, utiliser la fonction backend de streaming
+  if (videoUrl.includes('drive.google.com')) {
+    return `/api/functions/streamGoogleDriveVideo?url=${encodeURIComponent(videoUrl)}`;
+  }
+  
+  return videoUrl;
+};
+
 export default function StudentCourses() {
   const [student, setStudent] = useState(null);
   const [user, setUser] = useState(null);
@@ -240,7 +251,7 @@ export default function StudentCourses() {
                           <div key={idx} className="bg-gray-50 rounded-xl p-3">
                             <p className="text-xs text-gray-600 mb-2 font-medium">Vidéo {idx + 1}</p>
                             <video 
-                              src={video.url} 
+                              src={getVideoUrl(video.url)} 
                               controls 
                               preload="metadata"
                               className="w-full rounded-xl"

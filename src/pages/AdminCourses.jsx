@@ -21,7 +21,7 @@ export default function AdminCourses() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
   const [filterFormation, setFilterFormation] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
+  const [sortBy, setSortBy] = useState('order');
   const [audioFiles, setAudioFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
   const [documentFiles, setDocumentFiles] = useState([]);
@@ -30,6 +30,7 @@ export default function AdminCourses() {
   const [audioSource, setAudioSource] = useState('url');
   const [videoSource, setVideoSource] = useState('url');
   const [documentSource, setDocumentSource] = useState('file');
+  const [documentsToKeep, setDocumentsToKeep] = useState([]);
   const [audioUrls, setAudioUrls] = useState(['']);
   const [videoUrls, setVideoUrls] = useState(['']);
   const [qcmQuestions, setQcmQuestions] = useState([{ question: '', correct_answer: '' }]);
@@ -83,15 +84,16 @@ export default function AdminCourses() {
       }
 
       // Upload des documents
-      let documentFilesData = [];
+      let documentFilesData = [...documentsToKeep];
       if (documentFiles.length > 0) {
+        const startOrder = documentFilesData.length + 1;
         for (let i = 0; i < documentFiles.length; i++) {
           const { file_url } = await base44.integrations.Core.UploadFile({ file: documentFiles[i] });
           documentFilesData.push({
             url: file_url,
             name: documentFiles[i].name,
             type: documentFiles[i].type,
-            order: i + 1
+            order: startOrder + i
           });
         }
       }
@@ -181,9 +183,10 @@ export default function AdminCourses() {
     setVideoSource('url');
     setDocumentSource('file');
     setQcmQuestions([{ question: '', correct_answer: '', question_type: 'qcm' }]);
+    setDocumentsToKeep([]);
   };
 
-  const handleEdit = (course) => {
+  const handleEdit = async (course) => {
     setEditingCourse(course);
     setForm(course);
     if (course.audio_files?.length > 0) {
@@ -198,6 +201,22 @@ export default function AdminCourses() {
     } else {
       setVideoUrls(['']);
     }
+    
+    // Charger les documents existants pour permettre la suppression
+    if (course.document_files?.length > 0) {
+      setDocumentsToKeep(course.document_files);
+    } else {
+      setDocumentsToKeep([]);
+    }
+    
+    // Charger les questions QCM existantes
+    const existingEval = await base44.entities.CourseEvaluation.filter({ course_id: course.id });
+    if (existingEval.length > 0 && existingEval[0].questions?.length > 0) {
+      setQcmQuestions(existingEval[0].questions);
+    } else {
+      setQcmQuestions([{ question: '', correct_answer: '', question_type: 'qcm' }]);
+    }
+    
     setDialogOpen(true);
   };
 
@@ -211,6 +230,7 @@ export default function AdminCourses() {
       return matchesSearch && matchesDomain && matchesFormation;
     })
     .sort((a, b) => {
+      if (sortBy === 'order') return (a.order || 999) - (b.order || 999);
       if (sortBy === 'recent') return new Date(b.created_date) - new Date(a.created_date);
       if (sortBy === 'oldest') return new Date(a.created_date) - new Date(b.created_date);
       if (sortBy === 'title') return a.title.localeCompare(b.title);
@@ -272,6 +292,7 @@ export default function AdminCourses() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="order">Par ordre</SelectItem>
                     <SelectItem value="recent">Plus récents</SelectItem>
                     <SelectItem value="oldest">Plus anciens</SelectItem>
                     <SelectItem value="title">Par titre (A-Z)</SelectItem>
@@ -410,13 +431,28 @@ export default function AdminCourses() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Documents (PDF, Word, txt, etc. - jusqu'à 10)
                 </label>
-                {editingCourse?.document_files?.length > 0 && (
-                  <div className="mb-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
-                    <p className="text-xs text-orange-700 mb-2">Documents actuels :</p>
-                    {editingCourse.document_files.map((doc, idx) => (
-                      <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-orange-700 hover:underline">
-                        📄 {doc.name || `Document ${idx + 1}`}
-                      </a>
+                {(editingCourse?.document_files?.length > 0 || documentsToKeep.length > 0) && (
+                  <div className="mb-2 p-3 bg-orange-50 rounded-lg border border-orange-100 space-y-2">
+                    <p className="text-xs text-orange-700 font-medium mb-2">Documents actuels :</p>
+                    {(documentsToKeep.length > 0 ? documentsToKeep : editingCourse?.document_files || []).map((doc, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-white rounded-lg p-2">
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm text-orange-700 hover:underline flex-1">
+                          📄 {doc.name || `Document ${idx + 1}`}
+                        </a>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (editingCourse) {
+                              setDocumentsToKeep(documentsToKeep.filter((_, i) => i !== idx));
+                            }
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -424,11 +460,11 @@ export default function AdminCourses() {
                   type="file"
                   accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
                   multiple
-                  onChange={(e) => setDocumentFiles(Array.from(e.target.files).slice(0, 10))}
+                  onChange={(e) => setDocumentFiles(Array.from(e.target.files).slice(0, 10 - documentsToKeep.length))}
                   className="rounded-xl"
                 />
                 {documentFiles.length > 0 && (
-                  <p className="text-xs text-gray-600 mt-1">✓ {documentFiles.length} document(s) sélectionné(s)</p>
+                  <p className="text-xs text-gray-600 mt-1">✓ {documentFiles.length} nouveau(x) document(s) sélectionné(s)</p>
                 )}
               </div>
               <div>
