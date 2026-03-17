@@ -81,7 +81,7 @@ export default function StudentTuition() {
       amount: myConfig.amount,
       proof_url: txRef.trim(),
       period: format(new Date(), 'MMMM yyyy', { locale: fr }),
-      payment_type: myConfig.payment_type || 'Frais de scolarité',
+      payment_type: 'Frais de scolarité',
       status: 'en_attente'
     });
 
@@ -107,7 +107,7 @@ export default function StudentTuition() {
       student_name: `${student.first_name} ${student.last_name}`,
       domain: student.domain,
       formation_type: student.formation_type,
-      payment_type: myConfig.payment_type || 'Frais de scolarité',
+      payment_type: 'Frais de scolarité',
       payment_date: paymentDate,
     }));
     navigate(createPageUrl('PaymentSuccess'));
