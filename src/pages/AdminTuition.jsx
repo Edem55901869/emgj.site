@@ -89,8 +89,9 @@ export default function AdminTuition() {
     },
   });
 
-  // Stats
-  const totalRevenue = tuitions.filter(t => t.status === 'payé').reduce((s, t) => s + (t.amount || 0), 0);
+  // Stats — inclut le revenu archivé des étudiants supprimés
+  const archivedRevenue = configs.reduce((s, c) => s + (c.archived_revenue || 0), 0);
+  const totalRevenue = archivedRevenue + tuitions.filter(t => t.status === 'payé').reduce((s, t) => s + (t.amount || 0), 0);
   const pendingProofs = paymentProofs.filter(p => p.status === 'en_attente');
   const pendingAmount = pendingProofs.reduce((s, p) => s + (p.amount || 0), 0);
   const paidStudents = new Set(tuitions.filter(t => t.status === 'payé').map(t => t.student_email)).size;
