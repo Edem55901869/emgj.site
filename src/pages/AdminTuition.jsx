@@ -13,8 +13,7 @@ import AdminGuard from '../components/admin/AdminGuard';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const DOMAINS = ['THÉOLOGIE', 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE', 'MISSIOLOGIE', 'ÉCOLE PROPHETIQUES', 'ENTREPRENEURIAT', 'AUMÔNERIE', 'MINISTÈRE APOSTOLIQUE'];
-const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
+
 
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
