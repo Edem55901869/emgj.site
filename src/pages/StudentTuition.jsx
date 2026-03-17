@@ -78,7 +78,7 @@ export default function StudentTuition() {
     await base44.entities.PaymentProof.create({
       student_email: user.email,
       student_name: `${student.first_name} ${student.last_name}`,
-      amount: myConfig.amount,
+      amount: 0,
       proof_url: txRef.trim(),
       period: format(new Date(), 'MMMM yyyy', { locale: fr }),
       payment_type: 'Frais de scolarité',
