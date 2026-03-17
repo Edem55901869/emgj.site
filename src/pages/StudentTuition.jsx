@@ -53,7 +53,7 @@ export default function StudentTuition() {
   const { data: configs = [] } = useQuery({
     queryKey: ['tuitionConfigs'],
     queryFn: () => base44.entities.TuitionConfig.list(),
-    enabled: !!student,
+    enabled: true,
   });
 
   const { data: paymentProofs = [] } = useQuery({
