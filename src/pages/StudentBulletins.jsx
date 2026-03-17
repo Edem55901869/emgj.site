@@ -147,13 +147,18 @@ export default function StudentBulletins() {
         </div>
       `;
 
+      // Générer le PDF via l'API InvokeLLM avec HTML
+      const { file_url: pdfUrl } = await base44.integrations.Core.UploadFile({ 
+        file: new Blob([bulletinHTML], { type: 'text/html' }) 
+      });
+
       await base44.entities.Bulletin.create({
         student_email: user.email,
         student_name: `${student.first_name} ${student.last_name}`,
         domain: student.domain,
         formation_type: student.formation_type,
         document_type: 'bulletin',
-        pdf_url: bulletinHTML,
+        pdf_url: pdfUrl,
         period: format(new Date(), 'MMMM yyyy', { locale: fr })
       });
 
@@ -197,7 +202,15 @@ export default function StudentBulletins() {
       <div className="max-w-4xl mx-auto px-4 -mt-2">
         {viewingBulletin ? (
           <Card className="p-6 bg-white">
-            <div dangerouslySetInnerHTML={{ __html: viewingBulletin.pdf_url }} />
+            {viewingBulletin.pdf_url?.startsWith('http') ? (
+              <iframe 
+                src={viewingBulletin.pdf_url} 
+                className="w-full h-[600px] border-0 rounded-xl"
+                title="Bulletin"
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: viewingBulletin.pdf_url }} />
+            )}
           </Card>
         ) : (
           <>

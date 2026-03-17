@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Globe, Moon, Volume2, Lock, Eye, EyeOff, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -9,8 +10,31 @@ import StudentBottomNav from '../components/student/StudentBottomNav';
 
 export default function StudentSettings() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showPrivacy, setShowPrivacy] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        // Charger les préférences sauvegardées si elles existent
+        const savedSound = localStorage.getItem(`sound_enabled_${u.email}`);
+        if (savedSound !== null) {
+          setSoundEnabled(savedSound === 'true');
+        }
+      } catch {}
+    };
+    load();
+  }, []);
+
+  const handleSoundToggle = (enabled) => {
+    setSoundEnabled(enabled);
+    if (user?.email) {
+      localStorage.setItem(`sound_enabled_${user.email}`, enabled.toString());
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -46,7 +70,7 @@ export default function StudentSettings() {
                   </p>
                 </div>
               </div>
-              <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} />
+              <Switch checked={soundEnabled} onCheckedChange={handleSoundToggle} />
             </div>
           </div>
 
