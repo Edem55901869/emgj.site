@@ -27,7 +27,7 @@ export default function AdminLibrary() {
 
   const { data: docs = [], isLoading } = useQuery({
     queryKey: ['adminDocs'],
-    queryFn: () => base44.entities.LibraryDocument.list('-created_date', 100),
+    queryFn: () => base44.entities.LibraryDocument.list('-created_date', 300),
   });
 
   const applyStyle = (idx) => {

@@ -122,50 +122,65 @@ export default function StudentDashboard() {
   };
 
   const toggleBookmark = async (postId) => {
-    const existing = bookmarks.find(b => b.post_id === postId);
-    if (existing) {
-      await base44.entities.BlogBookmark.delete(existing.id);
-    } else {
-      await base44.entities.BlogBookmark.create({ post_id: postId, user_email: user.email });
+    try {
+      const existing = bookmarks.find(b => b.post_id === postId);
+      if (existing) {
+        await base44.entities.BlogBookmark.delete(existing.id);
+      } else {
+        await base44.entities.BlogBookmark.create({ post_id: postId, user_email: user.email });
+      }
+      queryClient.invalidateQueries({ queryKey: ['blogBookmarks'] });
+    } catch (error) {
+      console.error('Erreur toggle bookmark:', error);
+      toast.error('Action impossible');
     }
-    queryClient.invalidateQueries({ queryKey: ['blogBookmarks'] });
   };
 
   const addComment = async (postId, parentId = null) => {
     const content = parentId ? commentInputs[`${postId}-${parentId}`] : commentInputs[postId];
     if (!content?.trim()) return;
     
-    const comment = await base44.entities.BlogComment.create({
-      post_id: postId,
-      content: content.trim(),
-      author_name: `${studentProfile.first_name} ${studentProfile.last_name}`,
-      author_email: user.email,
-      parent_comment_id: parentId
-    });
+    try {
+      const comment = await base44.entities.BlogComment.create({
+        post_id: postId,
+        content: content.trim(),
+        author_name: `${studentProfile.first_name} ${studentProfile.last_name}`,
+        author_email: user.email,
+        parent_comment_id: parentId
+      });
 
-    if (parentId) {
-      const parentComment = allComments.find(c => c.id === parentId);
-      if (parentComment && parentComment.author_email !== user.email) {
-        await base44.entities.Notification.create({
-          recipient_email: parentComment.author_email,
-          type: 'info',
-          title: 'Nouvelle réponse à votre commentaire',
-          message: `${studentProfile.first_name} ${studentProfile.last_name} a répondu: "${content.trim()}"`
-        });
+      if (parentId) {
+        const parentComment = allComments.find(c => c.id === parentId);
+        if (parentComment && parentComment.author_email !== user.email) {
+          await base44.entities.Notification.create({
+            recipient_email: parentComment.author_email,
+            type: 'info',
+            title: 'Nouvelle réponse à votre commentaire',
+            message: `${studentProfile.first_name} ${studentProfile.last_name} a répondu: "${content.trim()}"`
+          });
+        }
+        setCommentInputs({ ...commentInputs, [`${postId}-${parentId}`]: '' });
+      } else {
+        setCommentInputs({ ...commentInputs, [postId]: '' });
       }
-      setCommentInputs({ ...commentInputs, [`${postId}-${parentId}`]: '' });
-    } else {
-      setCommentInputs({ ...commentInputs, [postId]: '' });
+      
+      queryClient.invalidateQueries({ queryKey: ['blogComments'] });
+      toast.success('Commentaire ajouté');
+    } catch (error) {
+      console.error('Erreur ajout commentaire:', error);
+      toast.error('Impossible d\'ajouter le commentaire');
     }
-    
-    queryClient.invalidateQueries({ queryKey: ['blogComments'] });
-    toast.success('Commentaire ajouté');
   };
 
   const deleteComment = async (commentId) => {
-    await base44.entities.BlogComment.delete(commentId);
-    queryClient.invalidateQueries({ queryKey: ['blogComments'] });
-    toast.success('Commentaire supprimé');
+    try {
+      await base44.entities.BlogComment.delete(commentId);
+      queryClient.invalidateQueries({ queryKey: ['blogComments'] });
+      toast.success('Commentaire supprimé');
+    } catch (error) {
+      console.error('Erreur suppression commentaire:', error);
+      toast.error('Impossible de supprimer');
+    }
   };
 
   if (loading) {

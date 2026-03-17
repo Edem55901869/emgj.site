@@ -27,18 +27,18 @@ export default function AdminBlog() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['adminPosts'],
-    queryFn: () => base44.entities.BlogPost.list('-created_date', 100),
+    queryFn: () => base44.entities.BlogPost.list('-created_date', 200),
   });
 
   const { data: allLikes = [] } = useQuery({
     queryKey: ['allLikes'],
-    queryFn: () => base44.entities.BlogLike.list('-created_date', 1000),
+    queryFn: () => base44.entities.BlogLike.list('-created_date', 2000),
   });
 
   const { data: allComments = [] } = useQuery({
     queryKey: ['allComments'],
-    queryFn: () => base44.entities.BlogComment.list('-created_date', 1000),
-    refetchInterval: 5000,
+    queryFn: () => base44.entities.BlogComment.list('-created_date', 2000),
+    refetchInterval: 15000,
   });
 
   const replyToCommentMutation = useMutation({
