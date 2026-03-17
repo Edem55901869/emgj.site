@@ -315,32 +315,23 @@ export default function AdminTuition() {
         {/* Dialog configuration */}
         <Dialog open={configDialog} onOpenChange={setConfigDialog}>
           <DialogContent className="max-w-md rounded-3xl bg-[#1e293b] border border-white/10 text-white">
-            <DialogHeader><DialogTitle className="text-white">Nouvelle configuration</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="text-white">Lien de paiement global</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
-              <Select value={configForm.domain} onValueChange={(v) => setConfigForm({ ...configForm, domain: v })}>
-                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Domaine" /></SelectTrigger>
-                <SelectContent>{DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={configForm.formation_type} onValueChange={(v) => setConfigForm({ ...configForm, formation_type: v })}>
-                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Type de formation" /></SelectTrigger>
-                <SelectContent>{FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
-              </Select>
-              <Input type="number" value={configForm.amount} onChange={(e) => setConfigForm({ ...configForm, amount: e.target.value })} placeholder="Montant (XOF)" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
-              <Input value={configForm.payment_link} onChange={(e) => setConfigForm({ ...configForm, payment_link: e.target.value })} placeholder="Lien de paiement (FedaPay, Wave...)" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
-              <Select value={configForm.payment_type} onValueChange={(v) => setConfigForm({ ...configForm, payment_type: v })}>
-                <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Type de frais" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
-                  <SelectItem value="Frais de mémoire">Frais de mémoire</SelectItem>
-                  <SelectItem value="Frais de graduation">Frais de graduation</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-white/60 text-sm mb-2 block">Lien de paiement *</label>
+                <Input value={configForm.payment_link} onChange={(e) => setConfigForm({ ...configForm, payment_link: e.target.value })} placeholder="https://wave.com/... ou FedaPay..." className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                <p className="text-white/30 text-xs mt-1">Ce lien sera affiché à tous les étudiants, quel que soit leur domaine ou formation.</p>
+              </div>
+              <div>
+                <label className="text-white/60 text-sm mb-2 block">Instructions (optionnel)</label>
+                <Input value={configForm.description} onChange={(e) => setConfigForm({ ...configForm, description: e.target.value })} placeholder="Ex: Utilisez votre nom complet comme référence" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+              </div>
               <Button
-                onClick={() => createConfigMutation.mutate({ ...configForm, amount: Number(configForm.amount) })}
-                disabled={!configForm.domain || !configForm.formation_type || !configForm.amount || !configForm.payment_type || createConfigMutation.isPending}
+                onClick={() => createConfigMutation.mutate(configForm)}
+                disabled={!configForm.payment_link || createConfigMutation.isPending}
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl h-11 font-bold"
               >
-                {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer la configuration'}
+                {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enregistrer'}
               </Button>
             </div>
           </DialogContent>
