@@ -225,39 +225,42 @@ export default function AdminTuition() {
             </div>
           )}
 
-          {/* Configurations */}
+          {/* Lien de paiement global */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
             <h3 className="font-bold text-white text-lg mb-4 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-blue-400" />
-              Configurations de scolarité
+              Lien de paiement global
             </h3>
             {configs.length === 0 ? (
-              <p className="text-white/30 text-center py-6 text-sm">Aucune configuration. Cliquez sur "Nouvelle config" pour commencer.</p>
+              <div className="text-center py-6">
+                <p className="text-white/30 text-sm mb-4">Aucun lien configuré. Cliquez sur "Configurer" pour ajouter un lien de paiement.</p>
+                <Button onClick={() => setConfigDialog(true)} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl">
+                  <Plus className="w-4 h-4 mr-2" /> Configurer le lien
+                </Button>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {configs.map(config => (
-                  <div key={config.id} className="bg-gradient-to-br from-blue-900/40 to-indigo-900/20 border border-blue-500/20 rounded-xl p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-2xl font-black text-white">{config.amount?.toLocaleString()} <span className="text-sm text-white/40">XOF</span></p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs">{config.formation_type}</Badge>
-                          {config.payment_type && <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">{config.payment_type}</Badge>}
-                        </div>
-                        <p className="text-white/30 text-xs mt-2 leading-tight">{config.domain}</p>
-                      </div>
-                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="icon" className="h-8 w-8 text-red-400/50 hover:text-red-400 hover:bg-red-500/10">
+              configs.map(config => (
+                <div key={config.id} className="bg-gradient-to-br from-blue-900/40 to-indigo-900/20 border border-blue-500/20 rounded-xl p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/40 text-xs uppercase mb-1">Lien de paiement actif</p>
+                      <a href={config.payment_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-300 hover:text-blue-200 transition-colors text-sm font-medium truncate">
+                        <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{config.payment_link}</span>
+                      </a>
+                      {config.description && <p className="text-white/30 text-xs mt-2">{config.description}</p>}
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button onClick={() => { setConfigForm({ payment_link: config.payment_link, description: config.description || '' }); setConfigDialog(true); }} variant="ghost" size="sm" className="text-blue-400 hover:bg-blue-500/10 rounded-xl">
+                        Modifier
+                      </Button>
+                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="icon" className="h-9 w-9 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    {config.payment_link && (
-                      <a href={config.payment_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-blue-400/70 hover:text-blue-400 transition-colors">
-                        <ArrowUpRight className="w-3 h-3" /> Lien de paiement
-                      </a>
-                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             )}
           </div>
 
