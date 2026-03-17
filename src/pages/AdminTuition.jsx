@@ -18,7 +18,7 @@ const FORMATIONS = ['Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'];
 
 export default function AdminTuition() {
   const [configDialog, setConfigDialog] = useState(false);
-  const [configForm, setConfigForm] = useState({ domain: '', formation_type: '', amount: '', currency: 'XOF', payment_link: '', payment_type: '' });
+  const [configForm, setConfigForm] = useState({ payment_link: '', description: '' });
   const [statusFilter, setStatusFilter] = useState('en_attente');
   const queryClient = useQueryClient();
 
