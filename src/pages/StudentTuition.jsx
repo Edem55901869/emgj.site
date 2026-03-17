@@ -224,7 +224,7 @@ export default function StudentTuition() {
                       <Zap className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">Payer {myConfig.amount.toLocaleString()} XOF</p>
+                      <p className="text-white font-medium">Accéder au paiement</p>
                       <p className="text-white/40 text-xs">Paiement en ligne sécurisé</p>
                     </div>
                   </div>
