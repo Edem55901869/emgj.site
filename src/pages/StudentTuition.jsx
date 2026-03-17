@@ -326,8 +326,8 @@ export default function StudentTuition() {
           </DialogHeader>
           <div className="space-y-5 pt-2">
             <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/10">
-              <p className="text-white/50 text-xs uppercase mb-1">Montant payé</p>
-              <p className="text-3xl font-black text-white">{myConfig?.amount?.toLocaleString()} <span className="text-lg text-white/50">XOF</span></p>
+              <p className="text-white/50 text-xs uppercase mb-1">Confirmation de paiement</p>
+              <p className="text-base text-white/70">Entrez la référence de votre transaction pour que l'administration puisse valider votre paiement.</p>
             </div>
 
             <div>
