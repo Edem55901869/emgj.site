@@ -178,7 +178,7 @@ export default function AdminTuition() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-[#0f172a]">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -284,8 +284,13 @@ export default function AdminTuition() {
             </div>
           )}
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-            <h3 className="font-bold text-white text-lg mb-4">Liens de paiement par formation</h3>
+          <div className="bg-gradient-to-br from-slate-800/50 via-slate-900/50 to-indigo-900/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl">
+            <h3 className="font-bold text-white text-lg mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-white" />
+              </div>
+              Liens de paiement par formation
+            </h3>
             {configs.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-white/30 text-sm mb-4">Aucune configuration</p>
@@ -345,8 +350,8 @@ export default function AdminTuition() {
             )}
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+          <div className="bg-gradient-to-br from-slate-800/50 via-slate-900/50 to-indigo-900/30 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-slate-800/50 to-indigo-900/30">
               <h3 className="font-bold text-white text-lg">Historique</h3>
               <div className="flex gap-2">
                 {['all', 'en_attente', 'validé', 'rejeté'].map(status => (
@@ -364,14 +369,14 @@ export default function AdminTuition() {
                 ))}
               </div>
             </div>
-            <div className="divide-y divide-white/5 max-h-96 overflow-y-auto">
+            <div className="divide-y divide-white/5 max-h-96 overflow-y-auto bg-slate-900/30">
               {loadingProofs ? (
                 <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
               ) : filteredProofs.length === 0 ? (
                 <div className="py-12 text-center text-white/30 text-sm">Aucune transaction</div>
               ) : (
                 filteredProofs.map(p => (
-                  <div key={p.id} className="p-4 flex items-center gap-4 hover:bg-white/3">
+                  <div key={p.id} className="p-4 flex items-center gap-4 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 transition-all duration-200">
                     <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
                       <span className="text-white/70 font-bold text-sm">{p.student_name?.charAt(0)}</span>
                     </div>
@@ -395,7 +400,7 @@ export default function AdminTuition() {
         </div>
 
         <Dialog open={configDialog} onOpenChange={(open) => !open && resetForm()}>
-          <DialogContent className="max-w-lg rounded-3xl bg-[#1e293b] border border-white/10 text-white max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-lg rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 border border-white/20 text-white max-h-[90vh] overflow-y-auto shadow-2xl backdrop-blur-xl">
             <DialogHeader><DialogTitle className="text-white">{editingConfig ? 'Modifier' : 'Nouveau'} lien</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
@@ -403,7 +408,7 @@ export default function AdminTuition() {
                 <select 
                   value={formationType} 
                   onChange={(e) => setFormationType(e.target.value)}
-                  className="w-full h-11 rounded-xl bg-white/10 border border-white/20 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg"
                 >
                   <option value="">Sélectionner...</option>
                   {ALL_FORMATIONS.map(f => <option key={f} value={f}>{f}</option>)}
@@ -415,7 +420,7 @@ export default function AdminTuition() {
                 <select 
                   value={feeType} 
                   onChange={(e) => setFeeType(e.target.value)}
-                  className="w-full h-11 rounded-xl bg-white/10 border border-white/20 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg"
                 >
                   <option value="Frais de diplôme">Frais de diplôme</option>
                   <option value="Frais de graduation">Frais de graduation</option>
@@ -424,41 +429,47 @@ export default function AdminTuition() {
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Lien de paiement *</label>
-                <Input value={paymentLink} onChange={(e) => setPaymentLink(e.target.value)} placeholder="https://..." className="rounded-xl h-11 bg-white/10 border-white/20 text-white" />
+                <Input value={paymentLink} onChange={(e) => setPaymentLink(e.target.value)} placeholder="https://..." className="rounded-xl h-11 bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white placeholder:text-white/40 focus:border-blue-500 shadow-lg" />
               </div>
 
-              <div className="flex items-center justify-between bg-white/5 rounded-xl p-4">
-                <p className="text-white text-sm">Promotion</p>
-                <input type="checkbox" checked={isPromotion} onChange={(e) => setIsPromotion(e.target.checked)} className="w-10 h-6" />
+              <div className="flex items-center justify-between bg-gradient-to-r from-slate-800/50 to-indigo-900/30 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-purple-400" />
+                  <p className="text-white text-sm font-medium">Promotion</p>
+                </div>
+                <input type="checkbox" checked={isPromotion} onChange={(e) => setIsPromotion(e.target.checked)} className="w-10 h-6 accent-purple-500" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-white/60 text-sm mb-2 block">Prix normal *</label>
-                  <Input type="number" value={normalPrice} onChange={(e) => setNormalPrice(e.target.value)} placeholder="50000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white" />
+                  <Input type="number" value={normalPrice} onChange={(e) => setNormalPrice(e.target.value)} placeholder="50000" className="rounded-xl h-11 bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white placeholder:text-white/40 focus:border-blue-500 shadow-lg" />
                 </div>
                 {isPromotion && (
                   <div>
                     <label className="text-white/60 text-sm mb-2 block">Prix promo *</label>
-                    <Input type="number" value={promoPrice} onChange={(e) => setPromoPrice(e.target.value)} placeholder="35000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white" />
+                    <Input type="number" value={promoPrice} onChange={(e) => setPromoPrice(e.target.value)} placeholder="35000" className="rounded-xl h-11 bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white placeholder:text-white/40 focus:border-blue-500 shadow-lg" />
                   </div>
                 )}
               </div>
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Instructions</label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Instructions..." className="rounded-xl bg-white/10 border-white/20 text-white resize-none" rows={3} />
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Instructions..." className="rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white placeholder:text-white/40 resize-none focus:border-blue-500 shadow-lg" rows={3} />
               </div>
 
-              <div className="flex items-center justify-between bg-white/5 rounded-xl p-4">
-                <p className="text-white text-sm">Actif</p>
-                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="w-10 h-6" />
+              <div className="flex items-center justify-between bg-gradient-to-r from-slate-800/50 to-indigo-900/30 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-green-400" />
+                  <p className="text-white text-sm font-medium">Actif</p>
+                </div>
+                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="w-10 h-6 accent-green-500" />
               </div>
 
               <Button
                 onClick={handleSubmit}
                 disabled={createConfigMutation.isPending}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl h-11 font-bold"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl h-11 font-bold shadow-lg shadow-blue-500/30 transition-all"
               >
                 {createConfigMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingConfig ? 'Mettre à jour' : 'Créer')}
               </Button>
