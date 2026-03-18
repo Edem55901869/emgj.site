@@ -32,6 +32,7 @@ export default function AdminTuition() {
   const [promoPrice, setPromoPrice] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [description, setDescription] = useState('');
+  const [promoEndDate, setPromoEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const queryClient = useQueryClient();
 
@@ -125,6 +126,7 @@ export default function AdminTuition() {
     setPromoPrice('');
     setIsActive(true);
     setDescription('');
+    setPromoEndDate('');
   };
 
   const handleEdit = (config) => {
@@ -137,6 +139,7 @@ export default function AdminTuition() {
     setPromoPrice(config.promo_price?.toString() || '');
     setIsActive(config.is_active ?? true);
     setDescription(config.description || '');
+    setPromoEndDate(config.promo_end_date || '');
     setConfigDialog(true);
   };
 
@@ -149,6 +152,10 @@ export default function AdminTuition() {
       toast.error('Prix de promotion requis');
       return;
     }
+    if (isPromotion && !promoEndDate) {
+      toast.error('Date de fin de promotion requise');
+      return;
+    }
 
     createConfigMutation.mutate({
       formation_type: formationType,
@@ -157,6 +164,7 @@ export default function AdminTuition() {
       is_promotion: isPromotion,
       normal_price: parseFloat(normalPrice),
       promo_price: isPromotion ? parseFloat(promoPrice) : null,
+      promo_end_date: isPromotion ? promoEndDate : null,
       is_active: isActive,
       description: description
     });
@@ -408,10 +416,10 @@ export default function AdminTuition() {
                 <select 
                   value={formationType} 
                   onChange={(e) => setFormationType(e.target.value)}
-                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg"
+                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg [&>option]:bg-slate-900 [&>option]:text-white"
                 >
-                  <option value="">Sélectionner...</option>
-                  {ALL_FORMATIONS.map(f => <option key={f} value={f}>{f}</option>)}
+                  <option value="" className="bg-slate-900">Sélectionner...</option>
+                  {ALL_FORMATIONS.map(f => <option key={f} value={f} className="bg-slate-900">{f}</option>)}
                 </select>
               </div>
 
@@ -420,10 +428,10 @@ export default function AdminTuition() {
                 <select 
                   value={feeType} 
                   onChange={(e) => setFeeType(e.target.value)}
-                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg"
+                  className="w-full h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/30 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-lg [&>option]:bg-slate-900 [&>option]:text-white"
                 >
-                  <option value="Frais de diplôme">Frais de diplôme</option>
-                  <option value="Frais de graduation">Frais de graduation</option>
+                  <option value="Frais de diplôme" className="bg-slate-900">Frais de diplôme</option>
+                  <option value="Frais de graduation" className="bg-slate-900">Frais de graduation</option>
                 </select>
               </div>
 
@@ -452,6 +460,18 @@ export default function AdminTuition() {
                   </div>
                 )}
               </div>
+
+              {isPromotion && (
+                <div>
+                  <label className="text-white/60 text-sm mb-2 block">Date de fin de promotion *</label>
+                  <Input 
+                    type="datetime-local" 
+                    value={promoEndDate} 
+                    onChange={(e) => setPromoEndDate(e.target.value)} 
+                    className="rounded-xl h-11 bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white focus:border-blue-500 shadow-lg" 
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Instructions</label>
