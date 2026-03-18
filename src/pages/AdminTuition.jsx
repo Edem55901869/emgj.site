@@ -404,17 +404,17 @@ export default function AdminTuition() {
         </div>
 
         {/* Dialog configuration */}
-        <Dialog open={configDialog} onOpenChange={resetForm}>
+        <Dialog open={configDialog} onOpenChange={(open) => { if (!open) resetForm(); }}>
           <DialogContent className="max-w-lg rounded-3xl bg-[#1e293b] border border-white/10 text-white max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle className="text-white">{editingConfig ? 'Modifier' : 'Nouveau'} lien de paiement</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Type de formation *</label>
-                <Select value={configForm.formation_type} onValueChange={(v) => setConfigForm({ ...configForm, formation_type: v })}>
+                <Select value={configForm.formation_type} onValueChange={(v) => setConfigForm(prev => ({ ...prev, formation_type: v }))}>
                   <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white">
                     <SelectValue placeholder="Sélectionner..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     {ALL_FORMATIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -422,11 +422,11 @@ export default function AdminTuition() {
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Type de frais *</label>
-                <Select value={configForm.fee_type} onValueChange={(v) => setConfigForm({ ...configForm, fee_type: v })}>
+                <Select value={configForm.fee_type} onValueChange={(v) => setConfigForm(prev => ({ ...prev, fee_type: v }))}>
                   <SelectTrigger className="rounded-xl h-11 bg-white/10 border-white/20 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="Frais de diplôme">Frais de diplôme</SelectItem>
                     <SelectItem value="Frais de graduation">Frais de graduation</SelectItem>
                   </SelectContent>
@@ -435,7 +435,7 @@ export default function AdminTuition() {
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Lien de paiement externe *</label>
-                <Input value={configForm.payment_link} onChange={(e) => setConfigForm({ ...configForm, payment_link: e.target.value })} placeholder="https://wave.com/... ou FedaPay..." className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                <Input value={configForm.payment_link} onChange={(e) => setConfigForm(prev => ({ ...prev, payment_link: e.target.value }))} placeholder="https://wave.com/... ou FedaPay..." className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
               </div>
 
               <div className="flex items-center justify-between bg-white/5 rounded-xl p-4">
@@ -443,25 +443,25 @@ export default function AdminTuition() {
                   <p className="text-white text-sm font-medium">Promotion active</p>
                   <p className="text-white/40 text-xs">Afficher un prix réduit</p>
                 </div>
-                <Switch checked={configForm.is_promotion} onCheckedChange={(v) => setConfigForm({ ...configForm, is_promotion: v })} />
+                <Switch checked={configForm.is_promotion} onCheckedChange={(v) => setConfigForm(prev => ({ ...prev, is_promotion: v }))} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-white/60 text-sm mb-2 block">Prix normal (XOF) *</label>
-                  <Input type="number" value={configForm.normal_price} onChange={(e) => setConfigForm({ ...configForm, normal_price: e.target.value })} placeholder="50000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                  <Input type="number" value={configForm.normal_price} onChange={(e) => setConfigForm(prev => ({ ...prev, normal_price: e.target.value }))} placeholder="50000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                 </div>
                 {configForm.is_promotion && (
                   <div>
                     <label className="text-white/60 text-sm mb-2 block">Prix promo (XOF) *</label>
-                    <Input type="number" value={configForm.promo_price} onChange={(e) => setConfigForm({ ...configForm, promo_price: e.target.value })} placeholder="35000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
+                    <Input type="number" value={configForm.promo_price} onChange={(e) => setConfigForm(prev => ({ ...prev, promo_price: e.target.value }))} placeholder="35000" className="rounded-xl h-11 bg-white/10 border-white/20 text-white placeholder:text-white/30" />
                   </div>
                 )}
               </div>
 
               <div>
                 <label className="text-white/60 text-sm mb-2 block">Instructions (optionnel)</label>
-                <Textarea value={configForm.description} onChange={(e) => setConfigForm({ ...configForm, description: e.target.value })} placeholder="Ex: Utilisez votre nom complet comme référence" className="rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 resize-none" rows={3} />
+                <Textarea value={configForm.description} onChange={(e) => setConfigForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Ex: Utilisez votre nom complet comme référence" className="rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 resize-none" rows={3} />
               </div>
 
               <div className="flex items-center justify-between bg-white/5 rounded-xl p-4">
@@ -469,7 +469,7 @@ export default function AdminTuition() {
                   <p className="text-white text-sm font-medium">Lien actif</p>
                   <p className="text-white/40 text-xs">Visible pour les étudiants</p>
                 </div>
-                <Switch checked={configForm.is_active} onCheckedChange={(v) => setConfigForm({ ...configForm, is_active: v })} />
+                <Switch checked={configForm.is_active} onCheckedChange={(v) => setConfigForm(prev => ({ ...prev, is_active: v }))} />
               </div>
 
               <Button
