@@ -486,7 +486,7 @@ export default function AdminTuition() {
                       Cette action nécessite un mot de passe VIP. Si vous ne possédez pas le mot de passe, contactez le développeur pour assistance.
                     </p>
                     <a
-                      href="https://wa.me/22931703478"
+                      href="https://wa.me/2290147659277"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
