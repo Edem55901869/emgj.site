@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import StudentBottomNav from '../components/student/StudentBottomNav';
+import PromoCountdown from '../components/PromoCountdown';
 
 export default function StudentTuition() {
   const navigate = useNavigate();
@@ -188,6 +189,8 @@ export default function StudentTuition() {
               const isPaid = myProof?.status === 'validé';
               const isPending = myProof?.status === 'en_attente';
               const isRejected = myProof?.status === 'rejeté';
+              const promoExpired = config.is_promotion && config.promo_end_date && new Date(config.promo_end_date) < new Date();
+              const showPromo = config.is_promotion && !promoExpired;
 
               return (
                 <div key={config.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
@@ -196,18 +199,21 @@ export default function StudentTuition() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-white font-bold text-lg">{config.fee_type}</h3>
-                          {config.is_promotion && (
-                            <Badge className="bg-red-500 text-white border-0 shadow-lg text-xs">PROMO</Badge>
+                          {showPromo && (
+                            <Badge className="bg-red-500 text-white border-0 shadow-lg text-xs animate-pulse">PROMO</Badge>
                           )}
                         </div>
-                        {config.is_promotion ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-white/40 text-sm line-through">{config.normal_price?.toLocaleString()} XOF</span>
-                            <span className="text-red-400 font-bold text-xl">{config.promo_price?.toLocaleString()} XOF</span>
-                            <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs">
-                              <Percent className="w-3 h-3 mr-0.5" />
-                              -{Math.round(((config.normal_price - config.promo_price) / config.normal_price) * 100)}%
-                            </Badge>
+                        {showPromo ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-white/40 text-sm line-through">{config.normal_price?.toLocaleString()} XOF</span>
+                              <span className="text-red-400 font-bold text-xl">{config.promo_price?.toLocaleString()} XOF</span>
+                              <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs">
+                                <Percent className="w-3 h-3 mr-0.5" />
+                                -{Math.round(((config.normal_price - config.promo_price) / config.normal_price) * 100)}%
+                              </Badge>
+                            </div>
+                            {config.promo_end_date && <PromoCountdown endDate={config.promo_end_date} />}
                           </div>
                         ) : (
                           <p className="text-white font-bold text-xl">{config.normal_price?.toLocaleString()} XOF</p>
