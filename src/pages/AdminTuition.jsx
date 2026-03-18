@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DollarSign, Plus, Trash2, Loader2, Check, X, TrendingUp, Clock, Users, Zap, Hash, AlertTriangle, RefreshCw, Edit, Tag, Percent } from 'lucide-react';
+import { DollarSign, Plus, Trash2, Loader2, Check, X, TrendingUp, Clock, Users, Zap, Hash, AlertTriangle, RefreshCw, Edit, Tag, Percent, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -141,6 +141,21 @@ export default function AdminTuition() {
     setDescription(config.description || '');
     setPromoEndDate(config.promo_end_date || '');
     setConfigDialog(true);
+  };
+
+  const handleDuplicate = (config) => {
+    setEditingConfig(null);
+    setFormationType(config.formation_type);
+    setFeeType(config.fee_type);
+    setPaymentLink(config.payment_link);
+    setIsPromotion(config.is_promotion || false);
+    setNormalPrice(config.normal_price?.toString() || '');
+    setPromoPrice(config.promo_price?.toString() || '');
+    setIsActive(config.is_active ?? true);
+    setDescription(config.description || '');
+    setPromoEndDate(config.promo_end_date || '');
+    setConfigDialog(true);
+    toast.success('Prêt à dupliquer');
   };
 
   const handleSubmit = () => {
@@ -345,10 +360,13 @@ export default function AdminTuition() {
                       >
                         {config.is_active ? 'Actif' : 'Inactif'}
                       </Button>
-                      <Button onClick={() => handleEdit(config)} variant="ghost" size="sm" className="text-blue-400 hover:bg-blue-500/10 rounded-xl">
+                      <Button onClick={() => handleDuplicate(config)} variant="ghost" size="sm" className="text-purple-400 hover:bg-purple-500/10 rounded-xl" title="Dupliquer">
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button onClick={() => handleEdit(config)} variant="ghost" size="sm" className="text-blue-400 hover:bg-blue-500/10 rounded-xl" title="Modifier">
                         <Edit className="w-3.5 h-3.5" />
                       </Button>
-                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/10 rounded-xl">
+                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/10 rounded-xl" title="Supprimer">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
