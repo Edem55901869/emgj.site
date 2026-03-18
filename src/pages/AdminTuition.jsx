@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DollarSign, Plus, Trash2, Loader2, Check, X, TrendingUp, Clock, Users, Zap, Hash, AlertTriangle, RefreshCw, Edit, Tag, Percent, Copy } from 'lucide-react';
+import { DollarSign, Plus, Trash2, Loader2, Check, X, TrendingUp, Clock, Users, Zap, Hash, AlertTriangle, RefreshCw, Edit, Tag, Percent, Copy, MessageCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,7 +34,13 @@ export default function AdminTuition() {
   const [description, setDescription] = useState('');
   const [promoEndDate, setPromoEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [securityDialog, setSecurityDialog] = useState(false);
+  const [securityAction, setSecurityAction] = useState(null);
+  const [securityPassword, setSecurityPassword] = useState('');
+  const [securityTarget, setSecurityTarget] = useState(null);
   const queryClient = useQueryClient();
+
+  const VIP_PASSWORD = 'Agnimaka2001.com';
 
   const { data: configs = [] } = useQuery({ 
     queryKey: ['tuitionConfigs'], 
@@ -66,6 +72,20 @@ export default function AdminTuition() {
       toast.success(editingConfig ? 'Configuration mise à jour' : 'Configuration créée');
     },
   });
+
+  const handleDelete = (config) => {
+    setSecurityAction('delete');
+    setSecurityTarget(config);
+    setSecurityDialog(true);
+  };
+
+  const proceedDelete = () => {
+    if (!securityTarget) return;
+    deleteConfigMutation.mutate(securityTarget.id);
+    setSecurityDialog(false);
+    setSecurityPassword('');
+    setSecurityTarget(null);
+  };
 
   const deleteConfigMutation = useMutation({
     mutationFn: (id) => base44.entities.TuitionConfig.delete(id),
@@ -130,16 +150,26 @@ export default function AdminTuition() {
   };
 
   const handleEdit = (config) => {
-    setEditingConfig(config);
-    setFormationType(config.formation_type);
-    setFeeType(config.fee_type);
-    setPaymentLink(config.payment_link);
-    setIsPromotion(config.is_promotion || false);
-    setNormalPrice(config.normal_price?.toString() || '');
-    setPromoPrice(config.promo_price?.toString() || '');
-    setIsActive(config.is_active ?? true);
-    setDescription(config.description || '');
-    setPromoEndDate(config.promo_end_date || '');
+    setSecurityAction('edit');
+    setSecurityTarget(config);
+    setSecurityDialog(true);
+  };
+
+  const proceedEdit = () => {
+    if (!securityTarget) return;
+    setEditingConfig(securityTarget);
+    setFormationType(securityTarget.formation_type);
+    setFeeType(securityTarget.fee_type);
+    setPaymentLink(securityTarget.payment_link);
+    setIsPromotion(securityTarget.is_promotion || false);
+    setNormalPrice(securityTarget.normal_price?.toString() || '');
+    setPromoPrice(securityTarget.promo_price?.toString() || '');
+    setIsActive(securityTarget.is_active ?? true);
+    setDescription(securityTarget.description || '');
+    setPromoEndDate(securityTarget.promo_end_date || '');
+    setSecurityDialog(false);
+    setSecurityPassword('');
+    setSecurityTarget(null);
     setConfigDialog(true);
   };
 
@@ -156,6 +186,18 @@ export default function AdminTuition() {
     setPromoEndDate(config.promo_end_date || '');
     setConfigDialog(true);
     toast.success('Prêt à dupliquer');
+  };
+
+  const handleSecuritySubmit = () => {
+    if (securityPassword === VIP_PASSWORD) {
+      if (securityAction === 'edit') {
+        proceedEdit();
+      } else if (securityAction === 'delete') {
+        proceedDelete();
+      }
+    } else {
+      toast.error('Mot de passe incorrect');
+    }
   };
 
   const handleSubmit = () => {
@@ -366,7 +408,7 @@ export default function AdminTuition() {
                       <Button onClick={() => handleEdit(config)} variant="ghost" size="sm" className="text-blue-400 hover:bg-blue-500/10 rounded-xl" title="Modifier">
                         <Edit className="w-3.5 h-3.5" />
                       </Button>
-                      <Button onClick={() => deleteConfigMutation.mutate(config.id)} variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/10 rounded-xl" title="Supprimer">
+                      <Button onClick={() => handleDelete(config)} variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/10 rounded-xl" title="Supprimer">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
@@ -424,6 +466,69 @@ export default function AdminTuition() {
             </div>
           </div>
         </div>
+
+        {/* Dialog sécurité VIP */}
+        <Dialog open={securityDialog} onOpenChange={(open) => { if (!open) { setSecurityDialog(false); setSecurityPassword(''); setSecurityTarget(null); } }}>
+          <DialogContent className="max-w-md rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 border border-amber-500/30 text-white shadow-2xl backdrop-blur-xl">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Shield className="w-5 h-5 text-amber-400" />
+                Sécurité VIP
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/20 border border-amber-500/30 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-amber-300 font-semibold text-sm mb-1">Action protégée</p>
+                    <p className="text-amber-400/70 text-xs mb-3">
+                      Cette action nécessite un mot de passe VIP. Si vous ne possédez pas le mot de passe, contactez le développeur pour assistance.
+                    </p>
+                    <a
+                      href="https://wa.me/22931703478"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Contacter sur WhatsApp
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-white/60 text-sm mb-2 block">Mot de passe VIP</label>
+                <Input
+                  type="password"
+                  value={securityPassword}
+                  onChange={(e) => setSecurityPassword(e.target.value)}
+                  placeholder="Entrez le mot de passe VIP"
+                  className="rounded-xl h-11 bg-gradient-to-br from-slate-800 to-slate-900 border-white/30 text-white placeholder:text-white/40 focus:border-amber-500 shadow-lg"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSecuritySubmit()}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => { setSecurityDialog(false); setSecurityPassword(''); setSecurityTarget(null); }}
+                  variant="outline"
+                  className="flex-1 rounded-xl h-11 border-white/20 text-white hover:bg-white/10"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleSecuritySubmit}
+                  disabled={!securityPassword}
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-xl h-11 font-bold shadow-lg shadow-amber-500/30 transition-all"
+                >
+                  Confirmer
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={configDialog} onOpenChange={(open) => !open && resetForm()}>
           <DialogContent className="max-w-lg rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 border border-white/20 text-white max-h-[90vh] overflow-y-auto shadow-2xl backdrop-blur-xl">
