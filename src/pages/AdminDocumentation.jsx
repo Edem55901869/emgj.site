@@ -574,40 +574,224 @@ export default function AdminDocumentation() {
 </ul>
 </div>
 
-<h2>📊 Tableau de bord administrateur</h2>
+<h2>📊 TABLEAU DE BORD ADMINISTRATEUR - GUIDE COMPLET</h2>
 
-<p>Le tableau de bord offre une vue d'ensemble de la plateforme :</p>
+<p>Le tableau de bord est le centre de contrôle de votre plateforme. Il offre une vue d'ensemble en temps réel de toutes les activités et métriques importantes.</p>
+
+<h3>🎯 Vue d'ensemble des métriques principales</h3>
 
 <table>
   <tr>
-    <th>Métrique</th>
-    <th>Description</th>
+    <th style="width: 25%;">Métrique</th>
+    <th style="width: 35%;">Description détaillée</th>
+    <th style="width: 40%;">Actions possibles</th>
   </tr>
   <tr>
-    <td>Total étudiants</td>
-    <td>Nombre total d'étudiants inscrits</td>
+    <td><strong>Total étudiants</strong></td>
+    <td>Nombre total d'étudiants inscrits sur la plateforme, tous statuts confondus</td>
+    <td>Cliquez pour voir la liste complète des étudiants</td>
   </tr>
   <tr>
-    <td>En attente</td>
-    <td>Comptes étudiants en attente de certification</td>
+    <td><strong>En attente de certification</strong></td>
+    <td>Nombre d'étudiants ayant complété leur profil mais non encore certifiés par un admin</td>
+    <td>
+      • Cliquez pour voir la liste<br>
+      • Action requise : Certifier ou rejeter<br>
+      • Priorité : HAUTE
+    </td>
   </tr>
   <tr>
-    <td>Certifiés</td>
-    <td>Étudiants avec profil validé</td>
+    <td><strong>Certifiés</strong></td>
+    <td>Étudiants avec profil validé, ayant accès complet aux cours et ressources</td>
+    <td>Consultez les profils validés</td>
   </tr>
   <tr>
-    <td>Total cours</td>
-    <td>Nombre de cours disponibles sur la plateforme</td>
+    <td><strong>Rejetés</strong></td>
+    <td>Comptes refusés (documents invalides, informations incorrectes)</td>
+    <td>Peut être reconsidéré si l'étudiant fournit de nouveaux documents</td>
   </tr>
   <tr>
-    <td>Articles blog</td>
-    <td>Publications sur le blog</td>
+    <td><strong>Bloqués</strong></td>
+    <td>Comptes temporairement ou définitivement bloqués (non-paiement, violation de règles)</td>
+    <td>Débloquez si la situation est résolue</td>
   </tr>
   <tr>
-    <td>Documents bibliothèque</td>
-    <td>Ressources disponibles dans la bibliothèque</td>
+    <td><strong>Total cours</strong></td>
+    <td>Nombre total de cours disponibles sur la plateforme, toutes formations confondues</td>
+    <td>
+      • Créez de nouveaux cours<br>
+      • Modifiez les cours existants<br>
+      • Consultez les statistiques par cours
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Cours complétés</strong></td>
+    <td>Nombre total d'évaluations réussies par tous les étudiants</td>
+    <td>Indicateur d'engagement et de réussite</td>
+  </tr>
+  <tr>
+    <td><strong>Taux de complétion</strong></td>
+    <td>Pourcentage moyen de cours terminés par rapport aux cours commencés</td>
+    <td>
+      • Si < 60% : Analysez les causes<br>
+      • Si > 80% : Excellent engagement
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Articles blog</strong></td>
+    <td>Nombre total de publications sur le blog institutionnel</td>
+    <td>Créez du contenu régulièrement pour maintenir l'engagement</td>
+  </tr>
+  <tr>
+    <td><strong>Documents bibliothèque</strong></td>
+    <td>Nombre de ressources PDF disponibles au téléchargement</td>
+    <td>Enrichissez régulièrement la bibliothèque</td>
+  </tr>
+  <tr>
+    <td><strong>Groupes actifs</strong></td>
+    <td>Nombre de groupes de discussion avec au moins un message cette semaine</td>
+    <td>Indicateur de vie communautaire</td>
+  </tr>
+  <tr>
+    <td><strong>Paiements en attente</strong></td>
+    <td>Nombre de justificatifs de paiement à vérifier</td>
+    <td>
+      • Action requise : Vérifier sous 24h<br>
+      • Priorité : HAUTE
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Questions sans réponse</strong></td>
+    <td>Nombre de questions de cours en attente de réponse admin</td>
+    <td>
+      • Répondez sous 48h max<br>
+      • Priorité : MOYENNE
+    </td>
   </tr>
 </table>
+
+<h3>📈 Graphiques et visualisations</h3>
+
+<p><strong>Graphique d'évolution des inscriptions :</strong></p>
+<ul>
+  <li>📊 <strong>Type :</strong> Graphique en courbe (30 derniers jours)</li>
+  <li>📅 <strong>Données affichées :</strong> Nombre d'inscriptions par jour</li>
+  <li>🔍 <strong>Utilité :</strong> Détecter les pics d'inscription (campagnes marketing, événements)</li>
+  <li>💡 <strong>Action :</strong> Si baisse d'inscriptions, relancer une campagne de communication</li>
+</ul>
+
+<p><strong>Répartition par domaine de formation :</strong></p>
+<ul>
+  <li>🥧 <strong>Type :</strong> Diagramme circulaire (pie chart)</li>
+  <li>📊 <strong>Données :</strong> Pourcentage d'étudiants par domaine (Théologie, Leadership, etc.)</li>
+  <li>🔍 <strong>Utilité :</strong> Identifier les domaines les plus populaires</li>
+  <li>💡 <strong>Action :</strong> Créez plus de cours dans les domaines très demandés</li>
+</ul>
+
+<p><strong>Progression académique globale :</strong></p>
+<ul>
+  <li>📊 <strong>Type :</strong> Barre de progression</li>
+  <li>📈 <strong>Données :</strong> Moyenne des taux de complétion par formation</li>
+  <li>🔍 <strong>Utilité :</strong> Mesurer l'efficacité pédagogique</li>
+  <li>💡 <strong>Action :</strong> Si faible, simplifiez les évaluations ou offrez plus de support</li>
+</ul>
+
+<h3>🔔 Alertes et notifications prioritaires</h3>
+
+<div class="warning">
+<strong>⚠️ ALERTES CRITIQUES (Action immédiate requise) :</strong>
+<ul>
+  <li>🔴 <strong>Hébergement expire dans moins de 7 jours</strong> → Renouveler immédiatement</li>
+  <li>🔴 <strong>Plus de 10 paiements en attente</strong> → Vérifier en priorité</li>
+  <li>🔴 <strong>Plus de 20 étudiants en attente de certification</strong> → Déléguer si nécessaire</li>
+</ul>
+</div>
+
+<div class="highlight">
+<strong>🟡 ALERTES IMPORTANTES (Action sous 48h) :</strong>
+<ul>
+  <li>🟡 <strong>Plus de 15 questions sans réponse</strong> → Planifier session de réponses</li>
+  <li>🟡 <strong>Taux de complétion < 50%</strong> → Analyser les cours problématiques</li>
+  <li>🟡 <strong>Aucune publication blog ce mois</strong> → Planifier du contenu</li>
+</ul>
+</div>
+
+<h3>📋 Section "Activités récentes"</h3>
+
+<p>Cette section affiche en temps réel les 10 dernières actions importantes sur la plateforme :</p>
+
+<table>
+  <tr>
+    <th>Type d'activité</th>
+    <th>Informations affichées</th>
+    <th>Action possible</th>
+  </tr>
+  <tr>
+    <td>Nouvelle inscription</td>
+    <td>Nom de l'étudiant, domaine choisi, date</td>
+    <td>Cliquez pour voir le profil et certifier</td>
+  </tr>
+  <tr>
+    <td>Cours complété</td>
+    <td>Étudiant, cours, note obtenue</td>
+    <td>Félicitez l'étudiant (optionnel)</td>
+  </tr>
+  <tr>
+    <td>Question posée</td>
+    <td>Étudiant, cours concerné, date</td>
+    <td>Cliquez pour répondre immédiatement</td>
+  </tr>
+  <tr>
+    <td>Paiement soumis</td>
+    <td>Étudiant, montant, référence</td>
+    <td>Cliquez pour vérifier le paiement</td>
+  </tr>
+  <tr>
+    <td>Nouveau commentaire blog</td>
+    <td>Article, auteur du commentaire</td>
+    <td>Modérez ou répondez</td>
+  </tr>
+  <tr>
+    <td>Document téléchargé</td>
+    <td>Document, étudiant, date</td>
+    <td>Suivi de l'utilisation de la bibliothèque</td>
+  </tr>
+</table>
+
+<h3>🎯 Utilisation stratégique du tableau de bord</h3>
+
+<p><strong>Routine quotidienne recommandée (10-15 minutes) :</strong></p>
+<ol>
+  <li>✅ <strong>Vérifier les alertes critiques</strong> (hébergement, paiements urgents)</li>
+  <li>✅ <strong>Certifier les nouveaux étudiants</strong> (max 24h d'attente)</li>
+  <li>✅ <strong>Valider les paiements en attente</strong> (priorité haute)</li>
+  <li>✅ <strong>Répondre aux 3 questions les plus anciennes</strong></li>
+  <li>✅ <strong>Consulter les activités récentes</strong> (détecter anomalies)</li>
+</ol>
+
+<p><strong>Routine hebdomadaire recommandée (30-45 minutes) :</strong></p>
+<ol>
+  <li>📊 <strong>Analyser les graphiques d'évolution</strong> (tendances, croissance)</li>
+  <li>📈 <strong>Identifier les cours avec faible taux de complétion</strong></li>
+  <li>👥 <strong>Envoyer un message encourageant aux étudiants inactifs</strong></li>
+  <li>📝 <strong>Publier un article de blog</strong> (annonce, enseignement, témoignage)</li>
+  <li>💰 <strong>Vérifier le statut de l'hébergement</strong></li>
+  <li>🎓 <strong>Ajouter 1-2 documents à la bibliothèque</strong></li>
+</ol>
+
+<p><strong>Routine mensuelle recommandée (1-2 heures) :</strong></p>
+<ol>
+  <li>📊 <strong>Générer un rapport complet</strong> (menu Analytique)</li>
+  <li>📈 <strong>Analyser les KPIs</strong> (inscriptions, complétions, revenus)</li>
+  <li>🎯 <strong>Définir les objectifs du mois suivant</strong></li>
+  <li>🔄 <strong>Mettre à jour les contenus obsolètes</strong></li>
+  <li>👥 <strong>Organiser une conférence de motivation</strong></li>
+  <li>💡 <strong>Planifier les nouveaux cours à créer</strong></li>
+</ol>
+
+<div class="note">
+<strong>💡 Astuce pro :</strong> Configurez des rappels sur votre téléphone pour ne jamais manquer votre routine quotidienne. La régularité est la clé d'une plateforme bien gérée !
+</div>
 
 <h2>👥 Gestion des étudiants</h2>
 
