@@ -160,7 +160,7 @@ export default function AdminTopNav() {
                     <MoreHorizontal className="w-4 h-4 mr-1" /> Plus
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 max-h-[600px] overflow-y-auto bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 backdrop-blur-xl border border-white/20 shadow-2xl">
+                <DropdownMenuContent align="end" className="w-80 max-h-[600px] overflow-y-auto bg-gradient-to-br from-slate-50 via-indigo-50/40 to-purple-50/50 backdrop-blur-xl border border-indigo-200/30 shadow-2xl">
                   <div className="p-2">
                     {moreItemsGroups.map((group, groupIdx) => {
                       const visibleItems = group.items.filter(item => hasPermission(item.page));
