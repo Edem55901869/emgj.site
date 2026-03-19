@@ -24,6 +24,7 @@ const moreItems = [
   { name: 'Questions', icon: HelpCircle, page: 'AdminQuestions' },
   { name: 'Scolarité', icon: DollarSign, page: 'AdminTuition' },
   { name: 'Analytique', icon: BarChart3, page: 'AdminAnalytics' },
+  { name: 'Documentation', icon: BookOpen, page: 'AdminDocumentation' },
   { name: 'Gérer administrateurs', icon: Shield, page: 'AdminManagement' },
   { name: 'Voir en tant qu\'étudiant', icon: Eye, page: 'AdminViewAsStudent' },
   { name: 'Assistant IA', icon: Bot, page: 'AdminAI' },
@@ -52,6 +53,7 @@ const PERMISSION_MAP = {
   'AdminAI': 'admin',
   'AdminHosting': 'admin',
   'AdminHomeVideo': 'admin',
+  'AdminDocumentation': 'admin',
   'AdminSettings': 'settings',
 };
 

@@ -12,6 +12,7 @@ import StudentTuitionPage from './pages/StudentTuition.jsx';
 import AdminTuitionPage from './pages/AdminTuition.jsx';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import DownloadManual from './pages/DownloadManual';
+import AdminDocumentation from './pages/AdminDocumentation';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
       <Route path="/StudentTuition" element={<StudentTuitionPage />} />
       <Route path="/AdminTuition" element={<AdminTuitionPage />} />
       <Route path="/DownloadManual" element={<DownloadManual />} />
+      <Route path="/AdminDocumentation" element={<AdminDocumentation />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
