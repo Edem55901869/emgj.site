@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw, Image } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw, Image, FileKey } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import PublicChat from '../PublicChat';
@@ -16,6 +16,7 @@ const navItems = [
 ];
 
 const moreItems = [
+  { name: 'Documents de cours', icon: FileKey, page: 'AdminCourseDocuments' },
   { name: 'Questions Cours', icon: MessagesSquare, page: 'AdminCourseQuestions' },
   { name: 'Conférences', icon: Radio, page: 'AdminConferences' },
   { name: 'Groupes', icon: MessageCircle, page: 'AdminGroups' },
@@ -36,6 +37,7 @@ const moreItems = [
 const PERMISSION_MAP = {
   'AdminDashboard': 'dashboard',
   'AdminCourses': 'courses',
+  'AdminCourseDocuments': 'courses',
   'AdminCourseQuestions': 'courses',
   'AdminStudents': 'students',
   'AdminBlog': 'blog',
