@@ -131,7 +131,7 @@ export default function AdminGallery() {
     // Set cover image from first file
     if (files.length > 0 && formData.media_type === 'photo') {
       const reader = new FileReader();
-      reader.onload = (e) => setFormData({ ...formData, cover_image: e.target.result });
+      reader.onload = (e) => setFormData(prev => ({ ...prev, cover_image: e.target.result }));
       reader.readAsDataURL(files[0]);
     }
 
@@ -208,7 +208,7 @@ export default function AdminGallery() {
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Type d'événement *</label>
-                      <Select value={formData.event_type} onValueChange={(value) => setFormData({ ...formData, event_type: value })}>
+                      <Select value={formData.event_type} onValueChange={(value) => setFormData(prev => ({ ...prev, event_type: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez un type" />
                         </SelectTrigger>
@@ -238,7 +238,7 @@ export default function AdminGallery() {
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Type de média *</label>
-                      <Select value={formData.media_type} onValueChange={(value) => setFormData({ ...formData, media_type: value })}>
+                      <Select value={formData.media_type} onValueChange={(value) => setFormData(prev => ({ ...prev, media_type: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -251,7 +251,7 @@ export default function AdminGallery() {
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Statut *</label>
-                      <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
