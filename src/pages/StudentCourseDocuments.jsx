@@ -77,7 +77,6 @@ export default function StudentCourseDocuments() {
         student_name: student.first_name + ' ' + student.last_name,
         amount: selectedDoc.price,
         transaction_reference: txRef,
-        payment_method: paymentMethod,
         payment_proof_url: proofUrl,
         status: 'en_attente'
       });
@@ -99,7 +98,6 @@ export default function StudentCourseDocuments() {
       toast.success('Demande envoyée ! En attente de validation.');
       setPurchaseDialog(false);
       setTxRef('');
-      setPaymentMethod('');
       setProofFile(null);
       setSelectedDoc(null);
     },
@@ -269,39 +267,32 @@ export default function StudentCourseDocuments() {
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="bg-blue-50 rounded-2xl p-4 text-center border border-blue-200">
-              <p className="text-sm text-blue-700 mb-1">Montant</p>
+              <p className="text-sm text-blue-700 mb-1">Montant à payer</p>
               <p className="text-2xl font-bold text-blue-900">{selectedDoc?.price?.toLocaleString()} XOF</p>
               <p className="text-xs text-blue-600 mt-1">{selectedDoc?.title}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Méthode de paiement *</label>
-              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full h-11 rounded-xl border border-gray-300 px-3">
-                <option value="">Sélectionner...</option>
-                <option value="Wave">Wave</option>
-                <option value="FedaPay">FedaPay</option>
-                <option value="Mobile Money">Mobile Money</option>
-                <option value="Autre">Autre</option>
-              </select>
             </div>
 
             <div>
               <label className="text-sm font-medium mb-2 block">Référence de transaction *</label>
               <div className="relative">
                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input value={txRef} onChange={(e) => setTxRef(e.target.value)} placeholder="TXN-XXXXXX" className="pl-10 rounded-xl" />
+                <Input value={txRef} onChange={(e) => setTxRef(e.target.value)} placeholder="Référence du paiement" className="pl-10 rounded-xl h-11" />
               </div>
+              <p className="text-xs text-gray-500 mt-1">La référence visible sur votre reçu de paiement</p>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Preuve de paiement (optionnel)</label>
+              <label className="text-sm font-medium mb-2 block">Preuve de paiement (image ou PDF) *</label>
               <input type="file" accept="image/*,.pdf" onChange={(e) => setProofFile(e.target.files[0])} className="w-full border rounded-xl p-2 text-sm" />
+              {proofFile && (
+                <p className="text-xs text-green-600 mt-1">✓ Fichier sélectionné: {proofFile.name}</p>
+              )}
             </div>
 
             <Button
               onClick={() => submitPurchaseMutation.mutate()}
-              disabled={submitPurchaseMutation.isPending || !txRef || !paymentMethod}
-              className="w-full bg-blue-600 hover:bg-blue-700 rounded-2xl h-12"
+              disabled={submitPurchaseMutation.isPending || !txRef || !proofFile}
+              className="w-full bg-blue-600 hover:bg-blue-700 rounded-2xl h-12 font-semibold"
             >
               {submitPurchaseMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmer l\'achat'}
             </Button>
