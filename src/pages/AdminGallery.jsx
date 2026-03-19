@@ -457,45 +457,57 @@ export default function AdminGallery() {
 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-white">
+                    <h4 className="font-medium text-gray-900">
                       Médias ({getPostMedia(selectedPost.id).length})
                     </h4>
-                    <label className="cursor-pointer">
+                    <div>
                       <input
                         type="file"
                         multiple
                         accept={selectedPost.media_type === 'photo' ? 'image/*' : 'video/*'}
                         className="hidden"
+                        id={`add-media-${selectedPost.id}`}
                         onChange={(e) => {
                           const files = Array.from(e.target.files);
                           if (files.length > 0) {
+                            toast.success(`Upload de ${files.length} fichier(s)...`);
                             addMediaMutation.mutate({ 
                               postId: selectedPost.id, 
                               files, 
                               currentMediaType: selectedPost.media_type 
                             });
-                            e.target.value = ''; // Reset input
+                            e.target.value = '';
                           }
                         }}
                       />
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="border-white/20 text-white hover:bg-white/10"
-                        disabled={addMediaMutation.isPending}
-                      >
-                        {addMediaMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <Plus className="w-4 h-4 mr-2" />
-                        )}
-                        Ajouter
-                      </Button>
-                    </label>
+                      <label htmlFor={`add-media-${selectedPost.id}`}>
+                        <Button 
+                          size="sm"
+                          type="button"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          disabled={addMediaMutation.isPending}
+                          asChild
+                        >
+                          <span className="cursor-pointer">
+                            {addMediaMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Upload...
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Ajouter
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                     {getPostMedia(selectedPost.id).map((media) => (
-                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-white/5 relative group">
+                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group">
                         {media.media_type === 'photo' ? (
                           <img src={media.media_url} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -517,14 +529,14 @@ export default function AdminGallery() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t border-white/10">
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
                   <Button
                     variant="outline"
                     onClick={() => {
                       const newStatus = selectedPost.status === 'publié' ? 'brouillon' : 'publié';
                       updateStatusMutation.mutate({ id: selectedPost.id, newStatus });
                     }}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     {selectedPost.status === 'publié' ? 'Mettre en brouillon' : 'Publier'}
                   </Button>
