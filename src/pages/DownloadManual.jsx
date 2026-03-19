@@ -4,10 +4,26 @@ import { Button } from '@/components/ui/button';
 
 export default function DownloadManual() {
   
-  const downloadManual = () => {
-    // Lien direct vers le manuel (à générer)
-    const manualUrl = 'https://docs.google.com/document/d/1XXX/export?format=pdf';
-    window.open(manualUrl, '_blank');
+  const generateAndDownload = async () => {
+    // Générer le manuel via l'API
+    try {
+      const response = await fetch('/api/generate-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Manuel-Utilisation-FTGJ-Complet.docx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Erreur téléchargement:', error);
+      alert('Erreur lors du téléchargement. Contactez le support.');
+    }
   };
 
   return (
@@ -134,18 +150,97 @@ export default function DownloadManual() {
           {/* Bouton téléchargement */}
           <div className="text-center">
             <p className="text-white/40 text-sm mb-4">Le manuel complet est disponible au téléchargement</p>
-            <a 
-              href="https://docs.google.com/document/d/1pjBQm8xVYq3fXKZN5rJ4vH2wL9sC6eR7tA8uD9fG0hI/edit?usp=sharing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block"
-            >
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl h-14 px-8 text-lg font-bold shadow-2xl shadow-blue-500/40 transition-all">
-                <Download className="w-5 h-5 mr-3" />
-                Télécharger le Manuel Complet
-              </Button>
-            </a>
-            <p className="text-white/30 text-xs mt-4">Format : PDF • Taille : ~12 MB • Version 1.0</p>
+            
+            <div className="space-y-4">
+              {/* Lien Google Docs */}
+              <div>
+                <a 
+                  href="https://docs.google.com/document/d/1pjBQm8xVYq3fXKZN5rJ4vH2wL9sC6eR7tA8uD9fG0hI/edit?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                >
+                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl h-14 px-8 text-lg font-bold shadow-2xl shadow-blue-500/40 transition-all">
+                    <Download className="w-5 h-5 mr-3" />
+                    Ouvrir dans Google Docs
+                  </Button>
+                </a>
+                <p className="text-white/30 text-xs mt-2">Cliquez puis Fichier → Télécharger → Microsoft Word (.docx)</p>
+              </div>
+
+              {/* Instructions détaillées */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left max-w-2xl mx-auto">
+                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                  Instructions de Téléchargement
+                </h3>
+                <ol className="text-white/70 text-sm space-y-3">
+                  <li className="flex gap-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">1.</span>
+                    <span>Cliquez sur "Ouvrir dans Google Docs" ci-dessus</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">2.</span>
+                    <span>Le document s'ouvre dans Google Docs (navigation requise)</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">3.</span>
+                    <span>Dans la barre de menu, cliquez sur <strong className="text-white">"Fichier"</strong></span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">4.</span>
+                    <span>Sélectionnez <strong className="text-white">"Télécharger"</strong></span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">5.</span>
+                    <span>Choisissez le format :</span>
+                  </li>
+                  <ul className="ml-8 mt-2 space-y-2">
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                      <span><strong className="text-white">Microsoft Word (.docx)</strong> - Format modifiable</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                      <span><strong className="text-white">PDF (.pdf)</strong> - Format lecture seule</span>
+                    </li>
+                  </ul>
+                  <li className="flex gap-3 mt-3">
+                    <span className="text-blue-400 font-bold flex-shrink-0">6.</span>
+                    <span>Le fichier se télécharge automatiquement sur votre appareil 🎉</span>
+                  </li>
+                </ol>
+              </div>
+
+              {/* Aperçu du contenu */}
+              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/20 border border-blue-500/30 rounded-xl p-6 text-left max-w-2xl mx-auto mt-6">
+                <h3 className="text-blue-300 font-bold mb-3">📋 Ce que contient le manuel :</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-200/80">
+                  <div>
+                    <p className="font-semibold text-blue-100 mb-1">✅ Partie Étudiants</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Inscription étape par étape</li>
+                      <li>• Utilisation complète des cours</li>
+                      <li>• Guide des évaluations</li>
+                      <li>• Paiements et promotions</li>
+                      <li>• Toutes les fonctionnalités</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-blue-100 mb-1">✅ Partie Administrateurs</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Connexion sécurisée</li>
+                      <li>• Gestion complète étudiants</li>
+                      <li>• Création de cours</li>
+                      <li>• Protection VIP paiements</li>
+                      <li>• Tous les modules admin</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-white/30 text-xs mt-6">Format : Word/PDF • Taille : ~8 MB • Version 1.0 • Mars 2026</p>
           </div>
 
           {/* Contact support */}
