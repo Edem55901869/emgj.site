@@ -432,9 +432,9 @@ export default function AdminGallery() {
 
         {/* View Dialog */}
         <Dialog open={viewDialog} onOpenChange={setViewDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-white/10 text-white">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200 text-gray-900">
             <DialogHeader>
-              <DialogTitle className="text-white text-xl">{selectedPost?.event_name}</DialogTitle>
+              <DialogTitle className="text-gray-900 text-xl">{selectedPost?.event_name}</DialogTitle>
             </DialogHeader>
             {selectedPost && (
               <div className="space-y-4 mt-4">
@@ -442,17 +442,17 @@ export default function AdminGallery() {
                   <Badge className={selectedPost.status === 'publié' ? 'bg-green-500' : 'bg-amber-500'}>
                     {selectedPost.status}
                   </Badge>
-                  <Badge variant="outline" className="border-white/20 text-white/70">
+                  <Badge variant="outline" className="border-gray-300 text-gray-700">
                     {selectedPost.event_type}
                   </Badge>
-                  <Badge variant="outline" className="border-white/20 text-white/70">
+                  <Badge variant="outline" className="border-gray-300 text-gray-700">
                     <Calendar className="w-3 h-3 mr-1" />
                     {format(new Date(selectedPost.event_date), 'dd MMMM yyyy', { locale: fr })}
                   </Badge>
                 </div>
 
                 {selectedPost.description && (
-                  <p className="text-white/70 text-sm">{selectedPost.description}</p>
+                  <p className="text-gray-600 text-sm">{selectedPost.description}</p>
                 )}
 
                 <div>
@@ -468,7 +468,7 @@ export default function AdminGallery() {
                         className="hidden"
                         id={`add-media-${selectedPost.id}`}
                         onChange={(e) => {
-                          const files = Array.from(e.target.files);
+                          const files = Array.from(e.target.files || []);
                           if (files.length > 0) {
                             toast.success(`Upload de ${files.length} fichier(s)...`);
                             addMediaMutation.mutate({ 
