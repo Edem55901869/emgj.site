@@ -3,38 +3,45 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Upload, Image as ImageIcon, Video, Calendar, Eye, Edit, Trash2, Loader2, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Upload, Image as ImageIcon, Video, Calendar, Loader2, X, Trash2, Edit, Search } from 'lucide-react';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+const EVENT_TYPES = [
+  'Cérémonie de remise de diplômes',
+  'Conférence',
+  'Culte',
+  'Sortie académique',
+  'Séminaire',
+  'Retraite spirituelle',
+  'Activité communautaire',
+  'Formation spéciale',
+  'Célébration',
+  'Autre'
+];
+
 export default function AdminGallery() {
   const queryClient = useQueryClient();
-  const [openCreate, setOpenCreate] = useState(false);
-  const [openView, setOpenView] = useState(false);
+  const [createDialog, setCreateDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [formData, setFormData] = useState({
-    event_name: '',
-    event_type: '',
-    event_date: '',
-    media_type: 'photo',
-    status: 'brouillon',
-    description: '',
-    cover_image: ''
-  });
-
-  const [mediaFiles, setMediaFiles] = useState([]);
+  // Form state
+  const [eventName, setEventName] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [mediaType, setMediaType] = useState('photo');
+  const [status, setStatus] = useState('brouillon');
+  const [description, setDescription] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['galleryPosts'],
@@ -47,25 +54,26 @@ export default function AdminGallery() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data) => {
-      const post = await base44.entities.GalleryPost.create(data);
-      
-      // Upload media files
-      const mediaPromises = mediaFiles.map(async (file) => {
+    mutationFn: async () => {
+      const post = await base44.entities.GalleryPost.create({
+        event_name: eventName,
+        event_type: eventType,
+        event_date: eventDate,
+        media_type: mediaType,
+        status: status,
+        description: description,
+        cover_image: '',
+        media_count: selectedFiles.length
+      });
+
+      for (const file of selectedFiles) {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        return base44.entities.GalleryMedia.create({
+        await base44.entities.GalleryMedia.create({
           post_id: post.id,
           media_url: file_url,
-          media_type: data.media_type
+          media_type: mediaType
         });
-      });
-      
-      await Promise.all(mediaPromises);
-      
-      // Update media count
-      await base44.entities.GalleryPost.update(post.id, {
-        media_count: mediaFiles.length
-      });
+      }
 
       return post;
     },
@@ -73,414 +81,406 @@ export default function AdminGallery() {
       queryClient.invalidateQueries(['galleryPosts']);
       queryClient.invalidateQueries(['galleryMedia']);
       toast.success('Publication créée avec succès');
-      setOpenCreate(false);
       resetForm();
+      setCreateDialog(false);
     },
     onError: () => toast.error('Erreur lors de la création')
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.GalleryPost.update(id, data),
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, newStatus }) => base44.entities.GalleryPost.update(id, { status: newStatus }),
     onSuccess: () => {
       queryClient.invalidateQueries(['galleryPosts']);
-      toast.success('Publication mise à jour');
-    },
-    onError: () => toast.error('Erreur lors de la mise à jour')
+      toast.success('Statut mis à jour');
+    }
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      // Delete associated media first
-      const media = allMedia.filter(m => m.post_id === id);
+    mutationFn: async (postId) => {
+      const media = allMedia.filter(m => m.post_id === postId);
       await Promise.all(media.map(m => base44.entities.GalleryMedia.delete(m.id)));
-      await base44.entities.GalleryPost.delete(id);
+      await base44.entities.GalleryPost.delete(postId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['galleryPosts']);
       queryClient.invalidateQueries(['galleryMedia']);
       toast.success('Publication supprimée');
-      setOpenView(false);
+      setViewDialog(false);
+    }
+  });
+
+  const addMediaMutation = useMutation({
+    mutationFn: async ({ postId, files }) => {
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        await base44.entities.GalleryMedia.create({
+          post_id: postId,
+          media_url: file_url,
+          media_type: selectedPost.media_type
+        });
+      }
+      const currentCount = getPostMedia(postId).length;
+      await base44.entities.GalleryPost.update(postId, {
+        media_count: currentCount + files.length
+      });
     },
-    onError: () => toast.error('Erreur lors de la suppression')
+    onSuccess: () => {
+      queryClient.invalidateQueries(['galleryMedia']);
+      toast.success('Médias ajoutés');
+    }
+  });
+
+  const deleteMediaMutation = useMutation({
+    mutationFn: async ({ mediaId, postId }) => {
+      await base44.entities.GalleryMedia.delete(mediaId);
+      const currentCount = getPostMedia(postId).length;
+      await base44.entities.GalleryPost.update(postId, {
+        media_count: currentCount - 1
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['galleryMedia']);
+      toast.success('Média supprimé');
+    }
   });
 
   const resetForm = () => {
-    setFormData({
-      event_name: '',
-      event_type: '',
-      event_date: '',
-      media_type: 'photo',
-      status: 'brouillon',
-      description: '',
-      cover_image: ''
-    });
-    setMediaFiles([]);
+    setEventName('');
+    setEventType('');
+    setEventDate('');
+    setMediaType('photo');
+    setStatus('brouillon');
+    setDescription('');
+    setSelectedFiles([]);
   };
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
-    const maxFiles = formData.media_type === 'photo' ? 50 : 20;
-
+    const maxFiles = mediaType === 'photo' ? 50 : 20;
+    
     if (files.length > maxFiles) {
-      toast.error(`Maximum ${maxFiles} ${formData.media_type === 'photo' ? 'photos' : 'vidéos'} autorisées`);
+      toast.error(`Maximum ${maxFiles} fichiers autorisés`);
       return;
     }
-
-    setMediaFiles(files);
     
-    // Set cover image from first file
-    if (files.length > 0 && formData.media_type === 'photo') {
-      const reader = new FileReader();
-      reader.onload = (e) => setFormData(prev => ({ ...prev, cover_image: e.target.result }));
-      reader.readAsDataURL(files[0]);
-    }
-
+    setSelectedFiles(files);
     toast.success(`${files.length} fichier(s) sélectionné(s)`);
   };
 
   const handleSubmit = () => {
-    if (!formData.event_name || !formData.event_type || !formData.event_date || mediaFiles.length === 0) {
-      toast.error('Veuillez remplir tous les champs requis et ajouter des médias');
+    if (!eventName || !eventType || !eventDate || selectedFiles.length === 0) {
+      toast.error('Veuillez remplir tous les champs requis');
       return;
     }
-    createMutation.mutate(formData);
+    createMutation.mutate();
   };
 
   const getPostMedia = (postId) => {
     return allMedia.filter(m => m.post_id === postId);
   };
 
-  const toggleStatus = (post) => {
-    const newStatus = post.status === 'publié' ? 'brouillon' : 'publié';
-    updateMutation.mutate({ id: post.id, data: { status: newStatus } });
-  };
+  const filteredPosts = posts.filter(post => 
+    post.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.event_type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
       </div>
     );
   }
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
         <AdminTopNav />
         
-        <div className="pt-20 px-6 pb-12">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Galerie</h1>
-                <p className="text-gray-600 mt-1">Gérez les publications de la galerie</p>
-              </div>
-              <div className="flex gap-3 items-center">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Rechercher un événement..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nouvelle publication
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Créer une publication</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Nom de l'événement *</label>
-                      <Input
-                        placeholder="Ex: Cérémonie de remise de diplômes 2025"
-                        value={formData.event_name}
-                        onChange={(e) => setFormData({ ...formData, event_name: e.target.value })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Type d'événement *</label>
-                      <Select value={formData.event_type} onValueChange={(value) => setFormData(prev => ({ ...prev, event_type: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez un type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Cérémonie de remise de diplômes">Cérémonie de remise de diplômes</SelectItem>
-                          <SelectItem value="Conférence">Conférence</SelectItem>
-                          <SelectItem value="Culte">Culte</SelectItem>
-                          <SelectItem value="Sortie académique">Sortie académique</SelectItem>
-                          <SelectItem value="Séminaire">Séminaire</SelectItem>
-                          <SelectItem value="Retraite spirituelle">Retraite spirituelle</SelectItem>
-                          <SelectItem value="Activité communautaire">Activité communautaire</SelectItem>
-                          <SelectItem value="Formation spéciale">Formation spéciale</SelectItem>
-                          <SelectItem value="Célébration">Célébration</SelectItem>
-                          <SelectItem value="Autre">Autre</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Date de l'événement *</label>
-                      <Input
-                        type="date"
-                        value={formData.event_date}
-                        onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Type de média *</label>
-                      <Select value={formData.media_type} onValueChange={(value) => setFormData(prev => ({ ...prev, media_type: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="photo">Photos (max 50)</SelectItem>
-                          <SelectItem value="video">Vidéos (max 20)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Statut *</label>
-                      <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="brouillon">Brouillon</SelectItem>
-                          <SelectItem value="publié">Publié</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Description</label>
-                      <Textarea
-                        placeholder="Description de l'événement..."
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        rows={3}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Ajouter des {formData.media_type === 'photo' ? 'photos' : 'vidéos'} *
-                        <span className="text-gray-500 text-xs ml-2">
-                          (Max {formData.media_type === 'photo' ? '50 photos' : '20 vidéos'})
-                        </span>
-                      </label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
-                        <input
-                          type="file"
-                          multiple
-                          accept={formData.media_type === 'photo' ? 'image/*' : 'video/*'}
-                          onChange={handleFileSelect}
-                          className="hidden"
-                          id="media-upload"
-                        />
-                        <label htmlFor="media-upload" className="cursor-pointer">
-                          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                          <p className="text-sm text-gray-600">
-                            Cliquez pour sélectionner des {formData.media_type === 'photo' ? 'photos' : 'vidéos'}
-                          </p>
-                          {mediaFiles.length > 0 && (
-                            <p className="text-sm text-blue-600 mt-2 font-medium">
-                              {mediaFiles.length} fichier(s) sélectionné(s)
-                            </p>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                      <Button variant="outline" onClick={() => setOpenCreate(false)} className="flex-1">
-                        Annuler
-                      </Button>
-                      <Button 
-                        onClick={handleSubmit} 
-                        disabled={createMutation.isPending}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        {createMutation.isPending ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Création...
-                          </>
-                        ) : (
-                          'Créer la publication'
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              </div>
+        <div className="pt-20 px-4 pb-12 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-white mb-2">Galerie d'Événements</h1>
+              <p className="text-white/40 text-sm">Gérez les publications photo et vidéo</p>
             </div>
+            <Button 
+              onClick={() => setCreateDialog(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle publication
+            </Button>
+          </div>
 
-            {posts.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune publication</h3>
-                  <p className="text-gray-600">Créez votre première publication pour commencer</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.filter(post => 
-                  post.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  post.event_type.toLowerCase().includes(searchQuery.toLowerCase())
-                ).map((post) => {
-                  const media = getPostMedia(post.id);
-                  return (
-                    <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => {
+          {/* Search */}
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <Input
+                placeholder="Rechercher un événement..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:bg-white/10 rounded-xl"
+              />
+            </div>
+          </div>
+
+          {/* Posts Grid */}
+          {filteredPosts.length === 0 ? (
+            <Card className="bg-white/5 border-white/10 text-center py-16">
+              <CardContent>
+                <ImageIcon className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">Aucune publication</h3>
+                <p className="text-white/40">Créez votre première publication pour commencer</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post) => {
+                const media = getPostMedia(post.id);
+                return (
+                  <Card 
+                    key={post.id} 
+                    className="bg-white/5 border-white/10 overflow-hidden hover:bg-white/10 transition-all cursor-pointer group"
+                    onClick={() => {
                       setSelectedPost(post);
-                      setOpenView(true);
-                    }}>
-                      <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 relative overflow-hidden">
-                        {post.media_type === 'photo' && media[0] ? (
-                          <img src={media[0].media_url} alt={post.event_name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            {post.media_type === 'photo' ? (
-                              <ImageIcon className="w-16 h-16 text-blue-400" />
-                            ) : (
-                              <Video className="w-16 h-16 text-purple-400" />
-                            )}
-                          </div>
-                        )}
-                        <Badge className={`absolute top-3 right-3 ${post.status === 'publié' ? 'bg-green-500' : 'bg-gray-500'}`}>
-                          {post.status}
-                        </Badge>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">{post.event_name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                          <Calendar className="w-4 h-4" />
-                          {format(new Date(post.event_date), 'dd MMMM yyyy', { locale: fr })}
+                      setViewDialog(true);
+                    }}
+                  >
+                    <div className="aspect-video bg-gradient-to-br from-blue-900/30 to-purple-900/30 relative overflow-hidden">
+                      {media[0] ? (
+                        <img src={media[0].media_url} alt={post.event_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          {post.media_type === 'photo' ? (
+                            <ImageIcon className="w-12 h-12 text-blue-400/50" />
+                          ) : (
+                            <Video className="w-12 h-12 text-purple-400/50" />
+                          )}
                         </div>
-                        <Badge variant="outline" className="text-xs">
+                      )}
+                      <Badge className={`absolute top-3 right-3 ${post.status === 'publié' ? 'bg-green-500' : 'bg-amber-500'}`}>
+                        {post.status}
+                      </Badge>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-bold text-white mb-2 line-clamp-1">{post.event_name}</h3>
+                      <div className="flex items-center gap-2 text-sm text-white/60 mb-3">
+                        <Calendar className="w-4 h-4" />
+                        {format(new Date(post.event_date), 'dd MMMM yyyy', { locale: fr })}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs border-white/20 text-white/70">
                           {post.event_type}
                         </Badge>
-                        <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
-                          {post.media_type === 'photo' ? (
-                            <ImageIcon className="w-4 h-4" />
-                          ) : (
-                            <Video className="w-4 h-4" />
-                          )}
+                        <span className="text-xs text-white/40">
                           {media.length} {post.media_type === 'photo' ? 'photo(s)' : 'vidéo(s)'}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* View Dialog */}
-        <Dialog open={openView} onOpenChange={setOpenView}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Create Dialog */}
+        <Dialog open={createDialog} onOpenChange={(open) => { if (!open) resetForm(); setCreateDialog(open); }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-white/10 text-white">
             <DialogHeader>
-              <DialogTitle>{selectedPost?.event_name}</DialogTitle>
+              <DialogTitle className="text-white text-xl">Créer une publication</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Nom de l'événement *</label>
+                <Input
+                  placeholder="Ex: Cérémonie de remise de diplômes 2026"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Type d'événement *</label>
+                <select
+                  value={eventType}
+                  onChange={(e) => setEventType(e.target.value)}
+                  className="w-full h-11 rounded-lg bg-white/5 border border-white/10 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="" className="bg-slate-900">Sélectionnez un type</option>
+                  {EVENT_TYPES.map(type => (
+                    <option key={type} value={type} className="bg-slate-900">{type}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Date de l'événement *</label>
+                <Input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Type de média *</label>
+                <select
+                  value={mediaType}
+                  onChange={(e) => setMediaType(e.target.value)}
+                  className="w-full h-11 rounded-lg bg-white/5 border border-white/10 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="photo" className="bg-slate-900">Photos (max 50)</option>
+                  <option value="video" className="bg-slate-900">Vidéos (max 20)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Statut *</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full h-11 rounded-lg bg-white/5 border border-white/10 text-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="brouillon" className="bg-slate-900">Brouillon</option>
+                  <option value="publié" className="bg-slate-900">Publié</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">Description</label>
+                <Textarea
+                  placeholder="Description de l'événement..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-white/70 mb-2 block">
+                  Ajouter des {mediaType === 'photo' ? 'photos' : 'vidéos'} *
+                  <span className="text-white/40 text-xs ml-2">
+                    (Max {mediaType === 'photo' ? '50' : '20'})
+                  </span>
+                </label>
+                <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer bg-white/5">
+                  <input
+                    type="file"
+                    multiple
+                    accept={mediaType === 'photo' ? 'image/*' : 'video/*'}
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="media-upload"
+                  />
+                  <label htmlFor="media-upload" className="cursor-pointer">
+                    <Upload className="w-10 h-10 text-white/40 mx-auto mb-3" />
+                    <p className="text-sm text-white/60">
+                      Cliquez pour sélectionner des {mediaType === 'photo' ? 'photos' : 'vidéos'}
+                    </p>
+                    {selectedFiles.length > 0 && (
+                      <p className="text-sm text-blue-400 mt-2 font-medium">
+                        ✓ {selectedFiles.length} fichier(s) sélectionné(s)
+                      </p>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => { resetForm(); setCreateDialog(false); }}
+                  className="flex-1 border-white/20 text-white hover:bg-white/10"
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={createMutation.isPending}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Création...
+                    </>
+                  ) : (
+                    'Créer la publication'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Dialog */}
+        <Dialog open={viewDialog} onOpenChange={setViewDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-white/10 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-white text-xl">{selectedPost?.event_name}</DialogTitle>
             </DialogHeader>
             {selectedPost && (
               <div className="space-y-4 mt-4">
-                <div className="flex gap-2">
-                  <Badge className={selectedPost.status === 'publié' ? 'bg-green-500' : 'bg-gray-500'}>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge className={selectedPost.status === 'publié' ? 'bg-green-500' : 'bg-amber-500'}>
                     {selectedPost.status}
                   </Badge>
-                  <Badge variant="outline">{selectedPost.event_type}</Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Date:</span>
-                    <p className="font-medium">{format(new Date(selectedPost.event_date), 'dd MMMM yyyy', { locale: fr })}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Type de média:</span>
-                    <p className="font-medium capitalize">{selectedPost.media_type}</p>
-                  </div>
+                  <Badge variant="outline" className="border-white/20 text-white/70">
+                    {selectedPost.event_type}
+                  </Badge>
+                  <Badge variant="outline" className="border-white/20 text-white/70">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    {format(new Date(selectedPost.event_date), 'dd MMMM yyyy', { locale: fr })}
+                  </Badge>
                 </div>
 
                 {selectedPost.description && (
-                  <div>
-                    <span className="text-gray-600 text-sm">Description:</span>
-                    <p className="text-gray-900 mt-1">{selectedPost.description}</p>
-                  </div>
+                  <p className="text-white/70 text-sm">{selectedPost.description}</p>
                 )}
 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium">
+                    <h4 className="font-medium text-white">
                       Médias ({getPostMedia(selectedPost.id).length})
                     </h4>
-                    <div className="flex gap-2">
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          multiple
-                          accept={selectedPost.media_type === 'photo' ? 'image/*' : 'video/*'}
-                          className="hidden"
-                          onChange={async (e) => {
-                            const files = Array.from(e.target.files);
-                            if (files.length === 0) return;
-                            
-                            toast.success(`Ajout de ${files.length} média(s)...`);
-                            for (const file of files) {
-                              const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                              await base44.entities.GalleryMedia.create({
-                                post_id: selectedPost.id,
-                                media_url: file_url,
-                                media_type: selectedPost.media_type
-                              });
-                            }
-                            
-                            await base44.entities.GalleryPost.update(selectedPost.id, {
-                              media_count: getPostMedia(selectedPost.id).length + files.length
-                            });
-                            
-                            queryClient.invalidateQueries(['galleryMedia']);
-                            toast.success('Médias ajoutés avec succès');
-                          }}
-                        />
-                        <Button size="sm" variant="outline" className="gap-2">
-                          <Plus className="w-4 h-4" />
-                          Ajouter
-                        </Button>
-                      </label>
-                    </div>
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        multiple
+                        accept={selectedPost.media_type === 'photo' ? 'image/*' : 'video/*'}
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          if (files.length > 0) {
+                            addMediaMutation.mutate({ postId: selectedPost.id, files });
+                          }
+                        }}
+                      />
+                      <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Ajouter
+                      </Button>
+                    </label>
                   </div>
                   <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                     {getPostMedia(selectedPost.id).map((media) => (
-                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group">
+                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-white/5 relative group">
                         {media.media_type === 'photo' ? (
                           <img src={media.media_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <video src={media.media_url} className="w-full h-full object-cover" />
                         )}
                         <button
-                          onClick={async (e) => {
+                          onClick={(e) => {
                             e.stopPropagation();
                             if (confirm('Supprimer ce média ?')) {
-                              await base44.entities.GalleryMedia.delete(media.id);
-                              await base44.entities.GalleryPost.update(selectedPost.id, {
-                                media_count: getPostMedia(selectedPost.id).length - 1
-                              });
-                              queryClient.invalidateQueries(['galleryMedia']);
-                              toast.success('Média supprimé');
+                              deleteMediaMutation.mutate({ mediaId: media.id, postId: selectedPost.id });
                             }
                           }}
                           className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -492,11 +492,14 @@ export default function AdminGallery() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t">
+                <div className="flex gap-3 pt-4 border-t border-white/10">
                   <Button
                     variant="outline"
-                    onClick={() => toggleStatus(selectedPost)}
-                    className="flex-1"
+                    onClick={() => {
+                      const newStatus = selectedPost.status === 'publié' ? 'brouillon' : 'publié';
+                      updateStatusMutation.mutate({ id: selectedPost.id, newStatus });
+                    }}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
                   >
                     {selectedPost.status === 'publié' ? 'Mettre en brouillon' : 'Publier'}
                   </Button>
@@ -508,6 +511,7 @@ export default function AdminGallery() {
                       }
                     }}
                     disabled={deleteMutation.isPending}
+                    className="bg-red-500 hover:bg-red-600"
                   >
                     {deleteMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
