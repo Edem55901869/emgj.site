@@ -480,28 +480,24 @@ export default function AdminGallery() {
                           }
                         }}
                       />
-                      <label htmlFor={`add-media-${selectedPost.id}`}>
-                        <Button 
-                          size="sm"
-                          type="button"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                          disabled={addMediaMutation.isPending}
-                          asChild
-                        >
-                          <span className="cursor-pointer">
-                            {addMediaMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Upload...
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Ajouter
-                              </>
-                            )}
-                          </span>
-                        </Button>
+                      <label htmlFor={`add-media-${selectedPost.id}`} className="cursor-pointer">
+                        <div className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors h-8 px-3 ${
+                          addMediaMutation.isPending 
+                            ? 'bg-blue-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        } text-white`}>
+                          {addMediaMutation.isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Upload...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4" />
+                              Ajouter
+                            </>
+                          )}
+                        </div>
                       </label>
                     </div>
                   </div>
