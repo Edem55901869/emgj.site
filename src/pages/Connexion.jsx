@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 // Sécurité : rate limiting côté client
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const LOCKOUT_DURATION = 3 * 60 * 1000; // 3 minutes
 const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 heures
 
 function getLoginAttempts(email) {
@@ -149,8 +149,8 @@ export default function Connexion() {
       const updatedAttempts = recordFailedAttempt(cleanEmail);
       const remaining = MAX_ATTEMPTS - updatedAttempts.count;
       if (remaining <= 0) {
-        toast.error(`Trop de tentatives. Compte verrouillé pendant 15 minutes.`);
-        setLockoutInfo(15);
+        toast.error(`Trop de tentatives. Compte verrouillé pendant 3 minutes.`);
+        setLockoutInfo(3);
       } else {
         toast.error(`Identifiants incorrects. ${remaining} tentative(s) restante(s) avant verrouillage.`);
       }
