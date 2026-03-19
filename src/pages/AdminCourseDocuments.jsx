@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, Plus, Lock, Unlock, Trash2, Edit, Search, Loader2, Check, X, Key, DollarSign } from 'lucide-react';
+import { FileText, Plus, Lock, Unlock, Trash2, Edit, Search, Loader2, Check, X, Key, DollarSign, TrendingUp, ShoppingCart, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -197,6 +197,9 @@ export default function AdminCourseDocuments() {
   );
 
   const pendingRequests = purchaseRequests.filter(r => r.status === 'en_attente');
+  const validatedRequests = purchaseRequests.filter(r => r.status === 'validé');
+  const totalRevenue = validatedRequests.reduce((sum, req) => sum + (req.amount || 0), 0);
+  const totalPurchases = validatedRequests.length;
 
   if (isLoading) {
     return (
@@ -230,6 +233,25 @@ export default function AdminCourseDocuments() {
                 <Plus className="w-4 h-4 mr-2" />
                 Nouveau document
               </Button>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
+              <TrendingUp className="w-8 h-8 mb-3 opacity-80" />
+              <p className="text-3xl font-black mb-1">{totalRevenue.toLocaleString()} XOF</p>
+              <p className="text-green-100 text-sm">Revenus générés</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+              <ShoppingCart className="w-8 h-8 mb-3 opacity-80" />
+              <p className="text-3xl font-black mb-1">{totalPurchases}</p>
+              <p className="text-blue-100 text-sm">Achats validés</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-6 text-white shadow-lg">
+              <FileText className="w-8 h-8 mb-3 opacity-80" />
+              <p className="text-3xl font-black mb-1">{documents.length}</p>
+              <p className="text-purple-100 text-sm">Documents publiés</p>
             </div>
           </div>
 
@@ -388,54 +410,135 @@ export default function AdminCourseDocuments() {
 
         {/* Purchase Requests Dialog */}
         <Dialog open={requestsDialog} onOpenChange={setRequestsDialog}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl">
             <DialogHeader>
-              <DialogTitle>Demandes d'achat en attente</DialogTitle>
+              <DialogTitle className="text-xl font-bold">Demandes d'achat de documents</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3 mt-4">
-              {pendingRequests.map(req => (
-                <div key={req.id} className="border border-amber-200 rounded-xl p-4 bg-amber-50">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="font-bold text-gray-900">{req.student_name}</p>
-                      <p className="text-sm text-gray-600">{req.student_email}</p>
-                      <p className="text-sm text-gray-700 font-medium mt-1">{req.document_title}</p>
+            
+            {/* Tabs */}
+            <div className="flex gap-2 border-b border-gray-200 pb-2 mt-4">
+              <button className="px-4 py-2 rounded-t-lg bg-amber-100 text-amber-700 font-medium text-sm border-b-2 border-amber-500">
+                En attente ({pendingRequests.length})
+              </button>
+              <button 
+                onClick={() => {}}
+                className="px-4 py-2 rounded-t-lg text-gray-600 hover:bg-gray-50 font-medium text-sm"
+              >
+                Validés ({validatedRequests.length})
+              </button>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              {pendingRequests.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Key className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>Aucune demande en attente</p>
+                </div>
+              ) : (
+                pendingRequests.map(req => (
+                  <div key={req.id} className="border border-amber-200 rounded-xl overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50">
+                    <div className="p-5">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-lg">{req.student_name?.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900 text-lg">{req.student_name}</p>
+                          <p className="text-sm text-gray-600">{req.student_email}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="bg-purple-100 text-purple-700 border-purple-200">{req.document_title}</Badge>
+                            <Badge className="bg-green-600 text-white">{req.amount?.toLocaleString()} XOF</Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/70 backdrop-blur rounded-lg p-4 mb-4 border border-amber-200">
+                        <p className="text-xs text-gray-500 mb-2 font-medium uppercase">Détails du paiement</p>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-gray-700">
+                            <span className="font-semibold">Référence:</span> 
+                            <span className="ml-2 font-mono bg-gray-100 px-2 py-1 rounded">{req.transaction_reference}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Preuve de paiement */}
+                      {req.payment_proof_url && (
+                        <div className="mb-4">
+                          <p className="text-xs text-gray-500 mb-2 font-medium uppercase">Preuve de paiement</p>
+                          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <img 
+                              src={req.payment_proof_url} 
+                              alt="Preuve de paiement" 
+                              className="w-full max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => window.open(req.payment_proof_url, '_blank')}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1 text-center">Cliquez pour agrandir</p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => validateRequestMutation.mutate({
+                            requestId: req.id,
+                            studentEmail: req.student_email,
+                            documentTitle: req.document_title
+                          })}
+                          disabled={validateRequestMutation.isPending}
+                          size="sm"
+                          className="bg-green-500 hover:bg-green-600 flex-1 h-11 rounded-xl font-semibold"
+                        >
+                          {validateRequestMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                            <>
+                              <Check className="w-4 h-4 mr-2" />
+                              Valider & Générer code
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => rejectRequestMutation.mutate({
+                            requestId: req.id,
+                            studentEmail: req.student_email,
+                            documentTitle: req.document_title
+                          })}
+                          disabled={rejectRequestMutation.isPending}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-300 hover:bg-red-50 px-6 h-11 rounded-xl font-semibold"
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          Rejeter
+                        </Button>
+                      </div>
                     </div>
-                    <Badge className="bg-amber-500">{req.amount?.toLocaleString()} XOF</Badge>
                   </div>
-                  <div className="text-sm text-gray-600 mb-3">
-                    <p>Référence: <span className="font-mono font-bold">{req.transaction_reference}</span></p>
-                    <p>Méthode: {req.payment_method}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => validateRequestMutation.mutate({
-                        requestId: req.id,
-                        studentEmail: req.student_email,
-                        documentTitle: req.document_title
-                      })}
-                      size="sm"
-                      className="bg-green-500 hover:bg-green-600 flex-1"
-                    >
-                      <Check className="w-4 h-4 mr-1" />
-                      Valider & Générer code
-                    </Button>
-                    <Button
-                      onClick={() => rejectRequestMutation.mutate({
-                        requestId: req.id,
-                        studentEmail: req.student_email,
-                        documentTitle: req.document_title
-                      })}
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Rejeter
-                    </Button>
+                ))
+              )}
+
+              {/* Historique validé */}
+              {validatedRequests.length > 0 && (
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Key className="w-5 h-5 text-green-600" />
+                    Achats validés ({validatedRequests.length})
+                  </h4>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {validatedRequests.map(req => (
+                      <div key={req.id} className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-sm">{req.student_name}</p>
+                          <p className="text-xs text-gray-600">{req.document_title}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge className="bg-green-600 text-white mb-1">{req.amount?.toLocaleString()} XOF</Badge>
+                          <p className="text-xs text-gray-500 font-mono">Code: {req.download_code}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </DialogContent>
         </Dialog>
