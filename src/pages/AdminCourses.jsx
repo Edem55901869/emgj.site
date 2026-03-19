@@ -5,7 +5,6 @@ import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Up
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -268,37 +267,34 @@ export default function AdminCourses() {
                     className="pl-10 h-11 rounded-xl"
                   />
                 </div>
-                <Select value={filterDomain} onValueChange={(v) => { setFilterDomain(v); setFilterFormation(''); }}>
-                  <SelectTrigger className="w-full md:w-64 h-11 rounded-xl">
-                    <Filter className="w-4 h-4 mr-2" />
-                    <SelectValue placeholder="Tous les domaines" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>Tous les domaines</SelectItem>
-                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={filterFormation} onValueChange={setFilterFormation} disabled={!filterDomain}>
-                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl">
-                    <SelectValue placeholder="Toutes formations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>Toutes formations</SelectItem>
-                    {availableFormations.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="order">Par ordre</SelectItem>
-                    <SelectItem value="recent">Plus récents</SelectItem>
-                    <SelectItem value="oldest">Plus anciens</SelectItem>
-                    <SelectItem value="title">Par titre (A-Z)</SelectItem>
-                    <SelectItem value="teacher">Par enseignant</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select
+                  value={filterDomain}
+                  onChange={(e) => { setFilterDomain(e.target.value); setFilterFormation(''); }}
+                  className="w-full md:w-64 h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Tous les domaines</option>
+                  {DOMAINS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select
+                  value={filterFormation}
+                  onChange={(e) => setFilterFormation(e.target.value)}
+                  disabled={!filterDomain}
+                  className="w-full md:w-48 h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                >
+                  <option value="">Toutes formations</option>
+                  {availableFormations.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full md:w-48 h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="order">Par ordre</option>
+                  <option value="recent">Plus récents</option>
+                  <option value="oldest">Plus anciens</option>
+                  <option value="title">Par titre (A-Z)</option>
+                  <option value="teacher">Par enseignant</option>
+                </select>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">{filteredAndSortedCourses.length} cours trouvé{filteredAndSortedCourses.length > 1 ? 's' : ''}</span>
@@ -405,23 +401,26 @@ export default function AdminCourses() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Domaine *</label>
-                <Select value={form.domain} onValueChange={(v) => setForm({ ...form, domain: v, formation_type: '' })}>
-                  <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Domaine" /></SelectTrigger>
-                  <SelectContent>
-                    {DOMAINS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={form.domain}
+                  onChange={(e) => setForm({ ...form, domain: e.target.value, formation_type: '' })}
+                  className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Sélectionner un domaine...</option>
+                  {DOMAINS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Formation *</label>
-                <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v })} disabled={!form.domain}>
-                  <SelectTrigger className="rounded-xl h-11">
-                    <SelectValue placeholder={form.domain ? "Type de formation" : "Sélectionnez d'abord un domaine"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={form.formation_type}
+                  onChange={(e) => setForm({ ...form, formation_type: e.target.value })}
+                  disabled={!form.domain}
+                  className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                >
+                  <option value="">{form.domain ? "Type de formation..." : "Sélectionnez d'abord un domaine"}</option>
+                  {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Enseignant *</label>
@@ -632,15 +631,16 @@ export default function AdminCourses() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Cours prérequis</label>
-                  <Select value={form.prerequisite_course_id || ''} onValueChange={(v) => setForm({ ...form, prerequisite_course_id: v })}>
-                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Aucun" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={null}>Aucun</SelectItem>
-                      {courses.filter(c => c.id !== editingCourse?.id).map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <select
+                    value={form.prerequisite_course_id || ''}
+                    onChange={(e) => setForm({ ...form, prerequisite_course_id: e.target.value || null })}
+                    className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Aucun</option>
+                    {courses.filter(c => c.id !== editingCourse?.id).map(c => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div>
