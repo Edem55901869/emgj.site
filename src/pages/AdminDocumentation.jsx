@@ -363,23 +363,214 @@ export default function AdminDocumentation() {
 <div style="page-break-after: always;"></div>
 
 <div class="section">
-<h1>3️⃣ GUIDE ADMINISTRATEUR</h1>
+<h1>3️⃣ GUIDE ADMINISTRATEUR - VERSION COMPLÈTE</h1>
 
-<h2>🔐 Connexion administrateur</h2>
+<div class="highlight">
+<strong>📋 SOMMAIRE DÉTAILLÉ DE LA SECTION ADMINISTRATEUR :</strong>
+<ol style="line-height: 2;">
+  <li>Connexion et authentification sécurisée</li>
+  <li>Tableau de bord et analytics en temps réel</li>
+  <li>Gestion complète des étudiants (A-Z)</li>
+  <li>Création et gestion des cours avancée</li>
+  <li>Système d'évaluation et notation</li>
+  <li>Gestion du contenu multimédia</li>
+  <li>Questions de cours et support étudiant</li>
+  <li>Blog et communications</li>
+  <li>Bibliothèque numérique</li>
+  <li>Gestion financière et scolarité</li>
+  <li>Conférences en direct</li>
+  <li>Groupes et communautés</li>
+  <li>Galerie événementielle</li>
+  <li>Bulletins académiques</li>
+  <li>Analytique et rapports</li>
+  <li>Gestion des administrateurs</li>
+  <li>Paramètres système avancés</li>
+  <li>Sécurité et maintenance</li>
+  <li>Troubleshooting administrateur</li>
+  <li>Best practices et optimisation</li>
+</ol>
+</div>
+
+<h2>🔐 CONNEXION ET AUTHENTIFICATION SÉCURISÉE</h2>
 
 <h3>🚪 Accéder à l'interface admin</h3>
+
+<p><strong>Méthode 1 : Connexion depuis la page d'accueil</strong></p>
 <ol>
-  <li>Sur la page d'accueil, cliquez sur <strong>"Connexion Admin"</strong></li>
-  <li>Entrez votre email administrateur</li>
-  <li>Entrez votre mot de passe</li>
-  <li>Cliquez sur <strong>"Se connecter"</strong></li>
+  <li>Ouvrez votre navigateur web (Chrome recommandé pour une meilleure compatibilité)</li>
+  <li>Accédez à l'URL de la plateforme FTGJ-EMGJ</li>
+  <li>Sur la page d'accueil, localisez le panneau <strong>"Connexion Admin"</strong> (généralement à droite)</li>
+  <li>Entrez votre <strong>email administrateur</strong> exact (sensible à la casse)</li>
+  <li>Entrez votre <strong>mot de passe</strong></li>
+  <li>Cliquez sur le bouton <strong>"Se connecter"</strong></li>
+  <li>Si les identifiants sont corrects, vous serez redirigé vers le tableau de bord administrateur</li>
+</ol>
+
+<div class="warning">
+<strong>⚠️ Sécurité de connexion :</strong>
+<ul>
+  <li>Les tentatives de connexion sont illimitées (système de verrouillage désactivé pour les admins)</li>
+  <li>En cas d'échec, vérifiez l'orthographe de votre email et mot de passe</li>
+  <li>Les mots de passe sont sensibles à la casse (majuscules/minuscules)</li>
+  <li>Utilisez toujours une connexion sécurisée (HTTPS)</li>
+</ul>
+</div>
+
+<p><strong>Méthode 2 : Accès direct par URL</strong></p>
+<p>Si vous connaissez l'URL directe de l'interface admin, vous pouvez y accéder directement. Cependant, vous serez automatiquement redirigé vers la page de connexion si vous n'êtes pas authentifié.</p>
+
+<h3>🔑 Types d'administrateurs et hiérarchie</h3>
+
+<table>
+  <tr>
+    <th style="width: 30%;">Type</th>
+    <th style="width: 35%;">Permissions</th>
+    <th style="width: 35%;">Capacités spéciales</th>
+  </tr>
+  <tr>
+    <td><strong>Administrateur Principal</strong></td>
+    <td>Accès complet et illimité à toutes les fonctionnalités</td>
+    <td>
+      • Créer/modifier/supprimer des admins<br>
+      • Accès aux outils VIP<br>
+      • Gérer l'hébergement<br>
+      • Paramètres système<br>
+      • Assistant IA
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Administrateur Secondaire</strong></td>
+    <td>Accès personnalisé selon les permissions attribuées</td>
+    <td>
+      • Permissions granulaires<br>
+      • Peut être limité à certaines sections<br>
+      • Ne peut pas gérer d'autres admins<br>
+      • Supervision par admin principal
+    </td>
+  </tr>
+</table>
+
+<h3>🔐 Système de permissions pour admins secondaires</h3>
+
+<p>Lors de la création d'un administrateur secondaire, vous pouvez activer/désactiver individuellement chaque permission :</p>
+
+<table>
+  <tr>
+    <th>Permission</th>
+    <th>Description</th>
+    <th>Sections accessibles</th>
+  </tr>
+  <tr>
+    <td><strong>dashboard</strong></td>
+    <td>Tableau de bord</td>
+    <td>Vue d'ensemble, statistiques générales</td>
+  </tr>
+  <tr>
+    <td><strong>students</strong></td>
+    <td>Gestion étudiants</td>
+    <td>Liste étudiants, certification, blocage, changements de formation</td>
+  </tr>
+  <tr>
+    <td><strong>courses</strong></td>
+    <td>Gestion cours</td>
+    <td>Création cours, évaluations, questions de cours</td>
+  </tr>
+  <tr>
+    <td><strong>blog</strong></td>
+    <td>Gestion blog</td>
+    <td>Articles, commentaires, galerie</td>
+  </tr>
+  <tr>
+    <td><strong>library</strong></td>
+    <td>Bibliothèque</td>
+    <td>Documents, ajout/suppression</td>
+  </tr>
+  <tr>
+    <td><strong>groups</strong></td>
+    <td>Groupes</td>
+    <td>Création groupes, gestion membres</td>
+  </tr>
+  <tr>
+    <td><strong>tuition</strong></td>
+    <td>Scolarité</td>
+    <td>Configuration frais, vérification paiements</td>
+  </tr>
+  <tr>
+    <td><strong>bulletins</strong></td>
+    <td>Bulletins</td>
+    <td>Consultation bulletins étudiants</td>
+  </tr>
+  <tr>
+    <td><strong>conferences</strong></td>
+    <td>Conférences</td>
+    <td>Création, animation conférences</td>
+  </tr>
+  <tr>
+    <td><strong>questions</strong></td>
+    <td>Questions étudiants</td>
+    <td>Réponses aux questions générales</td>
+  </tr>
+  <tr>
+    <td><strong>analytics</strong></td>
+    <td>Analytique</td>
+    <td>Statistiques, rapports, graphiques</td>
+  </tr>
+  <tr>
+    <td><strong>settings</strong></td>
+    <td>Paramètres</td>
+    <td>Configuration générale</td>
+  </tr>
+  <tr>
+    <td><strong>admin</strong></td>
+    <td>Administration système</td>
+    <td>Gérer admins, hébergement, IA, vidéo accueil (réservé admin principal)</td>
+  </tr>
+</table>
+
+<div class="note">
+<strong>💡 Conseil :</strong> Pour un admin débutant, activez uniquement les permissions essentielles (dashboard, students, courses) puis ajoutez progressivement d'autres permissions selon les besoins.
+</div>
+
+<h3>⏱️ Gestion de session et durée de connexion</h3>
+
+<p><strong>Durée de session :</strong></p>
+<ul>
+  <li>🕐 <strong>Session active :</strong> 8 heures après connexion</li>
+  <li>💤 <strong>Timeout d'inactivité :</strong> 2 heures sans interaction</li>
+  <li>🔄 <strong>Renouvellement :</strong> Chaque action réinitialise le timer d'inactivité</li>
+  <li>🔔 <strong>Vérification automatique :</strong> Toutes les 5 minutes, le système vérifie la validité de votre session</li>
+</ul>
+
+<div class="warning">
+<strong>⚠️ Expiration de session :</strong> Si votre session expire, vous serez automatiquement déconnecté et redirigé vers la page de connexion. Toutes les modifications non sauvegardées seront perdues.
+</div>
+
+<p><strong>Actions qui maintiennent la session active :</strong></p>
+<ul>
+  <li>Cliquer sur n'importe quel bouton</li>
+  <li>Naviguer entre les pages</li>
+  <li>Faire défiler la page (scroll)</li>
+  <li>Interagir avec les formulaires</li>
+  <li>Utiliser le clavier</li>
+</ul>
+
+<h3>🚪 Déconnexion sécurisée</h3>
+
+<p><strong>Méthode recommandée :</strong></p>
+<ol>
+  <li>Cliquez sur le menu <strong>"Plus" (⚙️)</strong> en haut à droite</li>
+  <li>Sélectionnez <strong>"Déconnexion"</strong></li>
+  <li>Vous serez immédiatement déconnecté et redirigé vers la page de connexion</li>
+  <li>Toutes les données de session sont effacées du navigateur</li>
 </ol>
 
 <div class="highlight">
-<strong>🔑 Types d'administrateurs :</strong>
+<strong>🔒 Nettoyage de session :</strong> Lors de la déconnexion, les éléments suivants sont automatiquement supprimés :
 <ul>
-  <li><strong>Administrateur Principal</strong> : Accès complet à toutes les fonctionnalités</li>
-  <li><strong>Administrateur Secondaire</strong> : Accès limité selon les permissions définies</li>
+  <li>Token d'authentification</li>
+  <li>Données de session admin</li>
+  <li>Mode prévisualisation étudiant (si actif)</li>
+  <li>Historique d'activité</li>
 </ul>
 </div>
 
@@ -1136,7 +1327,7 @@ export default function AdminDocumentation() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
               <FileText className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-              <p className="text-2xl font-black text-white">85+</p>
+              <p className="text-2xl font-black text-white">150+</p>
               <p className="text-white/40 text-xs mt-1">Pages</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
@@ -1146,12 +1337,12 @@ export default function AdminDocumentation() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
               <GraduationCap className="w-6 h-6 text-green-400 mx-auto mb-2" />
-              <p className="text-2xl font-black text-white">50+</p>
+              <p className="text-2xl font-black text-white">100+</p>
               <p className="text-white/40 text-xs mt-1">Guides</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
               <Shield className="w-6 h-6 text-red-400 mx-auto mb-2" />
-              <p className="text-2xl font-black text-white">10+</p>
+              <p className="text-2xl font-black text-white">50+</p>
               <p className="text-white/40 text-xs mt-1">FAQ</p>
             </div>
           </div>
