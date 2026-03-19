@@ -110,23 +110,34 @@ export default function AdminGallery() {
   });
 
   const addMediaMutation = useMutation({
-    mutationFn: async ({ postId, files }) => {
+    mutationFn: async ({ postId, files, currentMediaType }) => {
+      const uploadPromises = [];
       for (const file of files) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        await base44.entities.GalleryMedia.create({
-          post_id: postId,
-          media_url: file_url,
-          media_type: selectedPost.media_type
-        });
+        uploadPromises.push(
+          base44.integrations.Core.UploadFile({ file }).then(({ file_url }) =>
+            base44.entities.GalleryMedia.create({
+              post_id: postId,
+              media_url: file_url,
+              media_type: currentMediaType
+            })
+          )
+        );
       }
-      const currentCount = getPostMedia(postId).length;
+      await Promise.all(uploadPromises);
+      
+      // Recompter les médias après ajout
+      const updatedMedia = await base44.entities.GalleryMedia.filter({ post_id: postId });
       await base44.entities.GalleryPost.update(postId, {
-        media_count: currentCount + files.length
+        media_count: updatedMedia.length
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['galleryMedia']);
-      toast.success('Médias ajoutés');
+      queryClient.invalidateQueries(['galleryPosts']);
+      toast.success('Médias ajoutés avec succès');
+    },
+    onError: () => {
+      toast.error('Erreur lors de l\'ajout des médias');
     }
   });
 
@@ -194,15 +205,15 @@ export default function AdminGallery() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+      <div className="min-h-screen bg-gray-50">
         <AdminTopNav />
         
         <div className="pt-20 px-4 pb-12 max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-black text-white mb-2">Galerie d'Événements</h1>
-              <p className="text-white/40 text-sm">Gérez les publications photo et vidéo</p>
+              <h1 className="text-3xl font-black text-gray-900 mb-2">Galerie d'Événements</h1>
+              <p className="text-gray-600 text-sm">Gérez les publications photo et vidéo</p>
             </div>
             <Button 
               onClick={() => setCreateDialog(true)}
@@ -216,23 +227,23 @@ export default function AdminGallery() {
           {/* Search */}
           <div className="mb-6">
             <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Rechercher un événement..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:bg-white/10 rounded-xl"
+                className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 rounded-xl"
               />
             </div>
           </div>
 
           {/* Posts Grid */}
           {filteredPosts.length === 0 ? (
-            <Card className="bg-white/5 border-white/10 text-center py-16">
+            <Card className="bg-white border-gray-200 text-center py-16">
               <CardContent>
-                <ImageIcon className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Aucune publication</h3>
-                <p className="text-white/40">Créez votre première publication pour commencer</p>
+                <ImageIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune publication</h3>
+                <p className="text-gray-500">Créez votre première publication pour commencer</p>
               </CardContent>
             </Card>
           ) : (
@@ -242,13 +253,13 @@ export default function AdminGallery() {
                 return (
                   <Card 
                     key={post.id} 
-                    className="bg-white/5 border-white/10 overflow-hidden hover:bg-white/10 transition-all cursor-pointer group"
+                    className="bg-white border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => {
                       setSelectedPost(post);
                       setViewDialog(true);
                     }}
                   >
-                    <div className="aspect-video bg-gradient-to-br from-blue-900/30 to-purple-900/30 relative overflow-hidden">
+                    <div className="aspect-video bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
                       {media[0] ? (
                         <img src={media[0].media_url} alt={post.event_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
@@ -265,16 +276,16 @@ export default function AdminGallery() {
                       </Badge>
                     </div>
                     <CardContent className="p-4">
-                      <h3 className="font-bold text-white mb-2 line-clamp-1">{post.event_name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-white/60 mb-3">
+                      <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">{post.event_name}</h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                         <Calendar className="w-4 h-4" />
                         {format(new Date(post.event_date), 'dd MMMM yyyy', { locale: fr })}
                       </div>
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs border-white/20 text-white/70">
+                        <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
                           {post.event_type}
                         </Badge>
-                        <span className="text-xs text-white/40">
+                        <span className="text-xs text-gray-500">
                           {media.length} {post.media_type === 'photo' ? 'photo(s)' : 'vidéo(s)'}
                         </span>
                       </div>
@@ -458,12 +469,26 @@ export default function AdminGallery() {
                         onChange={(e) => {
                           const files = Array.from(e.target.files);
                           if (files.length > 0) {
-                            addMediaMutation.mutate({ postId: selectedPost.id, files });
+                            addMediaMutation.mutate({ 
+                              postId: selectedPost.id, 
+                              files, 
+                              currentMediaType: selectedPost.media_type 
+                            });
+                            e.target.value = ''; // Reset input
                           }
                         }}
                       />
-                      <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                        <Plus className="w-4 h-4 mr-2" />
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="border-white/20 text-white hover:bg-white/10"
+                        disabled={addMediaMutation.isPending}
+                      >
+                        {addMediaMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Plus className="w-4 h-4 mr-2" />
+                        )}
                         Ajouter
                       </Button>
                     </label>
