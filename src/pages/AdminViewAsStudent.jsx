@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Eye, ArrowLeft, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
@@ -51,30 +50,31 @@ export default function AdminViewAsStudent() {
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Domaine *</label>
-                <Select value={domain} onValueChange={(v) => { setDomain(v); setFormationType(''); }}>
-                  <SelectTrigger className="rounded-xl h-12">
-                    <SelectValue placeholder="Sélectionnez un domaine" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOMAINS.map(d => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={domain}
+                  onChange={(e) => { setDomain(e.target.value); setFormationType(''); }}
+                  className="w-full h-12 rounded-xl border border-gray-300 bg-white px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Sélectionnez un domaine</option>
+                  {DOMAINS.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Type de formation *</label>
-                <Select value={formationType} onValueChange={setFormationType} disabled={!domain}>
-                  <SelectTrigger className="rounded-xl h-12">
-                    <SelectValue placeholder={domain ? "Sélectionnez un type de formation" : "Sélectionnez d'abord un domaine"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableFormations.map(f => (
-                      <SelectItem key={f} value={f}>{f}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={formationType}
+                  onChange={(e) => setFormationType(e.target.value)}
+                  disabled={!domain}
+                  className="w-full h-12 rounded-xl border border-gray-300 bg-white px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">{domain ? "Sélectionnez un type de formation" : "Sélectionnez d'abord un domaine"}</option>
+                  {availableFormations.map(f => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
