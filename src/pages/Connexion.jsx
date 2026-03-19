@@ -66,16 +66,6 @@ export default function Connexion() {
     e.preventDefault();
 
     const cleanEmail = sanitize(adminEmail.toLowerCase());
-
-    // Vérifier le verrouillage
-    const attempts = getLoginAttempts(cleanEmail);
-    if (attempts.lockedUntil && Date.now() < attempts.lockedUntil) {
-      const minutesLeft = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
-      setLockoutInfo(minutesLeft);
-      toast.error(`Compte temporairement verrouillé. Réessayez dans ${minutesLeft} minute(s).`);
-      return;
-    }
-    setLockoutInfo(null);
     setAdminLoading(true);
     
     try {
@@ -86,10 +76,9 @@ export default function Connexion() {
       const validPrincipal = passwords.find(p => p.password_hash === adminPassword);
       
       if (validPrincipal) {
-        clearLoginAttempts(cleanEmail);
         localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ email: cleanEmail, role: 'admin_principal', loggedIn: true, expiresAt: sessionExpiry }));
-        toast.success('Connexion administrateur réussie !');
+        toast.success('Connexion réussie !');
         navigate(createPageUrl('AdminDashboard'));
         setAdminLoading(false);
         return;
@@ -100,10 +89,9 @@ export default function Connexion() {
       const validBackup = backupPasswords.find(p => p.password_hash === adminPassword && p.password_type !== 'principal');
       
       if (validBackup) {
-        clearLoginAttempts(cleanEmail);
         localStorage.removeItem('admin_student_view');
         localStorage.setItem('emgj_admin', JSON.stringify({ email: cleanEmail, role: 'admin_principal', loggedIn: true, expiresAt: sessionExpiry }));
-        toast.success('Connexion administrateur réussie !');
+        toast.success('Connexion réussie !');
         navigate(createPageUrl('AdminDashboard'));
         setAdminLoading(false);
         return;
@@ -121,7 +109,6 @@ export default function Connexion() {
         }
         
         if (admin.password === adminPassword) {
-          clearLoginAttempts(cleanEmail);
           localStorage.removeItem('admin_student_view');
           localStorage.setItem('emgj_admin', JSON.stringify({ 
             email: cleanEmail, 
@@ -145,15 +132,8 @@ export default function Connexion() {
         }
       }
       
-      // Échec : incrémenter le compteur
-      const updatedAttempts = recordFailedAttempt(cleanEmail);
-      const remaining = MAX_ATTEMPTS - updatedAttempts.count;
-      if (remaining <= 0) {
-        toast.error(`Trop de tentatives. Compte verrouillé pendant 3 minutes.`);
-        setLockoutInfo(3);
-      } else {
-        toast.error(`Identifiants incorrects. ${remaining} tentative(s) restante(s) avant verrouillage.`);
-      }
+      // Échec
+      toast.error('Email ou mot de passe incorrect');
     } catch (error) {
       toast.error('Erreur de connexion. Vérifiez votre connexion internet.');
     }
@@ -293,12 +273,7 @@ export default function Connexion() {
                 <h2 className="text-2xl font-bold text-white">Espace Administrateur</h2>
                 <p className="text-blue-200/50 text-sm mt-2">Accédez au panneau de gestion</p>
               </div>
-              {lockoutInfo && (
-                <div className="bg-red-500/20 border border-red-400/40 rounded-xl p-3 mb-4 text-center">
-                  <p className="text-red-200 text-sm font-semibold">🔒 Compte verrouillé</p>
-                  <p className="text-red-300 text-xs mt-1">Réessayez dans {lockoutInfo} minute(s)</p>
-                </div>
-              )}
+
               <form onSubmit={handleAdminLogin} className="space-y-4" autoComplete="off">
                 <div>
                   <label className="text-sm text-blue-200/70 mb-1 block">Email</label>
@@ -310,7 +285,6 @@ export default function Connexion() {
                     required
                     autoComplete="email"
                     maxLength={150}
-                    disabled={!!lockoutInfo}
                     className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-blue-200/30"
                   />
                 </div>
@@ -324,7 +298,6 @@ export default function Connexion() {
                     required
                     autoComplete="current-password"
                     maxLength={200}
-                    disabled={!!lockoutInfo}
                     className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-blue-200/30 pr-10"
                   />
                   <button
@@ -337,7 +310,7 @@ export default function Connexion() {
                 </div>
                 <Button
                   type="submit"
-                  disabled={adminLoading || !!lockoutInfo}
+                  disabled={adminLoading}
                   className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white text-base rounded-xl shadow-lg shadow-indigo-600/25 disabled:opacity-50"
                 >
                   {adminLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : '🔐 Se connecter'}
