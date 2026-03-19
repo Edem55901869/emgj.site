@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2 } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Search, SlidersHorizontal, Clock, Loader2, GraduationCap, CheckCircle2, FileText, Lock, Download } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -95,6 +95,16 @@ export default function StudentDashboard() {
     queryFn: () => base44.entities.BlogComment.list('-created_date', 500),
     enabled: studentProfile?.status === 'certifié',
     refetchInterval: 15000,
+  });
+
+  const { data: courseDocuments = [] } = useQuery({
+    queryKey: ['courseDocuments', studentProfile?.domain, studentProfile?.formation_type],
+    queryFn: () => base44.entities.CourseDocument.filter({
+      domain: studentProfile.domain,
+      formation_type: studentProfile.formation_type,
+      status: 'publié'
+    }),
+    enabled: !!studentProfile?.domain && !!studentProfile?.formation_type && studentProfile?.status === 'certifié',
   });
 
   const createProfileMutation = useMutation({
@@ -306,6 +316,60 @@ export default function StudentDashboard() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4">
+        {/* Documents de cours */}
+        {courseDocuments.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                Documents de cours disponibles
+              </h3>
+              <Badge className="bg-blue-100 text-blue-700 text-xs">{courseDocuments.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {courseDocuments.map(doc => (
+                <div key={doc.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-900 text-sm mb-1">{doc.title}</h4>
+                      {doc.description && <p className="text-xs text-gray-600 line-clamp-2 mb-2">{doc.description}</p>}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {doc.is_locked ? (
+                          <>
+                            <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                              <Lock className="w-3 h-3 mr-1" />
+                              {doc.price?.toLocaleString()} XOF
+                            </Badge>
+                            <a 
+                              href="/StudentCourseDocuments" 
+                              className="text-xs text-blue-600 hover:underline font-medium"
+                            >
+                              Acheter →
+                            </a>
+                          </>
+                        ) : (
+                          <a 
+                            href={doc.document_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-lg font-medium hover:bg-green-200 transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            Télécharger gratuitement
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mb-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
