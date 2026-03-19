@@ -7,6 +7,7 @@ const PAGE_PERMISSIONS = {
   'AdminDashboard': 'dashboard',
   'AdminStudents': 'students',
   'AdminCourses': 'courses',
+  'AdminCourseDocuments': 'courses',
   'AdminBlog': 'blog',
   'AdminLibrary': 'library',
   'AdminGroups': 'groups',
@@ -24,6 +25,7 @@ const PAGE_PERMISSIONS = {
   'AdminCourseQuestions': 'questions',
   'AdminGallery': 'admin',
   'AdminHomeVideo': 'admin',
+  'AdminDocumentation': 'admin',
 };
 
 // Durée de session : 8 heures
