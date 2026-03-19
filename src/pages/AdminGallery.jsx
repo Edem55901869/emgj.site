@@ -423,17 +423,70 @@ export default function AdminGallery() {
                 )}
 
                 <div>
-                  <h4 className="font-medium mb-3">
-                    Médias ({getPostMedia(selectedPost.id).length})
-                  </h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">
+                      Médias ({getPostMedia(selectedPost.id).length})
+                    </h4>
+                    <div className="flex gap-2">
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          multiple
+                          accept={selectedPost.media_type === 'photo' ? 'image/*' : 'video/*'}
+                          className="hidden"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files);
+                            if (files.length === 0) return;
+                            
+                            toast.success(`Ajout de ${files.length} média(s)...`);
+                            for (const file of files) {
+                              const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                              await base44.entities.GalleryMedia.create({
+                                post_id: selectedPost.id,
+                                media_url: file_url,
+                                media_type: selectedPost.media_type
+                              });
+                            }
+                            
+                            await base44.entities.GalleryPost.update(selectedPost.id, {
+                              media_count: getPostMedia(selectedPost.id).length + files.length
+                            });
+                            
+                            queryClient.invalidateQueries(['galleryMedia']);
+                            toast.success('Médias ajoutés avec succès');
+                          }}
+                        />
+                        <Button size="sm" variant="outline" className="gap-2">
+                          <Plus className="w-4 h-4" />
+                          Ajouter
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                     {getPostMedia(selectedPost.id).map((media) => (
-                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative group">
                         {media.media_type === 'photo' ? (
                           <img src={media.media_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <video src={media.media_url} controls className="w-full h-full object-cover" />
+                          <video src={media.media_url} className="w-full h-full object-cover" />
                         )}
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm('Supprimer ce média ?')) {
+                              await base44.entities.GalleryMedia.delete(media.id);
+                              await base44.entities.GalleryPost.update(selectedPost.id, {
+                                media_count: getPostMedia(selectedPost.id).length - 1
+                              });
+                              queryClient.invalidateQueries(['galleryMedia']);
+                              toast.success('Média supprimé');
+                            }
+                          }}
+                          className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     ))}
                   </div>

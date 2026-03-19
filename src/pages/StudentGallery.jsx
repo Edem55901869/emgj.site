@@ -155,23 +155,34 @@ export default function StudentGallery() {
                   </span>
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                  {getPostMedia(selectedPost.id).map((media) => (
+                  {getPostMedia(selectedPost.id).map((media, index) => (
                     <div 
                       key={media.id} 
-                      className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                      className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 cursor-pointer group relative transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-xl"
                       onClick={() => openMediaViewer(media)}
                     >
                       {media.media_type === 'photo' ? (
-                        <img 
-                          src={media.media_url} 
-                          alt="" 
-                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" 
-                        />
+                        <>
+                          <img 
+                            src={media.media_url} 
+                            alt="" 
+                            className="w-full h-full object-cover" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="absolute bottom-3 left-3 right-3 text-white">
+                              <p className="text-xs font-medium">Photo {index + 1}</p>
+                              <p className="text-[10px] text-white/70">Cliquez pour agrandir</p>
+                            </div>
+                          </div>
+                        </>
                       ) : (
                         <div className="relative w-full h-full">
                           <video src={media.media_url} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <Video className="w-8 h-8 text-white" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
+                            <div className="text-center text-white">
+                              <Video className="w-10 h-10 mx-auto mb-2" />
+                              <p className="text-xs font-medium">Vidéo {index + 1}</p>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -184,33 +195,43 @@ export default function StudentGallery() {
         </DialogContent>
       </Dialog>
 
-      {/* Media Viewer Dialog */}
+      {/* Media Viewer Dialog - Fullscreen */}
       <Dialog open={openMedia} onOpenChange={setOpenMedia}>
-        <DialogContent className="max-w-5xl p-0 bg-black">
-          <button
-            onClick={() => setOpenMedia(false)}
-            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          {selectedMedia && (
-            <div className="w-full h-full flex items-center justify-center p-4">
-              {selectedMedia.media_type === 'photo' ? (
-                <img 
-                  src={selectedMedia.media_url} 
-                  alt="" 
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg" 
-                />
-              ) : (
-                <video 
-                  src={selectedMedia.media_url} 
-                  controls 
-                  autoPlay
-                  className="max-w-full max-h-[85vh] rounded-lg"
-                />
-              )}
-            </div>
-          )}
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 backdrop-blur-xl border-0">
+          <div className="relative w-full h-[95vh]">
+            <button
+              onClick={() => setOpenMedia(false)}
+              className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-all hover:scale-110 shadow-2xl"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            {selectedMedia && (
+              <div className="w-full h-full flex items-center justify-center p-8">
+                {selectedMedia.media_type === 'photo' ? (
+                  <div className="relative max-w-full max-h-full">
+                    <img 
+                      src={selectedMedia.media_url} 
+                      alt="" 
+                      className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-300" 
+                    />
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full">
+                      <p className="text-white text-sm font-medium">📸 Photo HD</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative max-w-full max-h-full">
+                    <video 
+                      src={selectedMedia.media_url} 
+                      controls 
+                      autoPlay
+                      className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
