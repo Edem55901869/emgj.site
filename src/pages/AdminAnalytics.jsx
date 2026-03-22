@@ -1,476 +1,689 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Globe, Smartphone, Monitor, Tablet, Loader2, TrendingUp, Users, Eye, BookOpen, Award, CheckCircle, BarChart2, Activity, MapPin } from 'lucide-react';
+import { 
+  Users, Award, TrendingUp, Activity, BookOpen, CheckCircle, 
+  Globe, Smartphone, Monitor, Eye, MapPin, Calendar, Clock,
+  Download, FileText, MessageCircle, DollarSign, Loader2,
+  BarChart3, PieChart, LineChart, Filter, RefreshCw
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import { format, subDays, startOfDay, endOfDay, subMonths, isWithinInterval } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function AdminAnalytics() {
-  const { data: students = [], isLoading: loadingStudents } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list('-created_date', 500) });
-  const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: () => base44.entities.Course.list() });
-  const { data: allProgress = [], isLoading: loadingProgress } = useQuery({ queryKey: ['allProgress'], queryFn: () => base44.entities.StudentCourseProgress.list() });
-  const { data: visitors = [] } = useQuery({ queryKey: ['siteVisitors'], queryFn: () => base44.entities.SiteVisitor.list('-created_date', 500) });
+  const [dateRange, setDateRange] = useState('30d');
+  const [selectedDomain, setSelectedDomain] = useState('all');
+
+  // Fetch data
+  const { data: students = [], isLoading: loadingStudents } = useQuery({ 
+    queryKey: ['students'], 
+    queryFn: () => base44.entities.Student.list('-created_date', 1000) 
+  });
+  
+  const { data: courses = [] } = useQuery({ 
+    queryKey: ['courses'], 
+    queryFn: () => base44.entities.Course.list() 
+  });
+  
+  const { data: allProgress = [], isLoading: loadingProgress } = useQuery({ 
+    queryKey: ['allProgress'], 
+    queryFn: () => base44.entities.StudentCourseProgress.list('-created_date', 2000) 
+  });
+  
+  const { data: visitors = [] } = useQuery({ 
+    queryKey: ['siteVisitors'], 
+    queryFn: () => base44.entities.SiteVisitor.list('-created_date', 1000) 
+  });
+
+  const { data: blogPosts = [] } = useQuery({
+    queryKey: ['blogPosts'],
+    queryFn: () => base44.entities.BlogPost.list('-created_date', 500)
+  });
+
+  const { data: courseDocuments = [] } = useQuery({
+    queryKey: ['courseDocuments'],
+    queryFn: () => base44.entities.CourseDocument.list()
+  });
+
+  const { data: purchaseRequests = [] } = useQuery({
+    queryKey: ['purchaseRequests'],
+    queryFn: () => base44.entities.DocumentPurchaseRequest.list()
+  });
+
+  const { data: questions = [] } = useQuery({
+    queryKey: ['courseQuestions'],
+    queryFn: () => base44.entities.StudentCourseQuestion.list()
+  });
+
+  const { data: tuitionProofs = [] } = useQuery({
+    queryKey: ['tuitionProofs'],
+    queryFn: () => base44.entities.PaymentProof.list()
+  });
 
   const isLoading = loadingStudents || loadingProgress;
 
-  // Étudiants actifs = qui ont au moins 1 progression
-  const activeStudentEmails = new Set(allProgress.map(p => p.student_email));
-  const activeStudentsCount = students.filter(s => activeStudentEmails.has(s.user_email)).length;
+  // Date filtering helper
+  const getDateRangeFilter = () => {
+    const now = new Date();
+    switch(dateRange) {
+      case '7d': return subDays(now, 7);
+      case '30d': return subDays(now, 30);
+      case '90d': return subDays(now, 90);
+      case '1y': return subDays(now, 365);
+      default: return subDays(now, 30);
+    }
+  };
 
-  // Cours validés (passed=true) par des étudiants ENCORE présents sur la plateforme
-  const activeStudentEmailsSet = new Set(students.map(s => s.user_email));
-  const validatedByActiveStudents = allProgress.filter(p => p.passed && activeStudentEmailsSet.has(p.student_email));
+  // Advanced metrics calculation
+  const metrics = useMemo(() => {
+    const startDate = getDateRangeFilter();
+    
+    // Student metrics
+    const certifiedStudents = students.filter(s => s.status === 'certifié');
+    const pendingStudents = students.filter(s => s.status === 'en_attente');
+    const activeStudents = [...new Set(allProgress.map(p => p.student_email))].length;
+    const newStudents = students.filter(s => new Date(s.created_date) >= startDate);
 
-  // Taux de réussite
-  const successRate = allProgress.length > 0 ? ((allProgress.filter(p => p.passed).length / allProgress.length) * 100).toFixed(1) : 0;
-  
-  // Moyenne générale
-  const avgScore = allProgress.length > 0 ? (allProgress.reduce((s, p) => s + (p.score || 0), 0) / allProgress.length).toFixed(1) : 0;
+    // Course metrics
+    const completedCourses = allProgress.filter(p => p.passed);
+    const successRate = allProgress.length > 0 
+      ? ((completedCourses.length / allProgress.length) * 100).toFixed(1) 
+      : 0;
+    const avgScore = allProgress.length > 0 
+      ? (allProgress.reduce((s, p) => s + (p.score || 0), 0) / allProgress.length).toFixed(1) 
+      : 0;
+    const totalAttempts = allProgress.reduce((s, p) => s + (p.attempts || 1), 0);
 
-  // Stats par domaine
-  const domainStats = courses.reduce((acc, course) => {
-    if (!acc[course.domain]) acc[course.domain] = { courses: 0, validated: 0 };
-    acc[course.domain].courses++;
-    acc[course.domain].validated += validatedByActiveStudents.filter(p => p.course_id === course.id).length;
-    return acc;
-  }, {});
+    // Engagement metrics
+    const recentVisits = visitors.filter(v => new Date(v.created_date) >= startDate);
+    const avgDailyVisits = recentVisits.length / Math.ceil((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  // Stats par formation
-  const formationStats = students.reduce((acc, s) => {
-    const key = s.formation_type;
-    if (!key) return acc;
-    if (!acc[key]) acc[key] = { total: 0, certified: 0 };
-    acc[key].total++;
-    if (s.status === 'certifié') acc[key].certified++;
-    return acc;
-  }, {});
+    // Revenue metrics
+    const validatedPurchases = purchaseRequests.filter(r => r.status === 'validé');
+    const totalRevenue = validatedPurchases.reduce((sum, r) => sum + (r.amount || 0), 0);
+    const validatedTuition = tuitionProofs.filter(t => t.status === 'validé');
+    const tuitionRevenue = validatedTuition.reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  // Stats pays
-  const countryStats = students.reduce((acc, s) => {
-    const c = s.country || 'Non renseigné';
-    acc[c] = (acc[c] || 0) + 1;
-    return acc;
-  }, {});
-  const topCountries = Object.entries(countryStats).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    // Content metrics
+    const publishedPosts = blogPosts.filter(p => p.status === 'publié');
+    const answeredQuestions = questions.filter(q => q.status === 'répondue');
+    const questionResponseRate = questions.length > 0 
+      ? ((answeredQuestions.length / questions.length) * 100).toFixed(0) 
+      : 0;
 
-  // Visiteurs stats
-  const totalVisits = visitors.length;
-  const deviceStats = visitors.reduce((acc, v) => {
-    acc[v.device_type] = (acc[v.device_type] || 0) + 1;
-    return acc;
-  }, {});
-  const visitorCountryStats = visitors.reduce((acc, v) => {
-    const c = v.country || 'Inconnu';
-    acc[c] = (acc[c] || 0) + 1;
-    return acc;
-  }, {});
-  const topVisitorCountries = Object.entries(visitorCountryStats).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    return {
+      students: {
+        total: students.length,
+        certified: certifiedStudents.length,
+        pending: pendingStudents.length,
+        active: activeStudents,
+        new: newStudents.length,
+        certificationRate: students.length > 0 ? ((certifiedStudents.length / students.length) * 100).toFixed(1) : 0
+      },
+      courses: {
+        total: courses.length,
+        completed: completedCourses.length,
+        successRate,
+        avgScore,
+        totalAttempts,
+        avgAttemptsPerExam: allProgress.length > 0 ? (totalAttempts / allProgress.length).toFixed(1) : 0
+      },
+      engagement: {
+        totalVisits: visitors.length,
+        recentVisits: recentVisits.length,
+        avgDailyVisits: avgDailyVisits.toFixed(1),
+        uniqueCountries: [...new Set(visitors.map(v => v.country))].length
+      },
+      revenue: {
+        totalDocuments: totalRevenue,
+        totalTuition: tuitionRevenue,
+        total: totalRevenue + tuitionRevenue,
+        documentsSold: validatedPurchases.length,
+        tuitionPaid: validatedTuition.length
+      },
+      content: {
+        posts: publishedPosts.length,
+        documents: courseDocuments.length,
+        questions: questions.length,
+        questionsAnswered: answeredQuestions.length,
+        responseRate: questionResponseRate
+      }
+    };
+  }, [students, courses, allProgress, visitors, blogPosts, courseDocuments, purchaseRequests, questions, tuitionProofs, dateRange]);
 
-  // Visites par jour (14 derniers jours)
-  const dailyVisits = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (13 - i));
-    const label = d.toLocaleDateString('fr', { day: '2-digit', month: '2-digit' });
-    const count = visitors.filter(v => {
-      const vd = new Date(v.created_date);
-      return vd.toDateString() === d.toDateString();
-    }).length;
-    return { label, count };
-  });
-  const maxDaily = Math.max(1, ...dailyVisits.map(d => d.count));
+  // Domain distribution
+  const domainDistribution = useMemo(() => {
+    const dist = students.reduce((acc, s) => {
+      const domain = s.domain || 'Non défini';
+      if (!acc[domain]) acc[domain] = { total: 0, certified: 0, active: 0 };
+      acc[domain].total++;
+      if (s.status === 'certifié') acc[domain].certified++;
+      return acc;
+    }, {});
 
-  const now = new Date();
+    const activeByDomain = allProgress.reduce((acc, p) => {
+      const student = students.find(s => s.user_email === p.student_email);
+      if (student) {
+        const domain = student.domain || 'Non défini';
+        if (!acc[domain]) acc[domain] = new Set();
+        acc[domain].add(p.student_email);
+      }
+      return acc;
+    }, {});
 
-  // Visites par mois (6 derniers mois)
-  const monthlyVisits = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    const label = d.toLocaleString('fr', { month: 'short', year: '2-digit' });
-    const count = visitors.filter(v => {
-      const vd = new Date(v.created_date);
-      return vd.getMonth() === d.getMonth() && vd.getFullYear() === d.getFullYear();
-    }).length;
-    return { label, count };
-  });
-  const maxMonthlyVisits = Math.max(1, ...monthlyVisits.map(m => m.count));
+    Object.keys(dist).forEach(domain => {
+      dist[domain].active = activeByDomain[domain]?.size || 0;
+    });
 
-  // Inscriptions par mois (6 derniers mois)
-  const monthlySignups = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    const label = d.toLocaleString('fr', { month: 'short', year: '2-digit' });
-    const count = students.filter(s => {
-      const sd = new Date(s.created_date);
-      return sd.getMonth() === d.getMonth() && sd.getFullYear() === d.getFullYear();
-    }).length;
-    return { label, count };
-  });
-  const maxMonthly = Math.max(1, ...monthlySignups.map(m => m.count));
+    return Object.entries(dist).sort((a, b) => b[1].total - a[1].total);
+  }, [students, allProgress]);
 
-  // unused but kept for compatibility
+  // Formation distribution
+  const formationDistribution = useMemo(() => {
+    const dist = students.reduce((acc, s) => {
+      const formation = s.formation_type || 'Non défini';
+      if (!acc[formation]) acc[formation] = { total: 0, certified: 0 };
+      acc[formation].total++;
+      if (s.status === 'certifié') acc[formation].certified++;
+      return acc;
+    }, {});
+    return Object.entries(dist).sort((a, b) => b[1].total - a[1].total);
+  }, [students]);
+
+  // Geographic distribution
+  const geographicDistribution = useMemo(() => {
+    const dist = students.reduce((acc, s) => {
+      const country = s.country || 'Non défini';
+      acc[country] = (acc[country] || 0) + 1;
+      return acc;
+    }, {});
+    return Object.entries(dist).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  }, [students]);
+
+  // Time-based analytics (last 30 days)
+  const timeAnalytics = useMemo(() => {
+    const days = 30;
+    const signups = Array.from({ length: days }, (_, i) => {
+      const date = subDays(new Date(), days - 1 - i);
+      const count = students.filter(s => {
+        const created = new Date(s.created_date);
+        return created.toDateString() === date.toDateString();
+      }).length;
+      return { date: format(date, 'dd/MM'), count };
+    });
+
+    const visits = Array.from({ length: days }, (_, i) => {
+      const date = subDays(new Date(), days - 1 - i);
+      const count = visitors.filter(v => {
+        const created = new Date(v.created_date);
+        return created.toDateString() === date.toDateString();
+      }).length;
+      return { date: format(date, 'dd/MM'), count };
+    });
+
+    return { signups, visits };
+  }, [students, visitors]);
+
+  // Course completion funnel
+  const completionFunnel = useMemo(() => {
+    const totalStudents = students.filter(s => s.status === 'certifié').length;
+    const studentsWithProgress = [...new Set(allProgress.map(p => p.student_email))].length;
+    const studentsWithCompletion = [...new Set(allProgress.filter(p => p.passed).map(p => p.student_email))].length;
+    
+    return [
+      { stage: 'Étudiants certifiés', count: totalStudents, percent: 100 },
+      { stage: 'Ont commencé un cours', count: studentsWithProgress, percent: totalStudents > 0 ? (studentsWithProgress / totalStudents * 100).toFixed(0) : 0 },
+      { stage: 'Ont validé ≥1 cours', count: studentsWithCompletion, percent: totalStudents > 0 ? (studentsWithCompletion / totalStudents * 100).toFixed(0) : 0 }
+    ];
+  }, [students, allProgress]);
+
+  if (isLoading) {
+    return (
+      <AdminGuard>
+        <div className="min-h-screen bg-gray-50">
+          <AdminTopNav />
+          <div className="pt-20 flex items-center justify-center h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        </div>
+      </AdminGuard>
+    );
+  }
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <AdminTopNav />
-        <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Analytique & Statistiques</h1>
-            <p className="text-gray-600 mt-1">Vue d'ensemble de la plateforme en temps réel</p>
+        <div className="pt-20 px-4 pb-12 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 mb-2">Tableau analytique avancé</h1>
+              <p className="text-gray-600 text-sm">Analyse complète et indicateurs de performance en temps réel</p>
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium"
+              >
+                <option value="7d">7 derniers jours</option>
+                <option value="30d">30 derniers jours</option>
+                <option value="90d">90 derniers jours</option>
+                <option value="1y">1 an</option>
+              </select>
+            </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
-          ) : (
-            <>
-              {/* KPIs principaux */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-700 text-white">
-                  <CardContent className="pt-5 pb-4">
-                    <Users className="w-8 h-8 text-blue-200 mb-2" />
-                    <p className="text-3xl font-bold">{students.length}</p>
-                    <p className="text-blue-100 text-sm">Étudiants inscrits</p>
-                    <p className="text-blue-200 text-xs mt-1">{students.filter(s => s.status === 'certifié').length} certifiés</p>
+          {/* KPIs principaux */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+              <CardContent className="pt-5 pb-4">
+                <Users className="w-8 h-8 text-blue-200 mb-2" />
+                <p className="text-3xl font-bold">{metrics.students.total}</p>
+                <p className="text-blue-100 text-sm">Étudiants inscrits</p>
+                <div className="flex gap-2 mt-2">
+                  <Badge className="bg-white/20 text-white text-xs">{metrics.students.certified} certifiés</Badge>
+                  <Badge className="bg-white/20 text-white text-xs">{metrics.students.active} actifs</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+              <CardContent className="pt-5 pb-4">
+                <Award className="w-8 h-8 text-green-200 mb-2" />
+                <p className="text-3xl font-bold">{metrics.courses.completed}</p>
+                <p className="text-green-100 text-sm">Cours validés</p>
+                <p className="text-green-200 text-xs mt-2">Taux de réussite: {metrics.courses.successRate}%</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+              <CardContent className="pt-5 pb-4">
+                <Eye className="w-8 h-8 text-purple-200 mb-2" />
+                <p className="text-3xl font-bold">{metrics.engagement.totalVisits}</p>
+                <p className="text-purple-100 text-sm">Visites totales</p>
+                <p className="text-purple-200 text-xs mt-2">{metrics.engagement.avgDailyVisits}/jour en moyenne</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
+              <CardContent className="pt-5 pb-4">
+                <DollarSign className="w-8 h-8 text-orange-200 mb-2" />
+                <p className="text-3xl font-bold">{metrics.revenue.total.toLocaleString()}</p>
+                <p className="text-orange-100 text-sm">Revenus (XOF)</p>
+                <div className="flex gap-2 mt-2">
+                  <Badge className="bg-white/20 text-white text-xs">Docs: {metrics.revenue.documentsSold}</Badge>
+                  <Badge className="bg-white/20 text-white text-xs">Scol: {metrics.revenue.tuitionPaid}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="bg-white border border-gray-100 shadow-sm rounded-xl p-1">
+              <TabsTrigger value="overview" className="rounded-lg">Vue d'ensemble</TabsTrigger>
+              <TabsTrigger value="students" className="rounded-lg">Étudiants</TabsTrigger>
+              <TabsTrigger value="courses" className="rounded-lg">Cours</TabsTrigger>
+              <TabsTrigger value="engagement" className="rounded-lg">Engagement</TabsTrigger>
+              <TabsTrigger value="revenue" className="rounded-lg">Revenus</TabsTrigger>
+            </TabsList>
+
+            {/* Vue d'ensemble */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Évolution inscriptions */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <LineChart className="w-5 h-5 text-blue-600" />
+                      Inscriptions - 30 derniers jours
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5">
+                    <div className="flex items-end gap-1 h-32 overflow-x-auto">
+                      {timeAnalytics.signups.map((item, i) => {
+                        const max = Math.max(...timeAnalytics.signups.map(s => s.count), 1);
+                        return (
+                          <div key={i} className="flex-1 min-w-[12px] flex flex-col items-center gap-1">
+                            {item.count > 0 && <span className="text-[9px] font-bold text-gray-600">{item.count}</span>}
+                            <div
+                              className="w-full rounded-t-md"
+                              style={{
+                                height: `${(item.count / max) * 100}px`,
+                                minHeight: item.count > 0 ? '4px' : '2px',
+                                background: item.count > 0 ? 'linear-gradient(to top, #3b82f6, #60a5fa)' : '#e5e7eb'
+                              }}
+                            />
+                            {i % 5 === 0 && <span className="text-[8px] text-gray-400">{item.date}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </CardContent>
                 </Card>
-                <Card className="border-none shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-                  <CardContent className="pt-5 pb-4">
-                    <Award className="w-8 h-8 text-green-200 mb-2" />
-                    <p className="text-3xl font-bold">{validatedByActiveStudents.length}</p>
-                    <p className="text-green-100 text-sm">Cours validés</p>
-                    <p className="text-green-200 text-xs mt-1">Par étudiants actifs</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
-                  <CardContent className="pt-5 pb-4">
-                    <TrendingUp className="w-8 h-8 text-purple-200 mb-2" />
-                    <p className="text-3xl font-bold">{successRate}%</p>
-                    <p className="text-purple-100 text-sm">Taux de réussite</p>
-                    <p className="text-purple-200 text-xs mt-1">Moyenne : {avgScore}/20</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-none shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
-                  <CardContent className="pt-5 pb-4">
-                    <Activity className="w-8 h-8 text-orange-200 mb-2" />
-                    <p className="text-3xl font-bold">{activeStudentsCount}</p>
-                    <p className="text-orange-100 text-sm">Étudiants actifs</p>
-                    <p className="text-orange-200 text-xs mt-1">Ont suivi ≥1 cours</p>
+
+                {/* Évolution trafic */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-cyan-600" />
+                      Visites - 30 derniers jours
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5">
+                    <div className="flex items-end gap-1 h-32 overflow-x-auto">
+                      {timeAnalytics.visits.map((item, i) => {
+                        const max = Math.max(...timeAnalytics.visits.map(v => v.count), 1);
+                        return (
+                          <div key={i} className="flex-1 min-w-[12px] flex flex-col items-center gap-1">
+                            {item.count > 0 && <span className="text-[9px] font-bold text-gray-600">{item.count}</span>}
+                            <div
+                              className="w-full rounded-t-md"
+                              style={{
+                                height: `${(item.count / max) * 100}px`,
+                                minHeight: item.count > 0 ? '4px' : '2px',
+                                background: item.count > 0 ? 'linear-gradient(to top, #06b6d4, #22d3ee)' : '#e5e7eb'
+                              }}
+                            />
+                            {i % 5 === 0 && <span className="text-[8px] text-gray-400">{item.date}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
-              <Tabs defaultValue="students" className="space-y-6">
-                <TabsList className="bg-white border border-gray-100 shadow-sm rounded-xl p-1">
-                  <TabsTrigger value="students" className="rounded-lg">Étudiants</TabsTrigger>
-                  <TabsTrigger value="courses" className="rounded-lg">Cours</TabsTrigger>
-                  <TabsTrigger value="traffic" className="rounded-lg">Trafic</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="students" className="space-y-6">
-                  {/* Inscriptions par mois */}
-                  <Card className="border-none shadow-lg">
-                    <CardHeader className="border-b border-gray-100">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <BarChart2 className="w-5 h-5 text-blue-600" />
-                        Inscriptions — 6 derniers mois
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      <div className="flex items-end gap-2 h-32">
-                        {monthlySignups.map((m, i) => (
-                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                            <span className="text-xs font-bold text-gray-700">{m.count}</span>
-                            <div
-                              className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all"
-                              style={{ height: `${(m.count / maxMonthly) * 96}px`, minHeight: m.count > 0 ? '8px' : '2px' }}
-                            />
-                            <span className="text-xs text-gray-500">{m.label}</span>
+              {/* Funnel de conversion */}
+              <Card className="border-none shadow-lg">
+                <CardHeader className="border-b border-gray-100">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                    Tunnel de conversion des étudiants
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="space-y-4">
+                    {completionFunnel.map((stage, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="font-medium text-gray-900">{stage.stage}</span>
+                          <span className="text-gray-600">{stage.count} étudiants ({stage.percent}%)</span>
+                        </div>
+                        <div className="h-8 bg-gray-100 rounded-lg overflow-hidden">
+                          <div
+                            className="h-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{
+                              width: `${stage.percent}%`,
+                              background: `linear-gradient(to right, ${['#3b82f6', '#8b5cf6', '#10b981'][i]}, ${['#60a5fa', '#a78bfa', '#34d399'][i]})`
+                            }}
+                          >
+                            {stage.percent}%
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Pays */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Globe className="w-5 h-5 text-blue-600" />
-                          Pays des étudiants
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-5 space-y-3">
-                        {topCountries.map(([country, count]) => (
-                          <div key={country} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="font-medium text-gray-900">{country}</span>
-                              <span className="text-gray-500">{count} étudiant{count > 1 ? 's' : ''}</span>
-                            </div>
-                            <Progress value={(count / students.length) * 100} className="h-2" />
+            {/* Onglet Étudiants */}
+            <TabsContent value="students" className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="border border-gray-200">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-gray-900">{metrics.students.total}</p>
+                    <p className="text-sm text-gray-600">Total</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-green-200 bg-green-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-green-700">{metrics.students.certified}</p>
+                    <p className="text-sm text-green-600">Certifiés</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-amber-200 bg-amber-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-amber-700">{metrics.students.pending}</p>
+                    <p className="text-sm text-amber-600">En attente</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-blue-200 bg-blue-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-blue-700">{metrics.students.active}</p>
+                    <p className="text-sm text-blue-600">Actifs</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Par domaine */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-blue-600" />
+                      Répartition par domaine
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-3">
+                    {domainDistribution.map(([domain, stats]) => (
+                      <div key={domain} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-gray-900 text-xs">{domain}</span>
+                          <div className="flex gap-1">
+                            <Badge className="bg-blue-50 text-blue-700 text-xs">{stats.total}</Badge>
+                            <Badge className="bg-green-50 text-green-700 text-xs">{stats.certified} cert.</Badge>
+                            <Badge className="bg-purple-50 text-purple-700 text-xs">{stats.active} actifs</Badge>
                           </div>
-                        ))}
-                        {topCountries.length === 0 && <p className="text-gray-400 text-center py-4">Aucune donnée</p>}
-                      </CardContent>
-                    </Card>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
+                            style={{ width: `${(stats.total / metrics.students.total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
 
-                    {/* Par formation */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <BookOpen className="w-5 h-5 text-indigo-600" />
-                          Répartition par formation
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-5 space-y-3">
-                        {Object.entries(formationStats).sort((a, b) => b[1].total - a[1].total).map(([formation, stat]) => (
-                          <div key={formation} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="font-medium text-gray-900 text-xs">{formation}</span>
-                              <div className="flex gap-2">
-                                <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{stat.total}</Badge>
-                                <Badge className="bg-green-50 text-green-700 border-green-100 text-xs">{stat.certified} certifiés</Badge>
-                              </div>
-                            </div>
-                            <Progress value={(stat.certified / Math.max(1, stat.total)) * 100} className="h-2" />
+                {/* Par formation */}
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Award className="w-5 h-5 text-indigo-600" />
+                      Répartition par formation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-3">
+                    {formationDistribution.map(([formation, stats]) => (
+                      <div key={formation} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-gray-900 text-xs">{formation}</span>
+                          <div className="flex gap-1">
+                            <Badge className="bg-indigo-50 text-indigo-700 text-xs">{stats.total}</Badge>
+                            <Badge className="bg-green-50 text-green-700 text-xs">{stats.certified} cert.</Badge>
                           </div>
-                        ))}
-                        {Object.keys(formationStats).length === 0 && <p className="text-gray-400 text-center py-4">Aucune donnée</p>}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600"
+                            style={{ width: `${(stats.certified / Math.max(stats.total, 1)) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
 
-                <TabsContent value="courses" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Cours par domaine */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <BookOpen className="w-5 h-5 text-green-600" />
-                          Cours validés par domaine
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-5 space-y-3">
-                        {Object.entries(domainStats).sort((a, b) => b[1].validated - a[1].validated).map(([domain, stat]) => (
-                          <div key={domain} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="font-medium text-gray-900 text-xs leading-tight">{domain}</span>
-                              <div className="flex gap-1 flex-shrink-0 ml-2">
-                                <Badge className="bg-green-50 text-green-700 border-green-100 text-xs">{stat.validated} validés</Badge>
-                                <Badge className="bg-gray-50 text-gray-600 border-gray-100 text-xs">{stat.courses} cours</Badge>
-                              </div>
-                            </div>
-                            <Progress value={stat.courses > 0 ? (stat.validated / Math.max(1, stat.courses * activeStudentsCount)) * 100 : 0} className="h-2" />
+                {/* Géographie */}
+                <Card className="border-none shadow-lg lg:col-span-2">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-green-600" />
+                      Top 10 pays
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5">
+                    <div className="grid grid-cols-2 gap-4">
+                      {geographicDistribution.map(([country, count], i) => (
+                        <div key={country} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+                            {i + 1}
                           </div>
-                        ))}
-                        {Object.keys(domainStats).length === 0 && <p className="text-gray-400 text-center py-4">Aucun cours</p>}
-                      </CardContent>
-                    </Card>
+                          <div className="flex-1">
+                            <p className="font-bold text-gray-900 text-sm">{country}</p>
+                            <p className="text-xs text-gray-500">{count} étudiant{count > 1 ? 's' : ''} ({((count / metrics.students.total) * 100).toFixed(0)}%)</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-                    {/* Engagement */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-purple-600" />
-                          Performance globale
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-5 space-y-4">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                          <p className="text-sm text-gray-600 mb-1">Total tentatives d'examen</p>
-                          <p className="text-3xl font-bold text-blue-600">{allProgress.reduce((s, p) => s + (p.attempts || 1), 0)}</p>
-                        </div>
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                          <p className="text-sm text-gray-600 mb-1">Cours réussis (étudiants actifs)</p>
-                          <p className="text-3xl font-bold text-green-600">{validatedByActiveStudents.length}</p>
-                        </div>
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-                          <p className="text-sm text-gray-600 mb-1">Moyenne générale des examens</p>
-                          <p className="text-3xl font-bold text-purple-600">{avgScore}/20</p>
-                        </div>
-                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
-                          <p className="text-sm text-gray-600 mb-1">Taux de réussite global</p>
-                          <p className="text-3xl font-bold text-orange-600">{successRate}%</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
+            {/* Onglet Cours */}
+            <TabsContent value="courses" className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="border border-gray-200">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-gray-900">{metrics.courses.total}</p>
+                    <p className="text-sm text-gray-600">Cours disponibles</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-green-200 bg-green-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-green-700">{metrics.courses.completed}</p>
+                    <p className="text-sm text-green-600">Validations</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-purple-200 bg-purple-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-purple-700">{metrics.courses.successRate}%</p>
+                    <p className="text-sm text-purple-600">Taux de réussite</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-blue-200 bg-blue-50">
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-2xl font-bold text-blue-700">{metrics.courses.avgScore}/20</p>
+                    <p className="text-sm text-blue-600">Moyenne générale</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-                <TabsContent value="traffic" className="space-y-6">
-                  {/* KPIs trafic */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Card className="border-none shadow-md bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
-                      <CardContent className="pt-4 pb-3">
-                        <Eye className="w-7 h-7 text-cyan-200 mb-1" />
-                        <p className="text-2xl font-bold">{totalVisits}</p>
-                        <p className="text-cyan-100 text-xs">Visites totales</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-none shadow-md bg-gradient-to-br from-violet-500 to-purple-700 text-white">
-                      <CardContent className="pt-4 pb-3">
-                        <MapPin className="w-7 h-7 text-violet-200 mb-1" />
-                        <p className="text-2xl font-bold">{topVisitorCountries.length}</p>
-                        <p className="text-violet-100 text-xs">Pays différents</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-none shadow-md bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                      <CardContent className="pt-4 pb-3">
-                        <Smartphone className="w-7 h-7 text-emerald-200 mb-1" />
-                        <p className="text-2xl font-bold">{deviceStats['mobile'] || 0}</p>
-                        <p className="text-emerald-100 text-xs">Visites mobile</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-none shadow-md bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                      <CardContent className="pt-4 pb-3">
-                        <TrendingUp className="w-7 h-7 text-amber-200 mb-1" />
-                        <p className="text-2xl font-bold">{dailyVisits[dailyVisits.length - 1]?.count || 0}</p>
-                        <p className="text-amber-100 text-xs">Visites aujourd'hui</p>
-                      </CardContent>
-                    </Card>
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-orange-600" />
+                      Statistiques d'examens
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-4">
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                      <p className="text-sm text-gray-600 mb-1">Total tentatives</p>
+                      <p className="text-3xl font-bold text-blue-600">{metrics.courses.totalAttempts}</p>
+                    </div>
+                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                      <p className="text-sm text-gray-600 mb-1">Moyenne tentatives/examen</p>
+                      <p className="text-3xl font-bold text-purple-600">{metrics.courses.avgAttemptsPerExam}</p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  {/* Graphe évolutif 14 jours */}
-                  <Card className="border-none shadow-lg">
-                    <CardHeader className="border-b border-gray-100">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <BarChart2 className="w-5 h-5 text-cyan-600" />
-                        Évolution des visites — 14 derniers jours
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-5">
-                      {totalVisits === 0 ? (
-                        <div className="text-center py-8 text-gray-400">
-                          <Eye className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">Les visites de la page d'accueil seront trackées automatiquement</p>
-                        </div>
-                      ) : (
-                        <div className="flex items-end gap-1 h-36 overflow-x-auto pb-2">
-                          {dailyVisits.map((d, i) => (
-                            <div key={i} className="flex-1 min-w-[20px] flex flex-col items-center gap-1">
-                              <span className="text-[10px] font-bold text-gray-600">{d.count > 0 ? d.count : ''}</span>
-                              <div
-                                className="w-full rounded-t-md transition-all"
-                                style={{
-                                  height: `${(d.count / maxDaily) * 110}px`,
-                                  minHeight: d.count > 0 ? '6px' : '2px',
-                                  background: d.count > 0
-                                    ? `linear-gradient(to top, #0891b2, #06b6d4)`
-                                    : '#e5e7eb'
-                                }}
-                              />
-                              <span className="text-[9px] text-gray-400 whitespace-nowrap">{d.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                <Card className="border-none shadow-lg">
+                  <CardHeader className="border-b border-gray-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-green-600" />
+                      Support pédagogique
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-5 space-y-4">
+                    <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+                      <p className="text-sm text-gray-600 mb-1">Questions posées</p>
+                      <p className="text-3xl font-bold text-green-600">{metrics.content.questions}</p>
+                    </div>
+                    <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                      <p className="text-sm text-gray-600 mb-1">Taux de réponse</p>
+                      <p className="text-3xl font-bold text-indigo-600">{metrics.content.responseRate}%</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-                  {/* Graphe mensuel + pays */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Visites par mois */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-blue-600" />
-                          Visites mensuelles (6 mois)
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <div className="flex items-end gap-2 h-28">
-                          {monthlyVisits.map((m, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                              <span className="text-xs font-bold text-gray-700">{m.count}</span>
-                              <div
-                                className="w-full rounded-t-lg"
-                                style={{
-                                  height: `${(m.count / maxMonthlyVisits) * 80}px`,
-                                  minHeight: m.count > 0 ? '6px' : '2px',
-                                  background: m.count > 0 ? 'linear-gradient(to top, #6366f1, #818cf8)' : '#e5e7eb'
-                                }}
-                              />
-                              <span className="text-[10px] text-gray-500">{m.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+            {/* Onglet Engagement */}
+            <TabsContent value="engagement" className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="border border-gray-200">
+                  <CardContent className="pt-4 pb-4">
+                    <Eye className="w-6 h-6 text-cyan-600 mb-1" />
+                    <p className="text-2xl font-bold text-gray-900">{metrics.engagement.totalVisits}</p>
+                    <p className="text-sm text-gray-600">Visites totales</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-blue-200 bg-blue-50">
+                  <CardContent className="pt-4 pb-4">
+                    <TrendingUp className="w-6 h-6 text-blue-600 mb-1" />
+                    <p className="text-2xl font-bold text-blue-700">{metrics.engagement.avgDailyVisits}</p>
+                    <p className="text-sm text-blue-600">Visites/jour</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-purple-200 bg-purple-50">
+                  <CardContent className="pt-4 pb-4">
+                    <Globe className="w-6 h-6 text-purple-600 mb-1" />
+                    <p className="text-2xl font-bold text-purple-700">{metrics.engagement.uniqueCountries}</p>
+                    <p className="text-sm text-purple-600">Pays uniques</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-green-200 bg-green-50">
+                  <CardContent className="pt-4 pb-4">
+                    <FileText className="w-6 h-6 text-green-600 mb-1" />
+                    <p className="text-2xl font-bold text-green-700">{metrics.content.posts}</p>
+                    <p className="text-sm text-green-600">Articles publiés</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-                    {/* Top pays visiteurs */}
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-blue-600" />
-                          Pays de provenance
-                          {totalVisits > 0 && <span className="ml-auto text-xs font-normal text-gray-400">{totalVisits} visites</span>}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-4 space-y-2">
-                        {totalVisits === 0 ? (
-                          <p className="text-gray-400 text-center py-6 text-sm">Aucune visite enregistrée</p>
-                        ) : (
-                          topVisitorCountries.map(([country, count], i) => (
-                            <div key={country} className="flex items-center gap-3">
-                              <span className="text-xs text-gray-400 w-4 font-bold">{i + 1}</span>
-                              <div className="flex-1">
-                                <div className="flex justify-between text-sm mb-0.5">
-                                  <span className="font-medium text-gray-800 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3 text-gray-400" /> {country}
-                                  </span>
-                                  <span className="text-gray-500 text-xs">{count} — {((count / totalVisits) * 100).toFixed(0)}%</span>
-                                </div>
-                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full"
-                                    style={{
-                                      width: `${(count / totalVisits) * 100}%`,
-                                      background: `hsl(${210 + i * 25}, 70%, 55%)`
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Appareils */}
-                  {totalVisits > 0 && (
-                    <Card className="border-none shadow-lg">
-                      <CardHeader className="border-b border-gray-100">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Smartphone className="w-4 h-4 text-indigo-600" />
-                          Répartition par appareil
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <div className="grid grid-cols-3 gap-4">
-                          {[['mobile', Smartphone, '#10b981'], ['desktop', Monitor, '#6366f1'], ['tablet', Tablet, '#f59e0b']].map(([type, Icon, color]) => {
-                            const count = deviceStats[type] || 0;
-                            const pct = totalVisits > 0 ? ((count / totalVisits) * 100).toFixed(0) : 0;
-                            return (
-                              <div key={type} className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                <Icon className="w-7 h-7 mx-auto mb-2" style={{ color }} />
-                                <p className="text-2xl font-bold text-gray-800">{pct}%</p>
-                                <p className="text-xs text-gray-500 capitalize mt-1">{type === 'mobile' ? 'Mobile' : type === 'desktop' ? 'Ordinateur' : 'Tablette'}</p>
-                                <p className="text-xs text-gray-400">{count} visites</p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
+            {/* Onglet Revenus */}
+            <TabsContent value="revenue" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-none shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                  <CardContent className="pt-5 pb-4">
+                    <DollarSign className="w-8 h-8 text-green-200 mb-2" />
+                    <p className="text-3xl font-bold">{metrics.revenue.total.toLocaleString()} XOF</p>
+                    <p className="text-green-100 text-sm">Revenus totaux</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-blue-200 bg-blue-50">
+                  <CardContent className="pt-5 pb-4">
+                    <FileText className="w-8 h-8 text-blue-600 mb-2" />
+                    <p className="text-3xl font-bold text-blue-700">{metrics.revenue.totalDocuments.toLocaleString()}</p>
+                    <p className="text-sm text-blue-600">Vente de documents</p>
+                    <Badge className="bg-blue-100 text-blue-700 mt-2">{metrics.revenue.documentsSold} ventes</Badge>
+                  </CardContent>
+                </Card>
+                <Card className="border border-purple-200 bg-purple-50">
+                  <CardContent className="pt-5 pb-4">
+                    <Award className="w-8 h-8 text-purple-600 mb-2" />
+                    <p className="text-3xl font-bold text-purple-700">{metrics.revenue.totalTuition.toLocaleString()}</p>
+                    <p className="text-sm text-purple-600">Frais de scolarité</p>
+                    <Badge className="bg-purple-100 text-purple-700 mt-2">{metrics.revenue.tuitionPaid} paiements</Badge>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </AdminGuard>
