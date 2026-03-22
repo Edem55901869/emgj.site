@@ -139,7 +139,7 @@ export default function AdminAnalytics() {
 
     // Engagement metrics
     const uniqueVisitors = [...new Set(visitors.map(v => v.id))].length;
-    const avgDuration = 40.8; // Simulated average visit duration in seconds
+    const avgDuration = 0; // No duration tracking available
 
     // Revenue metrics
     const validatedPurchases = purchaseRequests.filter(r => r.status === 'validé');
@@ -227,23 +227,16 @@ export default function AdminAnalytics() {
 
   // Page traffic data
   const pageTrafficData = useMemo(() => {
-    const pages = {
-      'Home': 0,
-      'StudentDashboard': 0,
-      'AdminDashboard': 0,
-      'Connexion': 0,
-      'StudentCourses': 0
-    };
+    const pageCounts = visitors.reduce((acc, v) => {
+      const page = v.page || 'Home';
+      acc[page] = (acc[page] || 0) + 1;
+      return acc;
+    }, {});
 
-    // Simulate page views distribution
-    const total = visitors.length;
-    return [
-      { page: 'Home', visits: Math.floor(total * 0.4) },
-      { page: 'AdminDashboard', visits: Math.floor(total * 0.2) },
-      { page: 'StudentDashboard', visits: Math.floor(total * 0.18) },
-      { page: 'Connexion', visits: Math.floor(total * 0.15) },
-      { page: 'StudentCourses', visits: Math.floor(total * 0.07) }
-    ].sort((a, b) => b.visits - a.visits);
+    return Object.entries(pageCounts)
+      .map(([page, visits]) => ({ page, visits }))
+      .sort((a, b) => b.visits - a.visits)
+      .slice(0, 5);
   }, [visitors]);
 
   // Country distribution
@@ -262,15 +255,14 @@ export default function AdminAnalytics() {
   // Device distribution
   const deviceData = useMemo(() => {
     const dist = visitors.reduce((acc, v) => {
-      const device = v.device_type || 'unknown';
+      const device = v.device_type || 'Desktop';
       acc[device] = (acc[device] || 0) + 1;
       return acc;
     }, {});
-    return [
-      { name: 'Mobile', value: dist.mobile || 0 },
-      { name: 'Desktop', value: dist.desktop || 0 },
-      { name: 'Tablet', value: dist.tablet || 0 }
-    ];
+    
+    return Object.entries(dist)
+      .map(([name, value]) => ({ name, value }))
+      .filter(d => d.value > 0);
   }, [visitors]);
 
   // Domain distribution
@@ -394,11 +386,11 @@ export default function AdminAnalytics() {
                           Visit Duration
                           <Clock className="w-3 h-3 text-gray-400" />
                         </p>
-                        <p className="text-3xl font-bold text-gray-900">{metrics.engagement.avgDuration} seconds</p>
+                        <p className="text-3xl font-bold text-gray-900">N/A</p>
                       </div>
-                      <div className="flex items-center gap-1 text-sm font-medium text-green-600">
-                        <ArrowUp className="w-4 h-4" />
-                        160%
+                      <div className="flex items-center gap-1 text-sm font-medium text-gray-400">
+                        <Clock className="w-4 h-4" />
+                        -
                       </div>
                     </div>
                   </CardContent>
@@ -490,18 +482,20 @@ export default function AdminAnalytics() {
                   </CardHeader>
                   <CardContent className="pt-4">
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded px-2">
-                        <span className="text-sm text-gray-700">Android</span>
-                        <span className="text-sm font-semibold text-gray-900">{deviceData.find(d => d.name === 'Mobile')?.value || 0}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded px-2">
-                        <span className="text-sm text-gray-700">Windows</span>
-                        <span className="text-sm font-semibold text-gray-900">{Math.floor((deviceData.find(d => d.name === 'Desktop')?.value || 0) * 0.6)}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded px-2">
-                        <span className="text-sm text-gray-700">iOS</span>
-                        <span className="text-sm font-semibold text-gray-900">{deviceData.find(d => d.name === 'Tablet')?.value || 0}</span>
-                      </div>
+                      {visitors.reduce((acc, v) => {
+                        const os = v.os || 'Unknown';
+                        acc[os] = (acc[os] || 0) + 1;
+                        return acc;
+                      }, {}) && Object.entries(visitors.reduce((acc, v) => {
+                        const os = v.os || 'Unknown';
+                        acc[os] = (acc[os] || 0) + 1;
+                        return acc;
+                      }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([os, count]) => (
+                        <div key={os} className="flex items-center justify-between py-2 hover:bg-gray-50 rounded px-2">
+                          <span className="text-sm text-gray-700">{os}</span>
+                          <span className="text-sm font-semibold text-gray-900">{count}</span>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
