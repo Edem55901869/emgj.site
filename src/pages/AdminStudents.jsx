@@ -243,7 +243,7 @@ export default function AdminStudents() {
                       {student.whatsapp && (
                         <a
                           href={`https://wa.me/${student.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
-                            `*École de Ministère Globale de Jésus (EMGJ)*\n` +
+                            `*École Missionnaire Génération Joël (EMGJ)*\n` +
                             `*Accusé de réception - Demande d'adhésion*\n\n` +
                             `Cher(e) *${student.first_name} ${student.last_name}*,\n\n` +
                             `Nous avons bien reçu votre demande d'adhésion à l'EMGJ en date du *${student.created_date ? format(new Date(student.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}*.\n\n` +
@@ -331,7 +331,7 @@ export default function AdminStudents() {
                     {selectedStudent.whatsapp && (
                       <a
                         href={`https://wa.me/${selectedStudent.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
-                          `*École de Ministère Globale de Jésus (EMGJ)*\n` +
+                          `*École Missionnaire Génération Joël (EMGJ)*\n` +
                           `*Accusé de réception - Demande d'adhésion*\n\n` +
                           `Cher(e) *${selectedStudent.first_name} ${selectedStudent.last_name}*,\n\n` +
                           `Nous avons bien reçu votre demande d'adhésion à l'EMGJ en date du *${selectedStudent.created_date ? format(new Date(selectedStudent.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}*.\n\n` +
