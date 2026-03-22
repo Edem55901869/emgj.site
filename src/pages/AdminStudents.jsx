@@ -242,7 +242,24 @@ export default function AdminStudents() {
                       <p className="font-bold text-gray-900">{student.first_name} {student.last_name}</p>
                       {student.whatsapp && (
                         <a
-                          href={`https://wa.me/${student.whatsapp.replace(/[\s+\-()]/g, '')}`}
+                          href={`https://wa.me/${student.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
+                            `🙏 *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous !*\n\n` +
+                            `Cher(e) *${student.first_name} ${student.last_name}*,\n\n` +
+                            `Nous avons bien reçu votre demande d'adhésion à l'*École de Ministère Globale de Jésus (EMGJ)* le *${student.created_date ? format(new Date(student.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}*.\n\n` +
+                            `📋 *Informations soumises :*\n` +
+                            `• Domaine : *${student.domain}*\n` +
+                            `• Formation : *${student.formation_type}*\n` +
+                            `• Pays : *${student.country}*\n` +
+                            `• Ville : *${student.city}*\n` +
+                            `• Email : ${student.user_email}\n\n` +
+                            `✅ Votre demande est actuellement *en cours d'examen* par notre équipe administrative.\n\n` +
+                            `💡 *Prochaines étapes :*\n` +
+                            `Connectez-vous à votre compte sur notre plateforme pour suivre l'état de votre demande. Vous recevrez une notification dès que votre compte sera validé.\n\n` +
+                            `🌐 *Accédez à la plateforme :*\n` +
+                            `https://emgj.site\n\n` +
+                            `🙌 Que Dieu vous bénisse abondamment dans votre parcours de formation spirituelle !\n\n` +
+                            `_L'équipe EMGJ - Former des ouvriers pour la moisson du Seigneur_`
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title={`WhatsApp: ${student.whatsapp}`}
@@ -308,10 +325,27 @@ export default function AdminStudents() {
                     <p className="text-gray-600 mt-1">{selectedStudent.user_email}</p>
                     {selectedStudent.whatsapp && (
                       <a
-                        href={`https://wa.me/${selectedStudent.whatsapp.replace(/[\s+\-()]/g, '')}`}
+                        href={`https://wa.me/${selectedStudent.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
+                          `🙏 *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous !*\n\n` +
+                          `Cher(e) *${selectedStudent.first_name} ${selectedStudent.last_name}*,\n\n` +
+                          `Nous avons bien reçu votre demande d'adhésion à l'*École de Ministère Globale de Jésus (EMGJ)* le *${selectedStudent.created_date ? format(new Date(selectedStudent.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}*.\n\n` +
+                          `📋 *Informations soumises :*\n` +
+                          `• Domaine : *${selectedStudent.domain}*\n` +
+                          `• Formation : *${selectedStudent.formation_type}*\n` +
+                          `• Pays : *${selectedStudent.country}*\n` +
+                          `• Ville : *${selectedStudent.city}*\n` +
+                          `• Email : ${selectedStudent.user_email}\n\n` +
+                          `✅ Votre demande est actuellement *en cours d'examen* par notre équipe administrative.\n\n` +
+                          `💡 *Prochaines étapes :*\n` +
+                          `Connectez-vous à votre compte sur notre plateforme pour suivre l'état de votre demande. Vous recevrez une notification dès que votre compte sera validé.\n\n` +
+                          `🌐 *Accédez à la plateforme :*\n` +
+                          `https://emgj.site\n\n` +
+                          `🙌 Que Dieu vous bénisse abondamment dans votre parcours de formation spirituelle !\n\n` +
+                          `_L'équipe EMGJ - Former des ouvriers pour la moisson du Seigneur_`
+                        )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition-colors"
+                        className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition-colors shadow-lg hover:shadow-xl"
                       >
                         <MessageCircle className="w-4 h-4" />
                         WhatsApp : {selectedStudent.whatsapp}
