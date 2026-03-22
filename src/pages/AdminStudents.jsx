@@ -243,24 +243,24 @@ export default function AdminStudents() {
                       {student.whatsapp && (
                         <a
                           href={`https://wa.me/${student.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
-                            `🔥✨ *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous, bien-aimé(e) !* ✨🔥\n\n` +
-                            `Shalom cher(e) *${student.first_name} ${student.last_name}* ! 🤗💕\n\n` +
-                            `Quelle joie immense pour nous de vous accueillir dans la famille *EMGJ* ! 🎉🙌 Nous sommes ravis d'avoir reçu votre demande d'adhésion le *${student.created_date ? format(new Date(student.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}* et nous louons Dieu pour votre désir ardent de vous former pour Son royaume ! 🌟\n\n` +
-                            `💎 *Votre parcours spirituel :*\n` +
-                            `🎯 Domaine : *${student.domain}*\n` +
-                            `📚 Formation : *${student.formation_type}*\n` +
-                            `🌍 Pays : *${student.country}*\n` +
-                            `🏙️ Ville : *${student.city}*\n` +
-                            `📧 Email : ${student.user_email}\n\n` +
-                            `✅ Votre demande est actuellement entre les mains de notre équipe qui prie pour chacun de vous ! 🙏❤️\n\n` +
-                            `🎁 *Prochaines étapes avec nous :*\n` +
-                            `Connectez-vous régulièrement sur votre espace personnel pour suivre l'avancement de votre demande. Une belle surprise vous attend dès validation ! 🎊 Vous recevrez une notification pleine de joie dès que tout sera prêt ! 📲✨\n\n` +
-                            `🌐 *Rejoignez-nous sur la plateforme :*\n` +
-                            `👉 https://emgj.site 👈\n\n` +
-                            `🔥 *"Car nous sommes son ouvrage, ayant été créés en Jésus-Christ pour de bonnes œuvres"* - Éphésiens 2:10 🔥\n\n` +
-                            `💝 Que le feu du Saint-Esprit embrase votre cœur et que Sa grâce surabonde dans votre vie ! Nous sommes honorés de marcher avec vous dans ce merveilleux voyage spirituel ! 🚀🙌\n\n` +
+                            `🙏 *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous !*\n\n` +
+                            `Shalom cher(e) *${student.first_name} ${student.last_name}* ! 🤗\n\n` +
+                            `Quelle joie pour nous de vous accueillir dans la famille *EMGJ* ! Nous avons bien reçu votre demande d'adhésion le *${student.created_date ? format(new Date(student.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}* et nous louons Dieu pour votre désir de vous former pour Son royaume.\n\n` +
+                            `📋 *Votre parcours spirituel :*\n` +
+                            `• Domaine : *${student.domain}*\n` +
+                            `• Formation : *${student.formation_type}*\n` +
+                            `• Pays : *${student.country}*\n` +
+                            `• Ville : *${student.city}*\n` +
+                            `• Email : ${student.user_email}\n\n` +
+                            `✅ Votre demande est actuellement entre les mains de notre équipe qui prie pour chacun de vous !\n\n` +
+                            `💡 *Prochaines étapes :*\n` +
+                            `Connectez-vous régulièrement sur votre espace personnel pour suivre l'avancement de votre demande. Vous recevrez une notification dès validation !\n\n` +
+                            `🌐 *Accédez à la plateforme :*\n` +
+                            `https://emgj.site\n\n` +
+                            `🔥 *"Car nous sommes son ouvrage, ayant été créés en Jésus-Christ pour de bonnes œuvres"* - Éphésiens 2:10\n\n` +
+                            `Que le feu du Saint-Esprit embrase votre cœur et que Sa grâce surabonde dans votre vie ! Nous sommes honorés de marcher avec vous dans ce merveilleux voyage spirituel.\n\n` +
                             `Avec tout notre amour fraternel en Christ,\n` +
-                            `_🌾 L'équipe EMGJ - Ensemble, formons des ouvriers passionnés pour la grande moisson ! 🌾_`
+                            `_L'équipe EMGJ - Former des ouvriers passionnés pour la grande moisson_ 🌾`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -328,24 +328,24 @@ export default function AdminStudents() {
                     {selectedStudent.whatsapp && (
                       <a
                         href={`https://wa.me/${selectedStudent.whatsapp.replace(/[\s+\-()]/g, '')}?text=${encodeURIComponent(
-                          `🔥✨ *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous, bien-aimé(e) !* ✨🔥\n\n` +
-                          `Shalom cher(e) *${selectedStudent.first_name} ${selectedStudent.last_name}* ! 🤗💕\n\n` +
-                          `Quelle joie immense pour nous de vous accueillir dans la famille *EMGJ* ! 🎉🙌 Nous sommes ravis d'avoir reçu votre demande d'adhésion le *${selectedStudent.created_date ? format(new Date(selectedStudent.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}* et nous louons Dieu pour votre désir ardent de vous former pour Son royaume ! 🌟\n\n` +
-                          `💎 *Votre parcours spirituel :*\n` +
-                          `🎯 Domaine : *${selectedStudent.domain}*\n` +
-                          `📚 Formation : *${selectedStudent.formation_type}*\n` +
-                          `🌍 Pays : *${selectedStudent.country}*\n` +
-                          `🏙️ Ville : *${selectedStudent.city}*\n` +
-                          `📧 Email : ${selectedStudent.user_email}\n\n` +
-                          `✅ Votre demande est actuellement entre les mains de notre équipe qui prie pour chacun de vous ! 🙏❤️\n\n` +
-                          `🎁 *Prochaines étapes avec nous :*\n` +
-                          `Connectez-vous régulièrement sur votre espace personnel pour suivre l'avancement de votre demande. Une belle surprise vous attend dès validation ! 🎊 Vous recevrez une notification pleine de joie dès que tout sera prêt ! 📲✨\n\n` +
-                          `🌐 *Rejoignez-nous sur la plateforme :*\n` +
-                          `👉 https://emgj.site 👈\n\n` +
-                          `🔥 *"Car nous sommes son ouvrage, ayant été créés en Jésus-Christ pour de bonnes œuvres"* - Éphésiens 2:10 🔥\n\n` +
-                          `💝 Que le feu du Saint-Esprit embrase votre cœur et que Sa grâce surabonde dans votre vie ! Nous sommes honorés de marcher avec vous dans ce merveilleux voyage spirituel ! 🚀🙌\n\n` +
+                          `🙏 *Que la grâce et la paix de notre Seigneur Jésus-Christ soient avec vous !*\n\n` +
+                          `Shalom cher(e) *${selectedStudent.first_name} ${selectedStudent.last_name}* ! 🤗\n\n` +
+                          `Quelle joie pour nous de vous accueillir dans la famille *EMGJ* ! Nous avons bien reçu votre demande d'adhésion le *${selectedStudent.created_date ? format(new Date(selectedStudent.created_date), 'd MMMM yyyy', { locale: fr }) : 'récemment'}* et nous louons Dieu pour votre désir de vous former pour Son royaume.\n\n` +
+                          `📋 *Votre parcours spirituel :*\n` +
+                          `• Domaine : *${selectedStudent.domain}*\n` +
+                          `• Formation : *${selectedStudent.formation_type}*\n` +
+                          `• Pays : *${selectedStudent.country}*\n` +
+                          `• Ville : *${selectedStudent.city}*\n` +
+                          `• Email : ${selectedStudent.user_email}\n\n` +
+                          `✅ Votre demande est actuellement entre les mains de notre équipe qui prie pour chacun de vous !\n\n` +
+                          `💡 *Prochaines étapes :*\n` +
+                          `Connectez-vous régulièrement sur votre espace personnel pour suivre l'avancement de votre demande. Vous recevrez une notification dès validation !\n\n` +
+                          `🌐 *Accédez à la plateforme :*\n` +
+                          `https://emgj.site\n\n` +
+                          `🔥 *"Car nous sommes son ouvrage, ayant été créés en Jésus-Christ pour de bonnes œuvres"* - Éphésiens 2:10\n\n` +
+                          `Que le feu du Saint-Esprit embrase votre cœur et que Sa grâce surabonde dans votre vie ! Nous sommes honorés de marcher avec vous dans ce merveilleux voyage spirituel.\n\n` +
                           `Avec tout notre amour fraternel en Christ,\n` +
-                          `_🌾 L'équipe EMGJ - Ensemble, formons des ouvriers passionnés pour la grande moisson ! 🌾_`
+                          `_L'équipe EMGJ - Former des ouvriers passionnés pour la grande moisson_ 🌾`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
