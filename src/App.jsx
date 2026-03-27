@@ -10,6 +10,10 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PaymentSuccess from './pages/PaymentSuccess';
 import APropos from './pages/APropos';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import DownloadManual from './pages/DownloadManual';
+import AdminDocumentation from './pages/AdminDocumentation';
+import AdminCourseDocuments from './pages/AdminCourseDocuments';
+import StudentCourseDocuments from './pages/StudentCourseDocuments';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
