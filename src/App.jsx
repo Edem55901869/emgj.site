@@ -8,13 +8,6 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PaymentSuccess from './pages/PaymentSuccess';
-import StudentTuitionPage from './pages/StudentTuition.jsx';
-import AdminTuitionPage from './pages/AdminTuition.jsx';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import DownloadManual from './pages/DownloadManual';
-import AdminDocumentation from './pages/AdminDocumentation';
-import AdminCourseDocuments from './pages/AdminCourseDocuments';
-import StudentCourseDocuments from './pages/StudentCourseDocuments';
 import APropos from './pages/APropos';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -68,8 +61,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
-      <Route path="/StudentTuition" element={<StudentTuitionPage />} />
-      <Route path="/AdminTuition" element={<AdminTuitionPage />} />
+
       <Route path="/DownloadManual" element={<DownloadManual />} />
       <Route path="/AdminDocumentation" element={<AdminDocumentation />} />
       <Route path="/AdminCourseDocuments" element={<AdminCourseDocuments />} />
