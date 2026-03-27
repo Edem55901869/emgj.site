@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import HeroSection from '../components/landing/HeroSection';
-import VideoSection from '../components/landing/VideoSection';
+
 import DomainsSection from '../components/landing/DomainsSection';
 import CarouselSection from '../components/landing/CarouselSection';
 import TeachersSection from '../components/landing/TeachersSection';
@@ -68,7 +68,7 @@ export default function Home() {
           </div>
         </section>
       )}
-      <VideoSection />
+
       <DomainsSection />
       <CarouselSection />
       <TeachersSection />
