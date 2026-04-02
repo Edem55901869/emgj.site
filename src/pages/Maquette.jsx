@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { GraduationCap, BookOpen, Users, Radio, Library, Newspaper, MessageCircle, Award, Globe, Shield, BarChart3, Video, FileText, Star, ChevronRight, Play, CheckCircle, Zap, Heart, Lock } from 'lucide-react';
+import React from 'react';
+import { GraduationCap, BookOpen, Users, Radio, Library, Newspaper, MessageCircle, Award, Globe, Shield, BarChart3, FileText, Star, ChevronRight, CheckCircle, Zap, Heart, Lock } from 'lucide-react';
 
 const features = [
   {
@@ -83,18 +83,8 @@ const stats = [
   { value: '24/7', label: 'Accès aux ressources', icon: Zap },
 ];
 
-const screens = [
-  { name: 'Tableau de bord étudiant', desc: 'Interface principale avec blog, cours et profil', emoji: '🎓' },
-  { name: 'Espace cours', desc: 'Lecteur audio/vidéo, documents et évaluations QCM', emoji: '📚' },
-  { name: 'Conférence en direct', desc: 'Salle audio/vidéo avec chat et réactions en temps réel', emoji: '🎙️' },
-  { name: 'Bibliothèque', desc: 'Accès à des centaines de ressources spirituelles', emoji: '📖' },
-  { name: 'Gestion admin', desc: 'Dashboard complet pour les administrateurs', emoji: '⚙️' },
-  { name: 'Analytique', desc: 'Statistiques détaillées et rapports en temps réel', emoji: '📊' },
-];
 
 export default function Maquette() {
-  const [activeTab, setActiveTab] = useState('student');
-
   return (
     <div className="min-h-screen bg-white font-sans">
 
@@ -174,47 +164,6 @@ export default function Maquette() {
               <p className="text-gray-600 text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Interfaces aperçu */}
-      <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 py-24 px-6 mb-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="inline-block bg-white/10 text-white/80 text-sm font-bold px-4 py-2 rounded-full mb-4 border border-white/20">INTERFACES</span>
-            <h2 className="text-4xl font-black text-white mb-4">Des interfaces intuitives</h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">Conçues pour les étudiants et les administrateurs avec une expérience fluide.</p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex justify-center gap-3 mb-10">
-            <button
-              onClick={() => setActiveTab('student')}
-              className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'student' ? 'bg-white text-indigo-900 shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-            >
-              👨‍🎓 Interface Étudiant
-            </button>
-            <button
-              onClick={() => setActiveTab('admin')}
-              className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'admin' ? 'bg-white text-indigo-900 shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-            >
-              ⚙️ Interface Admin
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {screens.slice(activeTab === 'student' ? 0 : 3, activeTab === 'student' ? 3 : 6).map((screen, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all group">
-                <div className="text-5xl mb-5">{screen.emoji}</div>
-                <h3 className="text-white font-bold text-lg mb-2">{screen.name}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{screen.desc}</p>
-                <div className="mt-5 flex items-center gap-2 text-indigo-300 text-sm font-semibold group-hover:gap-3 transition-all">
-                  <span>En savoir plus</span>
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
