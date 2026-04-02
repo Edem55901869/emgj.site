@@ -14,6 +14,7 @@ import DownloadManual from './pages/DownloadManual';
 import AdminDocumentation from './pages/AdminDocumentation';
 import AdminCourseDocuments from './pages/AdminCourseDocuments';
 import StudentCourseDocuments from './pages/StudentCourseDocuments';
+import Maquette from './pages/Maquette';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/AdminCourseDocuments" element={<AdminCourseDocuments />} />
       <Route path="/StudentCourseDocuments" element={<StudentCourseDocuments />} />
       <Route path="/APropos" element={<APropos />} />
+      <Route path="/Maquette" element={<Maquette />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
