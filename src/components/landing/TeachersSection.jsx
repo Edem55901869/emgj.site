@@ -1,20 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap } from 'lucide-react';
-
-const teachers = [
-  { name: 'Dr NESTOR NKOSIKA (VODA)', country: '(CAMEROUN)', image: 'https://i.pravatar.cc/150?img=12' },
-  { name: 'Dr GERMAIN NOUDOFININ (ADJIMOTI)', country: '(BENIN)', image: 'https://i.pravatar.cc/150?img=13' },
-  { name: 'Dr CORINE LUKALA (CAMEROUN)', country: '(RDC)', image: 'https://i.pravatar.cc/150?img=9' },
-  { name: 'Dr DJADJOGBO EDOUARD (CAMEROUN)', country: '(BENIN)', image: 'https://i.pravatar.cc/150?img=14' },
-  { name: 'Dr NYANTEU PARAISO ELVIS (NYANTEU)', country: '(CAMEROUN)', image: 'https://i.pravatar.cc/150?img=15' },
-  { name: 'Dr BABA WILFRIED (BENIN)', country: '(CAMEROUN)', image: 'https://i.pravatar.cc/150?img=16' },
-  { name: 'Dr TCHENDJE JÉRÉMIE (BEMBE)', country: '(BENIN)', image: 'https://i.pravatar.cc/150?img=17' },
-  { name: 'Dr TCHOSSE OBEE (BENIN)', country: '(BENIN)', image: 'https://i.pravatar.cc/150?img=18' },
-  { name: 'Dr DESIRE JEAN HUBERT (HAITI)', country: '(HAITI)', image: 'https://i.pravatar.cc/150?img=19' },
-];
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 export default function TeachersSection() {
+  const { data: teachers = [] } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: () => base44.entities.Teacher.filter({ is_active: true }, 'order', 50),
+  });
+
   return (
     <section id="teachers" className="py-24 px-6 bg-gradient-to-b from-slate-900 to-slate-800 scroll-mt-16">
       <div className="max-w-6xl mx-auto">
@@ -34,7 +29,7 @@ export default function TeachersSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {teachers.map((teacher, i) => (
             <motion.div
-              key={i}
+              key={teacher.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -42,13 +37,18 @@ export default function TeachersSection() {
               className="group"
             >
               <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <GraduationCap className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  {teacher.profile_photo ? (
+                    <img src={teacher.profile_photo} alt={teacher.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <GraduationCap className="w-8 h-8 text-white" />
+                  )}
                 </div>
                 <h3 className="text-white font-bold text-center text-sm leading-tight mb-1">
-                  {teacher.name}
+                  {teacher.title ? `${teacher.title} ` : ''}{teacher.name}
                 </h3>
                 <p className="text-blue-300 text-xs text-center">{teacher.country}</p>
+                {teacher.speciality && <p className="text-blue-400/70 text-xs text-center mt-1">{teacher.speciality}</p>}
               </div>
             </motion.div>
           ))}

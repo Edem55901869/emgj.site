@@ -1,0 +1,40 @@
+{
+  "name": "Teacher",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom complet de l'enseignant"
+    },
+    "country": {
+      "type": "string",
+      "description": "Pays d'origine"
+    },
+    "title": {
+      "type": "string",
+      "description": "Titre (Dr, Pasteur, Prof...)"
+    },
+    "speciality": {
+      "type": "string",
+      "description": "Sp\u00e9cialit\u00e9 ou domaine d'enseignement"
+    },
+    "profile_photo": {
+      "type": "string",
+      "description": "URL de la photo de profil"
+    },
+    "order": {
+      "type": "number",
+      "description": "Ordre d'affichage",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible sur la page d'accueil"
+    }
+  },
+  "required": [
+    "name",
+    "country"
+  ]
+}
