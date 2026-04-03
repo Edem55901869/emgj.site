@@ -51,28 +51,31 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
+        <ErrorBoundary pageBoundary>
+          <LayoutWrapper currentPageName={mainPageKey}>
+            <MainPage />
+          </LayoutWrapper>
+        </ErrorBoundary>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
           path={`/${path}`}
           element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
+            <ErrorBoundary pageBoundary>
+              <LayoutWrapper currentPageName={path}>
+                <Page />
+              </LayoutWrapper>
+            </ErrorBoundary>
           }
         />
       ))}
-      <Route path="/PaymentSuccess" element={<PaymentSuccess />} />
-
-      <Route path="/DownloadManual" element={<DownloadManual />} />
-      <Route path="/AdminDocumentation" element={<AdminDocumentation />} />
-      <Route path="/AdminCourseDocuments" element={<AdminCourseDocuments />} />
-      <Route path="/StudentCourseDocuments" element={<StudentCourseDocuments />} />
-      <Route path="/APropos" element={<APropos />} />
+      <Route path="/PaymentSuccess" element={<ErrorBoundary pageBoundary><PaymentSuccess /></ErrorBoundary>} />
+      <Route path="/DownloadManual" element={<ErrorBoundary pageBoundary><DownloadManual /></ErrorBoundary>} />
+      <Route path="/AdminDocumentation" element={<ErrorBoundary pageBoundary><AdminDocumentation /></ErrorBoundary>} />
+      <Route path="/AdminCourseDocuments" element={<ErrorBoundary pageBoundary><AdminCourseDocuments /></ErrorBoundary>} />
+      <Route path="/StudentCourseDocuments" element={<ErrorBoundary pageBoundary><StudentCourseDocuments /></ErrorBoundary>} />
+      <Route path="/APropos" element={<ErrorBoundary pageBoundary><APropos /></ErrorBoundary>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -82,17 +85,15 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <NavigationTracker />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <NavigationTracker />
+          <AuthenticatedApp />
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </AuthProvider>
   )
 }
 
