@@ -44,7 +44,7 @@ export default function StudentNotifications() {
   });
 
   const markReadMutation = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, { status: 'lu' }),
+    mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
@@ -60,8 +60,8 @@ export default function StudentNotifications() {
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      for (const notif of notifications.filter(n => n.status === 'nouveau')) {
-        await base44.entities.Notification.update(notif.id, { status: 'lu' });
+      for (const notif of notifications.filter(n => !n.is_read)) {
+        await base44.entities.Notification.update(notif.id, { is_read: true });
       }
     },
     onSuccess: () => {
@@ -70,7 +70,7 @@ export default function StudentNotifications() {
     },
   });
 
-  const unreadCount = notifications.filter(n => n.status === 'nouveau').length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const getIcon = (type) => {
     switch(type) {
@@ -131,9 +131,9 @@ export default function StudentNotifications() {
             {notifications.map(notif => (
               <div 
                 key={notif.id} 
-                onClick={() => notif.status === 'nouveau' && markReadMutation.mutate(notif.id)}
+                onClick={() => !notif.is_read && markReadMutation.mutate(notif.id)}
                 className={`bg-white rounded-2xl p-4 transition-all cursor-pointer shadow-sm hover:shadow-md ${
-                  notif.status === 'nouveau' ? 'ring-2 ring-blue-200' : 'border border-gray-100'
+                  !notif.is_read ? 'ring-2 ring-blue-200' : 'border border-gray-100'
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -155,7 +155,7 @@ export default function StudentNotifications() {
                       <p className="text-xs text-gray-400">
                         {notif.created_date && format(new Date(notif.created_date), "d MMM 'à' HH:mm", { locale: fr })}
                       </p>
-                      {notif.status === 'nouveau' && (
+                      {!notif.is_read && (
                         <Badge className="bg-blue-100 text-blue-700 text-xs">Nouveau</Badge>
                       )}
                     </div>

@@ -43,7 +43,7 @@ export default function NotificationService({ userEmail, enabled = true }) {
 
     const lastNotifId = localStorage.getItem('last_notif_id');
     const newNotifications = notifications.filter(n => 
-      n.status === 'nouveau' && (!lastNotifId || n.id > lastNotifId)
+      !n.is_read && (!lastNotifId || n.id > lastNotifId)
     );
 
     if (newNotifications.length > 0) {

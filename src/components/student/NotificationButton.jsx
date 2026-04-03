@@ -11,7 +11,7 @@ export default function NotificationButton({ userEmail }) {
   
   const { data: notifications = [] } = useQuery({
     queryKey: ['studentNotifications', userEmail],
-    queryFn: () => base44.entities.Notification.filter({ recipient_email: userEmail, status: 'nouveau' }),
+    queryFn: () => base44.entities.Notification.filter({ recipient_email: userEmail, is_read: false }),
     enabled: !!userEmail,
     refetchInterval: 10000,
   });

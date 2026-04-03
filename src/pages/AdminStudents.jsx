@@ -89,20 +89,11 @@ export default function AdminStudents() {
           .reduce((sum, t) => sum + (t.amount || 0), 0);
 
         // Archiver ce revenu dans la config pour ne pas le perdre
-        if (validatedRevenue > 0) {
-          if (configs.length > 0) {
-            const config = configs[0];
-            await base44.entities.TuitionConfig.update(config.id, {
-              archived_revenue: (config.archived_revenue || 0) + validatedRevenue,
-            });
-          } else {
-            // Créer une config si elle n'existe pas
-            await base44.entities.TuitionConfig.create({
-              payment_link: '',
-              archived_revenue: validatedRevenue,
-              is_active: false,
-            });
-          }
+        if (validatedRevenue > 0 && configs.length > 0) {
+          const config = configs[0];
+          await base44.entities.TuitionConfig.update(config.id, {
+            archived_revenue: (config.archived_revenue || 0) + validatedRevenue,
+          });
         }
 
         // Supprimer tout en parallèle
