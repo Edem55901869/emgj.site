@@ -12,6 +12,7 @@ import APropos from './pages/APropos';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import DownloadManual from './pages/DownloadManual';
 import AdminDocumentation from './pages/AdminDocumentation';
+import AdminEvaluationSimulator from './pages/AdminEvaluationSimulator';
 import AdminCourseDocuments from './pages/AdminCourseDocuments';
 import StudentCourseDocuments from './pages/StudentCourseDocuments';
 
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
       <Route path="/AdminCourseDocuments" element={<ErrorBoundary pageBoundary><AdminCourseDocuments /></ErrorBoundary>} />
       <Route path="/StudentCourseDocuments" element={<ErrorBoundary pageBoundary><StudentCourseDocuments /></ErrorBoundary>} />
       <Route path="/APropos" element={<ErrorBoundary pageBoundary><APropos /></ErrorBoundary>} />
+      <Route path="/AdminEvaluationSimulator" element={<ErrorBoundary pageBoundary><AdminEvaluationSimulator /></ErrorBoundary>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
