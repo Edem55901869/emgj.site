@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw, Image, FileKey } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Newspaper, Library, Radio, MoreHorizontal, LogOut, GraduationCap, Menu, X, MessageCircle, FileText, HelpCircle, DollarSign, BarChart3, Bot, Cloud, Settings, Shield, Eye, MessagesSquare, Video, RefreshCw, Image, FileKey, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import PublicChat from '../PublicChat';
@@ -57,6 +57,7 @@ const moreItemsGroups = [
     icon: Bot,
     items: [
       { name: 'Assistant IA', icon: Bot, page: 'AdminAI' },
+      { name: 'Simulateur d\'évaluations', icon: FlaskConical, page: 'AdminEvaluationSimulator' },
       { name: 'Voir en tant qu\'étudiant', icon: Eye, page: 'AdminViewAsStudent' },
       { name: 'Documentation', icon: BookOpen, page: 'AdminDocumentation' },
       { name: 'Vidéo d\'accueil', icon: Video, page: 'AdminHomeVideo' },
@@ -86,6 +87,7 @@ const PERMISSION_MAP = {
   'AdminManagement': 'admin',
   'AdminViewAsStudent': 'admin',
   'AdminAI': 'admin',
+  'AdminEvaluationSimulator': 'admin',
   'AdminHosting': 'admin',
   'AdminHomeVideo': 'admin',
   'AdminDocumentation': 'admin',
