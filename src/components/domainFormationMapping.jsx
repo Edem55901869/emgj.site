@@ -11,12 +11,12 @@ export const DOMAINS = [
 
 export const FORMATION_BY_DOMAIN = {
   'THÉOLOGIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
-  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Licence', 'Master', 'Doctorat'],
-  'MISSIOLOGIE': ['Licence', 'Master', 'Doctorat'],
-  'ÉCOLE PROPHETIQUES': ['Brevet', 'Baccalauréat', 'Licence', 'Doctorat'],
-  'ENTREPRENEURIAT': ['Licence', 'Master', 'Doctorat'],
-  'AUMÔNERIE': ['Licence', 'Master', 'Doctorat'],
-  'MINISTÈRE APOSTOLIQUE': ['Licence', 'Master', 'Doctorat']
+  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'MISSIOLOGIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'ÉCOLE PROPHETIQUES': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'ENTREPRENEURIAT': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'AUMÔNERIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'MINISTÈRE APOSTOLIQUE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat']
 };
 
 // Domaines spécifiques pour la bibliothèque (inclut École de dimanche)

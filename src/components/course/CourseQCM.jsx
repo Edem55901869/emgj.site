@@ -19,7 +19,7 @@ export default function CourseQCM({ course, evaluation, studentEmail, onSuccess 
   const generateQCM = async () => {
     setGenerating(true);
     try {
-      const qcmQuestions = evaluation.questions.filter(q => q.question_type === 'qcm' || !q.question_type);
+      const qcmQuestions = evaluation.questions.filter(q => q.question_type !== 'redaction');
       const redactionQuestions = evaluation.questions.filter(q => q.question_type === 'redaction');
 
       let generatedQuestions = [];
@@ -142,13 +142,26 @@ Retourne un JSON avec le score moyen de 0 à 1.`;
     const score = (totalCorrect / questions.length) * 20;
     const passed = score >= 12;
 
-    await base44.entities.StudentCourseProgress.create({
+    // Vérifier s'il existe déjà une tentative pour éviter les doublons
+    const existing = await base44.entities.StudentCourseProgress.filter({
       student_email: studentEmail,
-      course_id: course.id,
-      score: parseFloat(score.toFixed(2)),
-      passed,
-      attempts: 1
+      course_id: course.id
     });
+    if (existing.length > 0) {
+      await base44.entities.StudentCourseProgress.update(existing[0].id, {
+        score: parseFloat(score.toFixed(2)),
+        passed,
+        attempts: (existing[0].attempts || 1) + 1
+      });
+    } else {
+      await base44.entities.StudentCourseProgress.create({
+        student_email: studentEmail,
+        course_id: course.id,
+        score: parseFloat(score.toFixed(2)),
+        passed,
+        attempts: 1
+      });
+    }
 
     if (!passed) {
       const verses = [
@@ -199,12 +212,15 @@ Retourne un JSON avec le score moyen de 0 à 1.`;
   }
 
   if (showResults) {
-    const qcmQuestions = questions.filter(q => q.type === 'qcm');
-    const correctQCM = qcmQuestions.filter((q, i) => {
+    const qcmQuestionsR = questions.filter(q => q.type === 'qcm');
+    const correctQCMR = qcmQuestionsR.filter((q) => {
       const qIndex = questions.indexOf(q);
       return selectedAnswers[qIndex] === q.correctIndex;
     }).length;
-    const score = (Object.keys(selectedAnswers).length + Object.keys(writtenAnswers).filter(k => writtenAnswers[k]?.trim()).length) / questions.length * 20;
+    const redactionQuestionsR = questions.filter(q => q.type === 'redaction');
+    // Utilise le même calcul que submitQCM pour la cohérence de l'affichage
+    const totalR = qcmQuestionsR.length + redactionQuestionsR.length;
+    const score = totalR > 0 ? (correctQCMR / Math.max(1, totalR)) * 20 : 0;
     const passed = score >= 12;
 
     return (
