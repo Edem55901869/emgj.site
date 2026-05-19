@@ -218,9 +218,9 @@ Retourne un JSON avec le score moyen de 0 à 1.`;
       return selectedAnswers[qIndex] === q.correctIndex;
     }).length;
     const redactionQuestionsR = questions.filter(q => q.type === 'redaction');
-    // Utilise le même calcul que submitQCM pour la cohérence de l'affichage
-    const totalR = qcmQuestionsR.length + redactionQuestionsR.length;
-    const score = totalR > 0 ? (correctQCMR / Math.max(1, totalR)) * 20 : 0;
+    // Même calcul que submitQCM : score basé sur QCM + évaluation rédaction estimée à 0 pour l'affichage
+    const totalR = questions.length;
+    const score = totalR > 0 ? (correctQCMR / totalR) * 20 : 0;
     const passed = score >= 12;
 
     return (
@@ -318,7 +318,7 @@ Retourne un JSON avec le score moyen de 0 à 1.`;
             disabled={
               questions.some((q, i) => {
                 if (q.type === 'qcm') return selectedAnswers[i] === undefined;
-                return !writtenAnswers[i]?.trim();
+                return false; // rédaction optionnelle pour la soumission
               })
             }
             className="ml-auto bg-green-600 hover:bg-green-700 rounded-xl"
