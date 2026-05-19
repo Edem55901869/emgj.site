@@ -1,0 +1,34 @@
+{
+  "name": "CourseEvaluation",
+  "type": "object",
+  "properties": {
+    "course_id": {
+      "type": "string",
+      "description": "ID du cours"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "correct_answer": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Questions et r\u00e9ponses correctes"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle (max 1000 caract\u00e8res)",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "course_id",
+    "questions"
+  ]
+}

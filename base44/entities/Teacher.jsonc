@@ -31,6 +31,11 @@
       "type": "boolean",
       "default": true,
       "description": "Visible sur la page d'accueil"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description ou biographie de l'enseignant (max 1000 caract\u00e8res)",
+      "maxLength": 1000
     }
   },
   "required": [

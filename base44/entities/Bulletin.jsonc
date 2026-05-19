@@ -1,0 +1,50 @@
+{
+  "name": "Bulletin",
+  "type": "object",
+  "properties": {
+    "student_email": {
+      "type": "string",
+      "description": "Email de l'\u00e9tudiant"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9tudiant"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Domaine"
+    },
+    "formation_type": {
+      "type": "string",
+      "description": "Type de formation"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "bulletin",
+        "dipl\u00f4me",
+        "certificat"
+      ],
+      "default": "bulletin",
+      "description": "Type de document"
+    },
+    "pdf_url": {
+      "type": "string",
+      "description": "URL du document PDF"
+    },
+    "period": {
+      "type": "string",
+      "description": "P\u00e9riode concern\u00e9e"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle (max 1000 caract\u00e8res)",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "student_email",
+    "student_name",
+    "pdf_url"
+  ]
+}
