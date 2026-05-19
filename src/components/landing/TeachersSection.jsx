@@ -65,7 +65,7 @@ export default function TeachersSection() {
             <div className="relative bg-gradient-to-br from-yellow-400/10 via-white/5 to-purple-600/10 border-2 border-yellow-400/40 rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-8 max-w-2xl w-full shadow-2xl shadow-yellow-500/10">
               {/* Crown badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0 px-4 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full text-xs font-black text-slate-900 uppercase tracking-widest shadow-lg">
-                ✦ Fondateur & Recteur
+                ✦ Recteur
               </div>
 
               {/* Photo */}
