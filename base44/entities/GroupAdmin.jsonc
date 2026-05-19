@@ -1,0 +1,27 @@
+{
+  "name": "GroupAdmin",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "ID du groupe"
+    },
+    "student_email": {
+      "type": "string",
+      "description": "Email de l'\u00e9tudiant admin"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9tudiant"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "group_id",
+    "student_email"
+  ]
+}

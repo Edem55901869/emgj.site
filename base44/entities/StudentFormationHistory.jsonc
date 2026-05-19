@@ -1,0 +1,42 @@
+{
+  "name": "StudentFormationHistory",
+  "type": "object",
+  "properties": {
+    "student_email": {
+      "type": "string",
+      "description": "Email de l'\u00e9tudiant"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Domaine de formation"
+    },
+    "formation_type": {
+      "type": "string",
+      "description": "Type de formation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "en_cours",
+        "termin\u00e9e"
+      ],
+      "default": "en_cours",
+      "description": "Statut de la formation"
+    },
+    "completion_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de compl\u00e9tion"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "student_email",
+    "domain",
+    "formation_type"
+  ]
+}

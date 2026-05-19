@@ -1,0 +1,105 @@
+{
+  "name": "Student",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "Pr\u00e9nom de l'\u00e9tudiant"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9tudiant"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date de naissance"
+    },
+    "place_of_birth": {
+      "type": "string",
+      "description": "Lieu de naissance"
+    },
+    "country": {
+      "type": "string",
+      "description": "Pays de l'\u00e9tudiant"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ville de l'\u00e9tudiant"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "Num\u00e9ro WhatsApp"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "TH\u00c9OLOGIE",
+        "LEADERSHIP ET ADMINISTRATION CHR\u00c9TIENNE",
+        "MISSIOLOGIE",
+        "\u00c9COLE PROPHETIQUES",
+        "ENTREPRENEURIAT",
+        "AUM\u00d4NERIE",
+        "MINIST\u00c8RE APOSTOLIQUE"
+      ],
+      "description": "Domaine de formation"
+    },
+    "formation_type": {
+      "type": "string",
+      "enum": [
+        "\u00c9cole des \u00e9vang\u00e9listes",
+        "Discipolat",
+        "Brevet",
+        "Baccalaur\u00e9at",
+        "Licence",
+        "Master",
+        "Doctorat"
+      ],
+      "description": "Type de formation"
+    },
+    "previous_diploma_proof": {
+      "type": "string",
+      "description": "URL de la preuve du dipl\u00f4me pr\u00e9c\u00e9dent"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "en_attente",
+        "certifi\u00e9",
+        "rejet\u00e9",
+        "bloqu\u00e9"
+      ],
+      "default": "en_attente",
+      "description": "Statut du compte"
+    },
+    "profile_photo": {
+      "type": "string",
+      "description": "URL de la photo de profil"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur li\u00e9"
+    },
+    "profile_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Profil compl\u00e9t\u00e9"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description ou note sur l'\u00e9tudiant (max 1000 caract\u00e8res)",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name",
+    "date_of_birth",
+    "place_of_birth",
+    "country",
+    "city",
+    "whatsapp",
+    "domain",
+    "formation_type"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "name": "MessageReaction",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "ID du message"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "public",
+        "group"
+      ],
+      "description": "Type de message (public ou groupe)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur"
+    },
+    "reaction": {
+      "type": "string",
+      "enum": [
+        "\u2764\ufe0f",
+        "\ud83d\udc4d",
+        "\ud83d\ude02",
+        "\ud83d\ude2e",
+        "\ud83d\ude22",
+        "\ud83d\ude4f"
+      ],
+      "description": "Type de r\u00e9action"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "message_id",
+    "message_type",
+    "user_email",
+    "user_name",
+    "reaction"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "BlogBookmark",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "ID du post"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "post_id",
+    "user_email"
+  ]
+}

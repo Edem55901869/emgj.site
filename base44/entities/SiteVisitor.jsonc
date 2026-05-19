@@ -1,0 +1,33 @@
+{
+  "name": "SiteVisitor",
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Pays du visiteur"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop"
+      ],
+      "description": "Type d'appareil"
+    },
+    "page_visited": {
+      "type": "string",
+      "description": "Page visit\u00e9e"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Adresse IP"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": []
+}

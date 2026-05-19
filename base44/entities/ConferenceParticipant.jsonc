@@ -1,0 +1,53 @@
+{
+  "name": "ConferenceParticipant",
+  "type": "object",
+  "properties": {
+    "conference_id": {
+      "type": "string",
+      "description": "ID de la conf\u00e9rence"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email du participant"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom du participant"
+    },
+    "is_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "Est administrateur"
+    },
+    "mic_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Micro activ\u00e9"
+    },
+    "mic_blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Micro bloqu\u00e9 par l'admin"
+    },
+    "hand_raised": {
+      "type": "boolean",
+      "default": false,
+      "description": "Main lev\u00e9e pour demander la parole"
+    },
+    "is_connected": {
+      "type": "boolean",
+      "default": true,
+      "description": "Actuellement connect\u00e9"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "conference_id",
+    "user_email",
+    "user_name"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "CourseQuestion",
+  "type": "object",
+  "properties": {
+    "evaluation_id": {
+      "type": "string",
+      "description": "ID de l'\u00e9valuation"
+    },
+    "question": {
+      "type": "string",
+      "description": "Question"
+    },
+    "question_type": {
+      "type": "string",
+      "enum": [
+        "qcm",
+        "redaction"
+      ],
+      "default": "qcm",
+      "description": "Type de question (QCM ou r\u00e9daction libre)"
+    },
+    "correct_answer": {
+      "type": "string",
+      "description": "R\u00e9ponse correcte (pour QCM ou comme r\u00e9f\u00e9rence pour r\u00e9daction)"
+    },
+    "order": {
+      "type": "number",
+      "description": "Ordre de la question"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description ou contexte de la question (max 1000 caract\u00e8res)",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "evaluation_id",
+    "question",
+    "question_type",
+    "correct_answer"
+  ]
+}

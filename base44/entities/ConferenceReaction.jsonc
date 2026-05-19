@@ -1,0 +1,40 @@
+{
+  "name": "ConferenceReaction",
+  "type": "object",
+  "properties": {
+    "conference_id": {
+      "type": "string",
+      "description": "ID de la conf\u00e9rence"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur"
+    },
+    "reaction": {
+      "type": "string",
+      "enum": [
+        "\ud83d\udc4d",
+        "\u2764\ufe0f",
+        "\ud83d\udc4f",
+        "\ud83c\udf89",
+        "\ud83d\udd25"
+      ],
+      "description": "Type de r\u00e9action"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "conference_id",
+    "user_email",
+    "user_name",
+    "reaction"
+  ]
+}

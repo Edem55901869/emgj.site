@@ -1,0 +1,24 @@
+{
+  "name": "ChatThemeConfig",
+  "type": "object",
+  "properties": {
+    "theme_index": {
+      "type": "number",
+      "description": "Index du th\u00e8me choisi par l'admin",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Configuration active",
+      "default": true
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "theme_index"
+  ]
+}

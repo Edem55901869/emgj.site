@@ -1,0 +1,36 @@
+{
+  "name": "GroupMembership",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "ID du groupe"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9tudiant"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "en_attente",
+        "accept\u00e9",
+        "rejet\u00e9"
+      ],
+      "default": "en_attente"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "group_id",
+    "user_email"
+  ]
+}

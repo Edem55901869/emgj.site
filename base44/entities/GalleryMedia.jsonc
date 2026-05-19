@@ -1,0 +1,32 @@
+{
+  "name": "GalleryMedia",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "ID de la publication"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "URL du m\u00e9dia"
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "video"
+      ],
+      "description": "Type de m\u00e9dia"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "post_id",
+    "media_url",
+    "media_type"
+  ]
+}

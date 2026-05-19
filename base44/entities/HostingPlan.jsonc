@@ -1,0 +1,57 @@
+{
+  "name": "HostingPlan",
+  "type": "object",
+  "properties": {
+    "plan_name": {
+      "type": "string",
+      "enum": [
+        "Basic",
+        "Pro",
+        "Enterprise"
+      ],
+      "description": "Nom du plan d'h\u00e9bergement"
+    },
+    "price": {
+      "type": "string",
+      "description": "Prix du plan (ex: 29,000 XOF)"
+    },
+    "payment_link": {
+      "type": "string",
+      "description": "Lien de paiement externe (FedaPay, Wave, etc.)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date et heure de d\u00e9but de l'h\u00e9bergement"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date et heure de fin de l'h\u00e9bergement"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Plan actuellement actif"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Liste des fonctionnalit\u00e9s incluses"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description du plan d'h\u00e9bergement (max 1000 caract\u00e8res)",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "plan_name",
+    "price",
+    "payment_link",
+    "start_date",
+    "end_date"
+  ]
+}

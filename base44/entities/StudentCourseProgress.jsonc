@@ -1,0 +1,38 @@
+{
+  "name": "StudentCourseProgress",
+  "type": "object",
+  "properties": {
+    "student_email": {
+      "type": "string",
+      "description": "Email de l'\u00e9tudiant"
+    },
+    "course_id": {
+      "type": "string",
+      "description": "ID du cours"
+    },
+    "score": {
+      "type": "number",
+      "description": "Note obtenue sur 20"
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "Valid\u00e9 ou non (12/20 minimum)"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de tentatives"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "student_email",
+    "course_id",
+    "score",
+    "passed"
+  ]
+}

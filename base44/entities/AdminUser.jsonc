@@ -1,0 +1,66 @@
+{
+  "name": "AdminUser",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "Pr\u00e9nom"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Nom"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin_principal",
+        "admin_secondaire"
+      ],
+      "description": "R\u00f4le"
+    },
+    "country": {
+      "type": "string",
+      "description": "Pays"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "Num\u00e9ro WhatsApp"
+    },
+    "profile_photo": {
+      "type": "string",
+      "description": "Photo de profil"
+    },
+    "password": {
+      "type": "string",
+      "description": "Mot de passe"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Fonctionnalit\u00e9s autoris\u00e9es"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Compte actif"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description optionnelle",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name",
+    "email",
+    "role",
+    "password"
+  ]
+}
