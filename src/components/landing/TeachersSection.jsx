@@ -52,9 +52,60 @@ export default function TeachersSection() {
           </p>
         </motion.div>
 
-        {/* Teachers Grid */}
+        {/* Founder — featured card */}
+        {teachers.filter(t => t.order === 0).map((founder) => (
+          <motion.div
+            key={founder.id}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="mb-14 flex justify-center"
+          >
+            <div className="relative bg-gradient-to-br from-yellow-400/10 via-white/5 to-purple-600/10 border-2 border-yellow-400/40 rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-8 max-w-2xl w-full shadow-2xl shadow-yellow-500/10">
+              {/* Crown badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0 px-4 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full text-xs font-black text-slate-900 uppercase tracking-widest shadow-lg">
+                ✦ Fondateur & Recteur
+              </div>
+
+              {/* Photo */}
+              <div className="flex-shrink-0">
+                <div className="w-36 h-36 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-1 shadow-xl shadow-yellow-500/30">
+                  <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-800">
+                    {founder.profile_photo ? (
+                      <img
+                        src={founder.profile_photo}
+                        alt={founder.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center">
+                        <span className="text-white font-black text-4xl">{founder.name?.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="text-center sm:text-left">
+                <p className="text-yellow-400 font-bold text-sm mb-1">{founder.title}</p>
+                <h3 className="text-white font-black text-2xl mb-2">{founder.name}</h3>
+                <div className="flex items-center justify-center sm:justify-start gap-1 text-slate-400 mb-3">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span className="text-sm">{founder.country}</span>
+                </div>
+                {founder.description && (
+                  <p className="text-slate-300 text-sm leading-relaxed max-w-sm">{founder.description}</p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Other Teachers Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-          {teachers.map((teacher, i) => (
+          {teachers.filter(t => t.order !== 0).map((teacher, i) => (
             <motion.div
               key={teacher.id}
               initial={{ opacity: 0, y: 40 }}
@@ -63,7 +114,6 @@ export default function TeachersSection() {
               transition={{ delay: i * 0.07, duration: 0.5 }}
             >
               <div className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/25 rounded-3xl p-5 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/20 cursor-default">
-                {/* Glow effect on hover */}
                 <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${gradients[i % gradients.length]} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
                 {/* Photo */}
@@ -78,14 +128,11 @@ export default function TeachersSection() {
                         />
                       ) : (
                         <div className={`w-full h-full bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center`}>
-                          <span className="text-white font-black text-2xl">
-                            {teacher.name?.charAt(0)}
-                          </span>
+                          <span className="text-white font-black text-2xl">{teacher.name?.charAt(0)}</span>
                         </div>
                       )}
                     </div>
                   </div>
-                  {/* Title badge */}
                   {teacher.title && (
                     <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r ${gradients[i % gradients.length]} rounded-full text-white text-xs font-bold shadow-lg whitespace-nowrap`}>
                       {teacher.title}
@@ -95,9 +142,7 @@ export default function TeachersSection() {
 
                 {/* Info */}
                 <div className="mt-3 relative z-10">
-                  <h3 className="text-white font-bold text-xs leading-tight mb-2 line-clamp-2">
-                    {teacher.name}
-                  </h3>
+                  <h3 className="text-white font-bold text-xs leading-tight mb-2 line-clamp-2">{teacher.name}</h3>
                   <div className="flex items-center justify-center gap-1 text-slate-400">
                     <MapPin className="w-3 h-3 flex-shrink-0" />
                     <span className="text-xs">{teacher.country}</span>
