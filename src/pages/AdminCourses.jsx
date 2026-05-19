@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload, Search, Filter } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -114,9 +114,9 @@ export default function AdminCourses() {
 
       const courseData = {
         ...data,
-        audio_files: audioFilesData.length > 0 ? audioFilesData : null,
-        video_files: videoFilesData.length > 0 ? videoFilesData : null,
-        document_files: documentFilesData.length > 0 ? documentFilesData : null,
+        audio_files: audioFilesData.length > 0 ? audioFilesData : [],
+        video_files: videoFilesData.length > 0 ? videoFilesData : [],
+        document_files: documentFilesData.length > 0 ? documentFilesData : [],
         pdf_url,
         cover_image,
         order

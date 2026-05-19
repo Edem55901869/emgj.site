@@ -177,7 +177,8 @@ Retourne un JSON avec le score moyen de 0 à 1.`;
                 }
               }
             });
-            redactionScore = (evalResult.average_score || 0) * redactionQuestions.length;
+            // Multiplier par answeredRedactions.length (pas redactionQuestions.length) car seules les réponses données sont évaluées
+          redactionScore = (evalResult.average_score || 0) * answeredRedactions.length;
           } catch {
             // En cas d'erreur IA, score rédaction = 0
             redactionScore = 0;

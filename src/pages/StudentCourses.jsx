@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import StudentBottomNav from '../components/student/StudentBottomNav';
 import CourseQCM from '../components/course/CourseQCM';
 import AskQuestionDialog from '../components/course/AskQuestionDialog';
-import { convertGoogleDriveUrl } from '../components/utils/googleDriveHelper';
+
 
 const getAudioUrl = (audioUrl) => {
   if (!audioUrl) return null;

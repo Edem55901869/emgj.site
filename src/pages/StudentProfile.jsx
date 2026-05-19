@@ -6,7 +6,7 @@ import { ArrowLeft, GraduationCap, CheckCircle2, Loader2, MapPin, Phone, Mail, C
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { createPageUrl } from '@/utils';
+
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -69,7 +69,7 @@ export default function StudentProfile() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Profil non trouvé</p>
-          <Button onClick={() => navigate(createPageUrl('StudentDashboard'))}>Retour</Button>
+          <Button onClick={() => navigate('/StudentDashboard')}>Retour</Button>
         </div>
       </div>
     );
@@ -90,7 +90,7 @@ export default function StudentProfile() {
                               radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)`
           }} />
           <Button
-            onClick={() => navigate(createPageUrl('StudentMore'))}
+            onClick={() => navigate('/StudentMore')}
             variant="ghost"
             size="icon"
             className="absolute top-4 left-4 bg-black/30 hover:bg-black/40 text-white rounded-full backdrop-blur-sm z-10"
