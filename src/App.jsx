@@ -15,6 +15,7 @@ import AdminDocumentation from './pages/AdminDocumentation';
 import AdminEvaluationSimulator from './pages/AdminEvaluationSimulator';
 import AdminCourseDocuments from './pages/AdminCourseDocuments';
 import StudentCourseDocuments from './pages/StudentCourseDocuments';
+import PublicGallery from './pages/PublicGallery';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
       <Route path="/StudentCourseDocuments" element={<ErrorBoundary pageBoundary><StudentCourseDocuments /></ErrorBoundary>} />
       <Route path="/APropos" element={<ErrorBoundary pageBoundary><APropos /></ErrorBoundary>} />
       <Route path="/AdminEvaluationSimulator" element={<ErrorBoundary pageBoundary><AdminEvaluationSimulator /></ErrorBoundary>} />
+      <Route path="/PublicGallery" element={<ErrorBoundary pageBoundary><PublicGallery /></ErrorBoundary>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

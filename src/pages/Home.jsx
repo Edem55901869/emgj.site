@@ -9,6 +9,7 @@ import TeachersSection from '../components/landing/TeachersSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import ContactSection from '../components/landing/ContactSection';
 import FooterSection from '../components/landing/FooterSection';
+import GallerySection from '../components/landing/GallerySection';
 
 async function trackVisit() {
   try {
@@ -73,6 +74,7 @@ export default function Home() {
       <CarouselSection />
       <TeachersSection />
       <TestimonialsSection />
+      <GallerySection />
       <ContactSection />
       <FooterSection />
     </div>
