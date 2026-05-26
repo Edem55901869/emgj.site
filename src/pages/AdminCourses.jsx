@@ -258,8 +258,8 @@ export default function AdminCourses() {
   // Filtrage et tri des cours
   const filteredAndSortedCourses = courses
     .filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          course.teacher_name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (course.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (course.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDomain = !filterDomain || course.domain === filterDomain;
       const matchesFormation = !filterFormation || course.formation_type === filterFormation;
       return matchesSearch && matchesDomain && matchesFormation;
