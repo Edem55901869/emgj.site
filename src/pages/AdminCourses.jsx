@@ -48,12 +48,14 @@ export default function AdminCourses() {
     const savedTeacher = localStorage.getItem('last_teacher_name');
     const savedDomain = localStorage.getItem('last_course_domain');
     const savedFormation = localStorage.getItem('last_course_formation');
+    const savedYear = localStorage.getItem('last_course_year');
     if (!editingCourse) {
       setForm(prev => ({
         ...prev,
         teacher_name: savedTeacher || prev.teacher_name,
         domain: savedDomain || prev.domain,
         formation_type: savedFormation || prev.formation_type,
+        year: savedYear ? parseInt(savedYear) : prev.year,
       }));
     }
   }, [editingCourse]);
@@ -113,30 +115,22 @@ export default function AdminCourses() {
       }
 
       // Calculer l'ordre et décaler les cours si nécessaire
+      // L'ordre est global pour tout le domaine+formation (toutes années confondues)
       let order = data.order ? parseInt(data.order) : null;
+      const sameFormationCourses = courses.filter(c => c.domain === data.domain && c.formation_type === data.formation_type);
       if (!editingCourse) {
         if (order) {
-          // Décaler tous les cours avec ordre >= order dans le même domaine/formation
-          const toShift = courses.filter(c =>
-            c.domain === data.domain &&
-            c.formation_type === data.formation_type &&
-            (c.order || 0) >= order
-          );
+          const toShift = sameFormationCourses.filter(c => (c.order || 0) >= order);
           for (const c of toShift) {
             await base44.entities.Course.update(c.id, { order: (c.order || 0) + 1 });
           }
         } else {
-          const sameDomainCourses = courses.filter(c => c.domain === data.domain && c.formation_type === data.formation_type);
-          const maxOrder = sameDomainCourses.length > 0 ? Math.max(...sameDomainCourses.map(c => c.order || 0)) : 0;
+          const maxOrder = sameFormationCourses.length > 0 ? Math.max(...sameFormationCourses.map(c => c.order || 0)) : 0;
           order = maxOrder + 1;
         }
       } else if (order && order !== editingCourse.order) {
-        // Modification d'ordre : décaler les autres
-        const toShift = courses.filter(c =>
-          c.id !== editingCourse.id &&
-          c.domain === data.domain &&
-          c.formation_type === data.formation_type &&
-          (c.order || 0) >= order
+        const toShift = sameFormationCourses.filter(c =>
+          c.id !== editingCourse.id && (c.order || 0) >= order
         );
         for (const c of toShift) {
           await base44.entities.Course.update(c.id, { order: (c.order || 0) + 1 });
@@ -159,6 +153,7 @@ export default function AdminCourses() {
       localStorage.setItem('last_teacher_name', data.teacher_name);
       localStorage.setItem('last_course_domain', data.domain);
       localStorage.setItem('last_course_formation', data.formation_type);
+      if (data.year) localStorage.setItem('last_course_year', data.year);
 
       let course;
       if (editingCourse) {
@@ -206,7 +201,8 @@ export default function AdminCourses() {
     const savedTeacher = localStorage.getItem('last_teacher_name');
     const savedDomain = localStorage.getItem('last_course_domain') || '';
     const savedFormation = localStorage.getItem('last_course_formation') || '';
-    setForm({ title: '', description: '', domain: savedDomain, formation_type: savedFormation, year: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
+    const savedYear2 = localStorage.getItem('last_course_year');
+    setForm({ title: '', description: '', domain: savedDomain, formation_type: savedFormation, year: savedYear2 ? parseInt(savedYear2) : '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFiles([]);
     setVideoFiles([]);
@@ -380,6 +376,7 @@ export default function AdminCourses() {
                     <div className="flex flex-wrap gap-2 mb-3">
                       <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{course.domain}</Badge>
                       <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{course.formation_type}</Badge>
+                      {course.year && <Badge className="bg-amber-50 text-amber-700 border-amber-100 text-xs">Année {course.year}</Badge>}
                       {course.audio_files?.length > 0 && (
                         <Badge className="bg-green-50 text-green-700 border-green-100 text-xs">
                           {course.audio_files.length} audio(s)
