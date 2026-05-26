@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload, Search } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit, Loader2, Headphones, Link as LinkIcon, Upload, Search, ArrowUpDown } from 'lucide-react';
+import CourseReorderDialog from '../components/admin/CourseReorderDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +22,7 @@ export default function AdminCourses() {
   const [filterDomain, setFilterDomain] = useState('');
   const [filterFormation, setFilterFormation] = useState('');
   const [sortBy, setSortBy] = useState('order');
+  const [reorderOpen, setReorderOpen] = useState(false);
   const [audioFiles, setAudioFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
   const [documentFiles, setDocumentFiles] = useState([]);
@@ -102,12 +104,35 @@ export default function AdminCourses() {
         cover_image = file_url;
       }
 
-      // Calculer l'ordre automatiquement si non spécifié
-      let order = data.order;
-      if (!order && !editingCourse) {
-        const sameDomainCourses = courses.filter(c => c.domain === data.domain && c.formation_type === data.formation_type);
-        const maxOrder = sameDomainCourses.length > 0 ? Math.max(...sameDomainCourses.map(c => c.order || 0)) : 0;
-        order = maxOrder + 1;
+      // Calculer l'ordre et décaler les cours si nécessaire
+      let order = data.order ? parseInt(data.order) : null;
+      if (!editingCourse) {
+        if (order) {
+          // Décaler tous les cours avec ordre >= order dans le même domaine/formation
+          const toShift = courses.filter(c =>
+            c.domain === data.domain &&
+            c.formation_type === data.formation_type &&
+            (c.order || 0) >= order
+          );
+          for (const c of toShift) {
+            await base44.entities.Course.update(c.id, { order: (c.order || 0) + 1 });
+          }
+        } else {
+          const sameDomainCourses = courses.filter(c => c.domain === data.domain && c.formation_type === data.formation_type);
+          const maxOrder = sameDomainCourses.length > 0 ? Math.max(...sameDomainCourses.map(c => c.order || 0)) : 0;
+          order = maxOrder + 1;
+        }
+      } else if (order && order !== editingCourse.order) {
+        // Modification d'ordre : décaler les autres
+        const toShift = courses.filter(c =>
+          c.id !== editingCourse.id &&
+          c.domain === data.domain &&
+          c.formation_type === data.formation_type &&
+          (c.order || 0) >= order
+        );
+        for (const c of toShift) {
+          await base44.entities.Course.update(c.id, { order: (c.order || 0) + 1 });
+        }
       }
 
       setUploading(false);
@@ -250,9 +275,14 @@ export default function AdminCourses() {
                 <h1 className="text-3xl font-bold text-gray-900">Cours</h1>
                 <p className="text-gray-500 text-sm mt-1">Gérez les cours (audio, vidéo, documents)</p>
               </div>
+              <div className="flex gap-2">
+              <Button onClick={() => setReorderOpen(true)} variant="outline" className="rounded-xl">
+                <ArrowUpDown className="w-4 h-4 mr-2" /> Réorganiser
+              </Button>
               <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
                 <Plus className="w-4 h-4 mr-2" /> Nouveau cours
               </Button>
+              </div>
             </div>
 
             {/* Barre de recherche et filtres */}
@@ -625,9 +655,9 @@ export default function AdminCourses() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Ordre (auto)</label>
-                  <Input type="number" value={form.order || ''} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || null })} placeholder="Auto" className="rounded-xl h-11" />
-                  <p className="text-xs text-gray-500 mt-1">Laissez vide pour auto</p>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Position dans la liste</label>
+                  <Input type="number" min="1" value={form.order || ''} onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || null })} placeholder="Auto (fin de liste)" className="rounded-xl h-11" />
+                  <p className="text-xs text-gray-500 mt-1">Les cours suivants seront décalés</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Cours prérequis</label>
@@ -712,6 +742,12 @@ export default function AdminCourses() {
           </DialogContent>
         </Dialog>
       </div>
+      <CourseReorderDialog
+        open={reorderOpen}
+        onOpenChange={setReorderOpen}
+        courses={courses}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ['adminCourses'] })}
+      />
     </AdminGuard>
   );
 }
