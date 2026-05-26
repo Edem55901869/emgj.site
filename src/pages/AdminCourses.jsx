@@ -42,11 +42,18 @@ export default function AdminCourses() {
     queryFn: () => base44.entities.Course.list('-created_date', 100),
   });
 
-  // Charger le nom de l'enseignant sauvegardé
+  // Charger le nom de l'enseignant et dernier domaine/formation sauvegardés
   React.useEffect(() => {
     const savedTeacher = localStorage.getItem('last_teacher_name');
-    if (savedTeacher && !editingCourse) {
-      setForm(prev => ({ ...prev, teacher_name: savedTeacher }));
+    const savedDomain = localStorage.getItem('last_course_domain');
+    const savedFormation = localStorage.getItem('last_course_formation');
+    if (!editingCourse) {
+      setForm(prev => ({
+        ...prev,
+        teacher_name: savedTeacher || prev.teacher_name,
+        domain: savedDomain || prev.domain,
+        formation_type: savedFormation || prev.formation_type,
+      }));
     }
   }, [editingCourse]);
 
@@ -147,8 +154,10 @@ export default function AdminCourses() {
         order
       };
 
-      // Sauvegarder le nom de l'enseignant
+      // Sauvegarder le nom de l'enseignant et dernier domaine/formation
       localStorage.setItem('last_teacher_name', data.teacher_name);
+      localStorage.setItem('last_course_domain', data.domain);
+      localStorage.setItem('last_course_formation', data.formation_type);
 
       let course;
       if (editingCourse) {
@@ -194,7 +203,9 @@ export default function AdminCourses() {
 
   const resetForm = () => {
     const savedTeacher = localStorage.getItem('last_teacher_name');
-    setForm({ title: '', description: '', domain: '', formation_type: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
+    const savedDomain = localStorage.getItem('last_course_domain') || '';
+    const savedFormation = localStorage.getItem('last_course_formation') || '';
+    setForm({ title: '', description: '', domain: savedDomain, formation_type: savedFormation, teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFiles([]);
     setVideoFiles([]);
@@ -424,6 +435,9 @@ export default function AdminCourses() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Titre *</label>
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Titre du cours" className="rounded-xl h-11" />
+                {form.title && courses.some(c => c.title.toLowerCase().trim() === form.title.toLowerCase().trim() && c.id !== editingCourse?.id) && (
+                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">⚠️ Un cours avec ce titre existe déjà.</p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
