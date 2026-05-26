@@ -27,6 +27,8 @@ export default function AdminStudents() {
   const [deleteConfirmStep, setDeleteConfirmStep] = useState(0); // 0=none, 1=first confirm, 2=second confirm
   const [studentToDelete, setStudentToDelete] = useState(null);
   const queryClient = useQueryClient();
+  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
+  const isYearFormation = (s) => s?.domain === 'THÉOLOGIE' && !!THEOLOGY_YEAR_COUNTS[s?.formation_type];
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['adminStudents'],
@@ -270,6 +272,9 @@ export default function AdminStudents() {
                     <div className="flex flex-wrap gap-2 mt-2">
                       <Badge className="bg-blue-50 text-blue-700 border-blue-100 text-xs">{student.domain}</Badge>
                       <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs">{student.formation_type}</Badge>
+                      {isYearFormation(student) && (
+                        <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">Année {student.academic_year || 1}</Badge>
+                      )}
                       <Badge className="bg-gray-50 text-gray-600 border-gray-100 text-xs">{student.country}</Badge>
                     </div>
                   </div>
@@ -462,6 +467,23 @@ export default function AdminStudents() {
                         </SelectContent>
                       </Select>
                     </div>
+                    {isYearFormation(selectedStudent) && (
+                      <div>
+                        <p className="text-gray-500 mb-1">Année académique</p>
+                        <Select
+                          key={`year-${selectedStudent.id}`}
+                          defaultValue={String(selectedStudent.academic_year || 1)}
+                          onValueChange={(v) => updateMutation.mutate({ id: selectedStudent.id, data: { academic_year: parseInt(v) } })}
+                        >
+                          <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: THEOLOGY_YEAR_COUNTS[selectedStudent.formation_type] }, (_, i) => i + 1).map(y => (
+                              <SelectItem key={y} value={String(y)}>Année {y}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     <div>
                       <p className="text-gray-500 mb-1">Pays</p>
                       <Input defaultValue={selectedStudent.country} disabled className="rounded-xl h-10" />
@@ -476,6 +498,25 @@ export default function AdminStudents() {
                   
                   <div className="flex flex-wrap gap-2 pt-2">
                      <Button onClick={() => { updateMutation.mutate({ id: selectedStudent.id, data: { status: 'certifié' } }); setSelectedStudent(null); }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
+                     {isYearFormation(selectedStudent) && (selectedStudent.academic_year || 1) < THEOLOGY_YEAR_COUNTS[selectedStudent.formation_type] && (
+                       <Button
+                         size="sm"
+                         className="bg-purple-600 hover:bg-purple-700 rounded-xl text-white"
+                         onClick={async () => {
+                           const nextYear = (selectedStudent.academic_year || 1) + 1;
+                           updateMutation.mutate({ id: selectedStudent.id, data: { academic_year: nextYear } });
+                           await base44.entities.Notification.create({
+                             recipient_email: selectedStudent.user_email,
+                             type: 'success',
+                             title: `🎓 Admis en Année ${nextYear} !`,
+                             message: `Félicitations ${selectedStudent.first_name} ! Votre paiement a été validé et vous êtes admis en année ${nextYear} de ${selectedStudent.formation_type}.`,
+                           });
+                           toast.success(`Étudiant promu en année ${nextYear}`);
+                         }}
+                       >
+                         <Award className="w-3 h-3 mr-1" />Promouvoir Année {(selectedStudent.academic_year || 1) + 1}
+                       </Button>
+                     )}
                      <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'rejeté' } })} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><X className="w-3 h-3 mr-1" />Rejeter</Button>
                      <Button onClick={() => updateMutation.mutate({ id: selectedStudent.id, data: { status: 'bloqué' } })} size="sm" variant="outline" className="rounded-xl"><Ban className="w-3 h-3 mr-1" />Bloquer</Button>
                      <Button onClick={() => { initiateDelete(selectedStudent); }} size="sm" variant="outline" className="text-red-600 border-red-200 rounded-xl"><Trash2 className="w-3 h-3 mr-1" />Supprimer</Button>
