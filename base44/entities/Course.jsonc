@@ -1,0 +1,121 @@
+{
+  "name": "Course",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre du cours"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description du cours"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "TH\u00c9OLOGIE",
+        "LEADERSHIP ET ADMINISTRATION CHR\u00c9TIENNE",
+        "MISSIOLOGIE",
+        "\u00c9COLE PROPHETIQUES",
+        "ENTREPRENEURIAT",
+        "AUM\u00d4NERIE",
+        "MINIST\u00c8RE APOSTOLIQUE"
+      ],
+      "description": "Domaine du cours"
+    },
+    "formation_type": {
+      "type": "string",
+      "enum": [
+        "\u00c9cole des \u00e9vang\u00e9listes",
+        "Discipolat",
+        "Brevet",
+        "Baccalaur\u00e9at",
+        "Licence",
+        "Master",
+        "Doctorat"
+      ],
+      "description": "Type de formation"
+    },
+    "year": {
+      "type": "number",
+      "description": "Ann\u00e9e acad\u00e9mique du cours (1, 2 ou 3) \u2014 applicable uniquement pour TH\u00c9OLOGIE Licence/Master/Doctorat"
+    },
+    "teacher_name": {
+      "type": "string",
+      "description": "Nom de l'enseignant"
+    },
+    "audio_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Liste des fichiers audio (jusqu'\u00e0 10)"
+    },
+    "video_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Liste des fichiers vid\u00e9o (jusqu'\u00e0 10)"
+    },
+    "document_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Liste des documents (PDF, Word, txt, etc. - jusqu'\u00e0 10)"
+    },
+    "pdf_url": {
+      "type": "string",
+      "description": "Fichier PDF du cours (optionnel, d\u00e9pr\u00e9ci\u00e9 - utiliser document_files)"
+    },
+    "cover_image": {
+      "type": "string",
+      "description": "Image de couverture"
+    },
+    "order": {
+      "type": "number",
+      "description": "Ordre du cours dans la hi\u00e9rarchie"
+    },
+    "prerequisite_course_id": {
+      "type": "string",
+      "description": "ID du cours pr\u00e9requis"
+    }
+  },
+  "required": [
+    "title",
+    "domain",
+    "formation_type",
+    "teacher_name"
+  ]
+}

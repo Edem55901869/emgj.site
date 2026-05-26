@@ -71,9 +71,19 @@ export default function StudentCourses() {
     load();
   }, []);
 
+  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
+  const needsYearFilter = student?.domain === 'THÉOLOGIE' && !!THEOLOGY_YEAR_COUNTS[student?.formation_type];
+
   const { data: courses = [], isLoading } = useQuery({
-    queryKey: ['courses', student?.domain, student?.formation_type],
-    queryFn: () => base44.entities.Course.filter({ domain: student.domain, formation_type: student.formation_type }),
+    queryKey: ['courses', student?.domain, student?.formation_type, student?.academic_year],
+    queryFn: async () => {
+      const all = await base44.entities.Course.filter({ domain: student.domain, formation_type: student.formation_type });
+      if (needsYearFilter) {
+        const year = student.academic_year || 1;
+        return all.filter(c => !c.year || c.year === year);
+      }
+      return all;
+    },
     enabled: !!student,
   });
 
@@ -138,6 +148,9 @@ export default function StudentCourses() {
         <div className="flex gap-2">
           <Badge className="bg-white/20 text-white border-white/30">{student?.domain}</Badge>
           <Badge className="bg-white/20 text-white border-white/30">{student?.formation_type}</Badge>
+          {needsYearFilter && (
+            <Badge className="bg-yellow-400/80 text-yellow-900 border-yellow-300/50">Année {student?.academic_year || 1}</Badge>
+          )}
           <Badge className="bg-white/20 text-white border-white/30">
             {progress.filter(p => p.passed).length} / {courses.length} validés
           </Badge>

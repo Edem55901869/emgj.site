@@ -16,7 +16,8 @@ import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMappin
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', teacher_name: '', pdf_url: '', audio_files: [], video_files: [], document_files: [] });
+  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
+  const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', year: '', teacher_name: '', pdf_url: '', audio_files: [], video_files: [], document_files: [] });
   const [pdfFile, setPdfFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
@@ -205,7 +206,7 @@ export default function AdminCourses() {
     const savedTeacher = localStorage.getItem('last_teacher_name');
     const savedDomain = localStorage.getItem('last_course_domain') || '';
     const savedFormation = localStorage.getItem('last_course_formation') || '';
-    setForm({ title: '', description: '', domain: savedDomain, formation_type: savedFormation, teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
+    setForm({ title: '', description: '', domain: savedDomain, formation_type: savedFormation, year: '', teacher_name: savedTeacher || '', pdf_url: '', audio_files: [], video_files: [], document_files: [], order: '', prerequisite_course_id: '' });
     setEditingCourse(null);
     setAudioFiles([]);
     setVideoFiles([]);
@@ -458,7 +459,7 @@ export default function AdminCourses() {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Formation *</label>
                 <select
                   value={form.formation_type}
-                  onChange={(e) => setForm({ ...form, formation_type: e.target.value })}
+                  onChange={(e) => setForm({ ...form, formation_type: e.target.value, year: '' })}
                   disabled={!form.domain}
                   className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 >
@@ -466,6 +467,21 @@ export default function AdminCourses() {
                   {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
+              {form.domain === 'THÉOLOGIE' && THEOLOGY_YEAR_COUNTS[form.formation_type] && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Année académique *</label>
+                  <select
+                    value={form.year || ''}
+                    onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) || '' })}
+                    className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Choisir l'année...</option>
+                    {Array.from({ length: THEOLOGY_YEAR_COUNTS[form.formation_type] }, (_, i) => i + 1).map(y => (
+                      <option key={y} value={y}>Année {y}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Enseignant *</label>
                 <Input value={form.teacher_name} onChange={(e) => setForm({ ...form, teacher_name: e.target.value })} placeholder="Nom de l'enseignant" className="rounded-xl h-11" />

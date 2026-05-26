@@ -20,13 +20,16 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
     whatsapp: '',
     domain: '',
     formation_type: '',
+    academic_year: 1,
     previous_diploma_proof: ''
   });
   const [uploading, setUploading] = useState(false);
 
+  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
+  const needsYearSelection = form.domain === 'THÉOLOGIE' && !!THEOLOGY_YEAR_COUNTS[form.formation_type];
   const step1Valid = form.first_name && form.last_name && form.date_of_birth && form.place_of_birth && form.country && form.city && form.whatsapp;
   const needsDiploma = form.domain && form.formation_type && requiresPreviousDiploma(form.formation_type, form.domain);
-  const step2Valid = form.domain && form.formation_type && (!needsDiploma || form.previous_diploma_proof);
+  const step2Valid = form.domain && form.formation_type && (!needsDiploma || form.previous_diploma_proof) && (!needsYearSelection || form.academic_year);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -185,7 +188,7 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Type de formation *</label>
-              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v, previous_diploma_proof: '' })} disabled={!form.domain}>
+              <Select value={form.formation_type} onValueChange={(v) => setForm({ ...form, formation_type: v, academic_year: 1, previous_diploma_proof: '' })} disabled={!form.domain}>
                 <SelectTrigger className="h-12 rounded-xl">
                   <SelectValue placeholder={form.domain ? "Choisissez un type" : "Sélectionnez d'abord un domaine"} />
                 </SelectTrigger>
@@ -196,6 +199,22 @@ export default function ProfileSetupForm({ onSubmit, loading }) {
                 </SelectContent>
               </Select>
             </div>
+
+            {needsYearSelection && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Année académique *</label>
+                <Select value={String(form.academic_year || '')} onValueChange={(v) => setForm({ ...form, academic_year: parseInt(v) })}>
+                  <SelectTrigger className="h-12 rounded-xl">
+                    <SelectValue placeholder="Choisissez l'année" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: THEOLOGY_YEAR_COUNTS[form.formation_type] }, (_, i) => i + 1).map(y => (
+                      <SelectItem key={y} value={String(y)}>Année {y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {needsDiploma && (
               <motion.div

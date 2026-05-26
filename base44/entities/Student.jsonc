@@ -57,6 +57,11 @@
       ],
       "description": "Type de formation"
     },
+    "academic_year": {
+      "type": "number",
+      "default": 1,
+      "description": "Ann\u00e9e acad\u00e9mique actuelle (1, 2 ou 3) \u2014 applicable pour TH\u00c9OLOGIE Licence/Master/Doctorat"
+    },
     "previous_diploma_proof": {
       "type": "string",
       "description": "URL de la preuve du dipl\u00f4me pr\u00e9c\u00e9dent"
