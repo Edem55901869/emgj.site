@@ -582,7 +582,7 @@ export default function AdminCourses() {
                   <div className="space-y-2">
                     <Input 
                       type="file" 
-                      accept="audio/*,.opus" 
+                      accept="audio/*,.opus,.ogg,.oga,.m4a,.aac,.flac,.wav,.mp3,.weba,.webm,.mp4,.3gp,.amr" 
                       multiple 
                       onChange={(e) => setAudioFiles(Array.from(e.target.files).slice(0, 10))} 
                       className="rounded-xl" 
