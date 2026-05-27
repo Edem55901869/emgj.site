@@ -190,6 +190,10 @@ export default function AdminCourses() {
       resetForm();
       toast.success(editingCourse ? 'Cours modifié' : 'Cours publié');
     },
+    onError: (error) => {
+      setUploading(false);
+      toast.error(`Erreur : ${error?.message || 'La publication a échoué'}`);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -763,7 +767,7 @@ export default function AdminCourses() {
               </div>
               <Button
                 onClick={() => saveMutation.mutate(form)}
-                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || saveMutation.isPending || uploading}
+                disabled={!form.title || !form.domain || !form.formation_type || !form.teacher_name || (getYearCount(form.domain, form.formation_type) && !form.year) || saveMutation.isPending || uploading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl h-11"
               >
                 {(saveMutation.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingCourse ? 'Mettre à jour' : 'Publier le cours')}
