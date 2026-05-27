@@ -29,7 +29,6 @@ export default function AdminStudents() {
   const queryClient = useQueryClient();
   const getYearCount = (domain, formation_type) => {
     if (domain === 'THÉOLOGIE') return ({ 'Licence': 3, 'Master': 2, 'Doctorat': 3 })[formation_type] || null;
-    if (domain === 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE') return formation_type ? 3 : null;
     return null;
   };
   const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };

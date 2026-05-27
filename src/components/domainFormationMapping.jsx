@@ -11,7 +11,7 @@ export const DOMAINS = [
 
 export const FORMATION_BY_DOMAIN = {
   'THÉOLOGIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
-  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
+  'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE': ['Année 1', 'Année 2', 'Année 3'],
   'MISSIOLOGIE': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
   'ÉCOLE PROPHETIQUES': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
   'ENTREPRENEURIAT': ['École des évangélistes', 'Discipolat', 'Brevet', 'Baccalauréat', 'Licence', 'Master', 'Doctorat'],
