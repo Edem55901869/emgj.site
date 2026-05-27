@@ -16,7 +16,11 @@ import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMappin
 export default function AdminCourses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
-  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
+  const getYearCount = (domain, formation_type) => {
+    if (domain === 'THÉOLOGIE') return ({ 'Licence': 3, 'Master': 2, 'Doctorat': 3 })[formation_type] || null;
+    if (domain === 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE') return formation_type ? 3 : null;
+    return null;
+  };
   const [form, setForm] = useState({ title: '', description: '', domain: '', formation_type: '', year: '', teacher_name: '', pdf_url: '', audio_files: [], video_files: [], document_files: [] });
   const [pdfFile, setPdfFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -464,7 +468,7 @@ export default function AdminCourses() {
                   {form.domain && FORMATION_BY_DOMAIN[form.domain]?.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
-              {form.domain === 'THÉOLOGIE' && THEOLOGY_YEAR_COUNTS[form.formation_type] && (
+              {getYearCount(form.domain, form.formation_type) && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Année académique *</label>
                   <select
@@ -473,7 +477,7 @@ export default function AdminCourses() {
                     className="w-full h-11 rounded-xl border border-gray-300 bg-white px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Choisir l'année...</option>
-                    {Array.from({ length: THEOLOGY_YEAR_COUNTS[form.formation_type] }, (_, i) => i + 1).map(y => (
+                    {Array.from({ length: getYearCount(form.domain, form.formation_type) }, (_, i) => i + 1).map(y => (
                       <option key={y} value={y}>Année {y}</option>
                     ))}
                   </select>

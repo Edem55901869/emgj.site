@@ -71,8 +71,12 @@ export default function StudentCourses() {
     load();
   }, []);
 
-  const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
-  const needsYearFilter = student?.domain === 'THÉOLOGIE' && !!THEOLOGY_YEAR_COUNTS[student?.formation_type];
+  const getYearCount = (domain, formation_type) => {
+    if (domain === 'THÉOLOGIE') return ({ 'Licence': 3, 'Master': 2, 'Doctorat': 3 })[formation_type] || null;
+    if (domain === 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE') return formation_type ? 3 : null;
+    return null;
+  };
+  const needsYearFilter = !!getYearCount(student?.domain, student?.formation_type);
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses', student?.domain, student?.formation_type, student?.academic_year],

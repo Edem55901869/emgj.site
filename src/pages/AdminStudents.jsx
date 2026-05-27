@@ -27,8 +27,13 @@ export default function AdminStudents() {
   const [deleteConfirmStep, setDeleteConfirmStep] = useState(0); // 0=none, 1=first confirm, 2=second confirm
   const [studentToDelete, setStudentToDelete] = useState(null);
   const queryClient = useQueryClient();
+  const getYearCount = (domain, formation_type) => {
+    if (domain === 'THÉOLOGIE') return ({ 'Licence': 3, 'Master': 2, 'Doctorat': 3 })[formation_type] || null;
+    if (domain === 'LEADERSHIP ET ADMINISTRATION CHRÉTIENNE') return formation_type ? 3 : null;
+    return null;
+  };
   const THEOLOGY_YEAR_COUNTS = { 'Licence': 3, 'Master': 2, 'Doctorat': 3 };
-  const isYearFormation = (s) => s?.domain === 'THÉOLOGIE' && !!THEOLOGY_YEAR_COUNTS[s?.formation_type];
+  const isYearFormation = (s) => !!getYearCount(s?.domain, s?.formation_type);
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['adminStudents'],
@@ -477,7 +482,7 @@ export default function AdminStudents() {
                         >
                           <SelectTrigger className="rounded-xl h-10"><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            {Array.from({ length: THEOLOGY_YEAR_COUNTS[selectedStudent.formation_type] }, (_, i) => i + 1).map(y => (
+                            {Array.from({ length: getYearCount(selectedStudent.domain, selectedStudent.formation_type) }, (_, i) => i + 1).map(y => (
                               <SelectItem key={y} value={String(y)}>Année {y}</SelectItem>
                             ))}
                           </SelectContent>
@@ -498,7 +503,7 @@ export default function AdminStudents() {
                   
                   <div className="flex flex-wrap gap-2 pt-2">
                      <Button onClick={() => { updateMutation.mutate({ id: selectedStudent.id, data: { status: 'certifié' } }); setSelectedStudent(null); }} size="sm" className="bg-green-600 hover:bg-green-700 rounded-xl"><Check className="w-3 h-3 mr-1" />Certifier</Button>
-                     {isYearFormation(selectedStudent) && (selectedStudent.academic_year || 1) < THEOLOGY_YEAR_COUNTS[selectedStudent.formation_type] && (
+                     {isYearFormation(selectedStudent) && (selectedStudent.academic_year || 1) < (getYearCount(selectedStudent.domain, selectedStudent.formation_type) || 3) && (
                        <Button
                          size="sm"
                          className="bg-purple-600 hover:bg-purple-700 rounded-xl text-white"
