@@ -211,15 +211,6 @@ export default function AdminGallery() {
         <AdminTopNav />
         
         <div className="pt-20 px-4 pb-12 max-w-7xl mx-auto">
-          {isLocked && (
-            <div className="mb-4 bg-red-600 text-white rounded-xl p-4 flex items-center gap-3 shadow-lg">
-              <span className="text-2xl">⚠️</span>
-              <div>
-                <p className="font-bold text-base">Espace de stockage insuffisant</p>
-                <p className="text-sm text-red-100">La publication de nouveaux médias est désactivée. Veuillez contacter l'hébergeur pour étendre votre base de données.</p>
-              </div>
-            </div>
-          )}
           {/* Header */}
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <div>
