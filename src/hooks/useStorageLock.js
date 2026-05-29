@@ -5,7 +5,9 @@ export function useStorageLock() {
   const { data: configs = [] } = useQuery({
     queryKey: ['storageConfig'],
     queryFn: () => base44.entities.StorageConfig.list(),
-    staleTime: 30000,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   return {

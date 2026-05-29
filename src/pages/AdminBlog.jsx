@@ -123,6 +123,15 @@ export default function AdminBlog() {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <AdminTopNav />
         <div className="pt-20 px-4 pb-8 max-w-3xl mx-auto">
+          {isLocked && (
+            <div className="mb-4 bg-red-600 text-white rounded-xl p-4 flex items-center gap-3 shadow-lg">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <p className="font-bold text-base">Espace de stockage insuffisant</p>
+                <p className="text-sm text-red-100">La publication de nouveaux articles est désactivée. Veuillez contacter l'hébergeur pour étendre votre base de données.</p>
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Publications</h1>
