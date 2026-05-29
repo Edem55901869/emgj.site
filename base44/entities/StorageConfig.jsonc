@@ -1,0 +1,12 @@
+{
+  "name": "StorageConfig",
+  "type": "object",
+  "properties": {
+    "storage_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Verrouille la publication de nouveaux contenus (cours, galerie, blog) pour cause d'espace insuffisant"
+    }
+  },
+  "required": []
+}

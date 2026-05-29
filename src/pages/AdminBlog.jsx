@@ -12,9 +12,11 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
+import { useStorageLock } from '@/hooks/useStorageLock';
 import ThemeSelector, { themes } from '../components/blog/ThemeSelector';
 
 export default function AdminBlog() {
+  const { isLocked } = useStorageLock();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [form, setForm] = useState({ title: '', content: '', media_type: 'text', theme_id: null, theme_bg: null, theme_text: null });
@@ -126,7 +128,10 @@ export default function AdminBlog() {
               <h1 className="text-3xl font-bold text-gray-900">Publications</h1>
               <p className="text-gray-500 text-sm mt-1">Partagez du contenu avec les étudiants</p>
             </div>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
+            <Button
+              onClick={() => { if (isLocked) { toast.error("⚠️ Espace insuffisant — Contactez l'hébergeur pour étendre votre base de données."); return; } resetForm(); setDialogOpen(true); }}
+              className={`rounded-xl shadow-lg ${isLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20'}`}
+            >
               <Plus className="w-4 h-4 mr-2" /> Publier
             </Button>
           </div>

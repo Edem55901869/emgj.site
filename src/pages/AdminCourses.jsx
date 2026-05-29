@@ -12,8 +12,10 @@ import { toast } from 'sonner';
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import { DOMAINS, FORMATION_BY_DOMAIN } from '@/components/domainFormationMapping';
+import { useStorageLock } from '@/hooks/useStorageLock';
 
 export default function AdminCourses() {
+  const { isLocked } = useStorageLock();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const getYearCount = (domain, formation_type) => {
@@ -294,7 +296,10 @@ export default function AdminCourses() {
               <Button onClick={() => setReorderOpen(true)} variant="outline" className="rounded-xl">
                 <ArrowUpDown className="w-4 h-4 mr-2" /> Réorganiser
               </Button>
-              <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20">
+              <Button
+                onClick={() => { if (isLocked) { toast.error("⚠️ Espace insuffisant — Contactez l'hébergeur pour étendre votre base de données."); return; } resetForm(); setDialogOpen(true); }}
+                className={`rounded-xl shadow-lg ${isLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20'}`}
+              >
                 <Plus className="w-4 h-4 mr-2" /> Nouveau cours
               </Button>
               </div>

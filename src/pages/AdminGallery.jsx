@@ -11,6 +11,7 @@ import { Plus, Upload, Image as ImageIcon, Video, Calendar, Loader2, X, Trash2, 
 import AdminTopNav from '../components/admin/AdminTopNav';
 import AdminGuard from '../components/admin/AdminGuard';
 import { toast } from 'sonner';
+import { useStorageLock } from '@/hooks/useStorageLock';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -28,6 +29,7 @@ const EVENT_TYPES = [
 ];
 
 export default function AdminGallery() {
+  const { isLocked } = useStorageLock();
   const queryClient = useQueryClient();
   const [createDialog, setCreateDialog] = useState(false);
   const [viewDialog, setViewDialog] = useState(false);
@@ -216,8 +218,8 @@ export default function AdminGallery() {
               <p className="text-gray-600 text-sm">Gérez les publications photo et vidéo</p>
             </div>
             <Button 
-              onClick={() => setCreateDialog(true)}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg"
+              onClick={() => { if (isLocked) { toast.error("⚠️ Espace insuffisant — Contactez l'hébergeur pour étendre votre base de données."); return; } setCreateDialog(true); }}
+              className={`rounded-xl shadow-lg ${isLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'}`}
             >
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle publication
