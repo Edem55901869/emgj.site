@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X, Key, User, Database, Lock, Unlock } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Settings, Eye, EyeOff, Plus, Loader2, Edit, Trash2, Check, X, Key, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,27 +13,6 @@ import AdminGuard from '../components/admin/AdminGuard';
 export default function AdminSettings() {
   const [showPasswords, setShowPasswords] = useState({});
 
-  const { data: storageConfigs = [], refetch: refetchStorage } = useQuery({
-    queryKey: ['storageConfig'],
-    queryFn: () => base44.entities.StorageConfig.list(),
-  });
-
-  const storageConfig = storageConfigs[0];
-
-  const toggleStorageLock = useMutation({
-    mutationFn: async () => {
-      const newValue = !storageConfig?.storage_locked;
-      if (storageConfig) {
-        return base44.entities.StorageConfig.update(storageConfig.id, { storage_locked: newValue });
-      } else {
-        return base44.entities.StorageConfig.create({ storage_locked: true });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['storageConfig'] });
-      toast.success(storageConfig?.storage_locked ? 'Espace débloqué — publications autorisées' : 'Espace verrouillé — publications bloquées');
-    },
-  });
   const [newPassword, setNewPassword] = useState('');
   const [editingPassword, setEditingPassword] = useState(null);
   const [currentAdmin, setCurrentAdmin] = useState(null);
@@ -103,45 +82,7 @@ export default function AdminSettings() {
             <p className="text-gray-500 mt-1">Gérez vos mots de passe de sécurité</p>
           </div>
 
-          {/* Contrôle de l'espace de stockage — visible par tous les admins principaux */}
-          {currentAdmin?.role === 'admin_principal' && (
-          <Card className="border-none shadow-lg mb-6">
-            <CardHeader className="border-b border-gray-100">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Database className="w-5 h-5 text-orange-500" />
-                Contrôle de l'espace de stockage
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-5">
-              <div className={`rounded-xl p-5 border-2 flex items-center justify-between gap-4 ${storageConfig?.storage_locked ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    {storageConfig?.storage_locked
-                      ? <Lock className="w-5 h-5 text-red-600" />
-                      : <Unlock className="w-5 h-5 text-green-600" />
-                    }
-                    <span className={`font-bold text-base ${storageConfig?.storage_locked ? 'text-red-700' : 'text-green-700'}`}>
-                      {storageConfig?.storage_locked ? 'ESPACE VERROUILLÉ' : 'ESPACE DISPONIBLE'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {storageConfig?.storage_locked
-                      ? "L'administrateur ne peut plus publier de cours, galerie ni blog. Un message d'alerte s'affiche."
-                      : "Toutes les publications sont autorisées normalement."
-                    }
-                  </p>
-                </div>
-                <Button
-                  onClick={() => toggleStorageLock.mutate()}
-                  disabled={toggleStorageLock.isPending}
-                  className={`rounded-xl font-bold shrink-0 ${storageConfig?.storage_locked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
-                >
-                  {toggleStorageLock.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (storageConfig?.storage_locked ? 'Débloquer' : 'Verrouiller')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          )}
+
 
           {currentAdmin?.role === 'admin_principal' && (
           <Card className="border-none shadow-lg mb-6">

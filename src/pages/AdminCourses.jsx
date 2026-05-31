@@ -16,6 +16,13 @@ import { useStorageLock } from '@/hooks/useStorageLock';
 
 export default function AdminCourses() {
   const { isLocked } = useStorageLock();
+
+  const { data: storageConfigs = [] } = useQuery({
+    queryKey: ['storageConfig'],
+    queryFn: () => base44.entities.StorageConfig.list(),
+    staleTime: 0,
+  });
+  const coursesHidden = storageConfigs[0]?.courses_hidden ?? false;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const getYearCount = (domain, formation_type) => {
@@ -261,9 +268,17 @@ export default function AdminCourses() {
     setDialogOpen(true);
   };
 
+  // IDs des 15 derniers cours publiés (à masquer si courses_hidden est actif)
+  const last15Ids = React.useMemo(() => {
+    if (!coursesHidden) return new Set();
+    const sorted = [...courses].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    return new Set(sorted.slice(0, 15).map(c => c.id));
+  }, [courses, coursesHidden]);
+
   // Filtrage et tri des cours
   const filteredAndSortedCourses = courses
     .filter(course => {
+      if (coursesHidden && last15Ids.has(course.id)) return false;
       const matchesSearch = (course.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (course.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDomain = !filterDomain || course.domain === filterDomain;

@@ -6,6 +6,11 @@
       "type": "boolean",
       "default": false,
       "description": "Verrouille la publication de nouveaux contenus (cours, galerie, blog) pour cause d'espace insuffisant"
+    },
+    "courses_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Masque les 15 derniers cours publi\u00e9s \u2014 ils n'apparaissent plus dans la liste ni dans la recherche des administrateurs"
     }
   },
   "required": []
